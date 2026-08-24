@@ -355,12 +355,19 @@ body.zig-md-page {
   line-height: 1.35;
   text-decoration: none;
   text-overflow: ellipsis;
+  transition: background-color 120ms ease, color 120ms ease;
   white-space: nowrap;
 }
 
-#zig-md-toc nav a:hover {
+#zig-md-toc nav a:hover,
+#zig-md-toc nav a.is-active {
   background: var(--zig-md-accent-soft);
   color: var(--zig-md-accent);
+}
+
+#zig-md-toc nav a.is-active {
+  box-shadow: inset 2px 0 0 var(--zig-md-accent);
+  font-weight: 700;
 }
 
 #zig-md-toc nav a.level-2 { padding-left: 18px; }

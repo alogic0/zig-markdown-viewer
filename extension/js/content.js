@@ -20,6 +20,9 @@
     renderer: null,
     refreshTimer: null,
     rawMode: false,
+    tocEntries: [],
+    activeHeadingId: null,
+    scrollFrame: null,
     documentTitle: document.title || fileName(window.location.href),
   };
 
@@ -182,7 +185,7 @@
     shell.querySelector('#zig-md-scroll-top').addEventListener('click', () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
-    window.addEventListener('scroll', updateScrollButton, { passive: true });
+    window.addEventListener('scroll', updateScrollState, { passive: true });
   }
 
   function applySettings() {
@@ -217,6 +220,8 @@
       raw.textContent = state.source;
       content.append(raw);
       document.querySelector('#zig-md-toc nav').replaceChildren();
+      state.tocEntries = [];
+      state.activeHeadingId = null;
       return;
     }
 
@@ -260,6 +265,8 @@
   function buildToc(content) {
     const nav = document.querySelector('#zig-md-toc nav');
     nav.replaceChildren();
+    state.tocEntries = [];
+    state.activeHeadingId = null;
     const headings = [...content.querySelectorAll('h1,h2,h3')];
     if (headings.length === 0) {
       const empty = document.createElement('p');
@@ -274,11 +281,52 @@
       link.className = `level-${heading.tagName.slice(1)}`;
       link.textContent = heading.textContent.replace(/^#/, '').trim();
       nav.append(link);
+      state.tocEntries.push({ heading, link });
     }
+    updateActiveTocLink();
   }
 
   function updateScrollButton() {
     document.querySelector('#zig-md-scroll-top')?.classList.toggle('is-visible', scrollY > 500);
+  }
+
+  function updateActiveTocLink() {
+    if (state.tocEntries.length === 0) return;
+
+    let active = state.tocEntries[0];
+    const atBottom = scrollY > 0 && innerHeight + scrollY >= document.documentElement.scrollHeight - 2;
+    if (atBottom) {
+      active = state.tocEntries[state.tocEntries.length - 1];
+    } else {
+      for (const entry of state.tocEntries) {
+        if (entry.heading.getBoundingClientRect().top > 96) break;
+        active = entry;
+      }
+    }
+
+    for (const entry of state.tocEntries) {
+      const isActive = entry === active;
+      entry.link.classList.toggle('is-active', isActive);
+      if (isActive) entry.link.setAttribute('aria-current', 'location');
+      else entry.link.removeAttribute('aria-current');
+    }
+
+    if (state.activeHeadingId === active.heading.id) return;
+    state.activeHeadingId = active.heading.id;
+    const toc = document.querySelector('#zig-md-toc');
+    const linkRect = active.link.getBoundingClientRect();
+    const tocRect = toc.getBoundingClientRect();
+    if (linkRect.top < tocRect.top + 16) toc.scrollTop -= tocRect.top + 16 - linkRect.top;
+    else if (linkRect.bottom > tocRect.bottom - 16) toc.scrollTop += linkRect.bottom - tocRect.bottom + 16;
+  }
+
+  function updateScrollState() {
+    if (state.scrollFrame !== null) return;
+    state.scrollFrame = requestAnimationFrame(() => {
+      state.scrollFrame = null;
+      updateScrollButton();
+      updateActiveTocLink();
+    });
   }
 
   function notify(message, isError = false) {
@@ -321,6 +369,10 @@
 
   function restoreRawDocument() {
     if (state.refreshTimer) clearInterval(state.refreshTimer);
+    if (state.scrollFrame !== null) cancelAnimationFrame(state.scrollFrame);
+    state.scrollFrame = null;
+    state.tocEntries = [];
+    state.activeHeadingId = null;
     document.documentElement.removeAttribute('data-zig-markdown-theme');
     document.body.className = '';
     const pre = document.createElement('pre');
