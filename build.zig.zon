@@ -1,0 +1,20 @@
+.{
+    .name = .zig_markdown_viewer,
+    .version = "0.1.0",
+    .fingerprint = 0xf144d88b71f63db,
+    .minimum_zig_version = "0.17.0-dev.1756+613c03321",
+    .dependencies = .{
+        .markdown_parser = .{ .path = "../zig-markdown-parser" },
+    },
+    .paths = .{
+        "LICENSE",
+        "README.md",
+        "build.sh",
+        "build.zig",
+        "build.zig.zon",
+        "docs",
+        "extension",
+        "src",
+        "tests",
+    },
+}

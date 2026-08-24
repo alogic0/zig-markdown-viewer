@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Zig Markdown Viewer</title>
+    <link rel="stylesheet" href="css/popup.css">
+  </head>
+  <body>
+    <header>
+      <div class="logo" aria-hidden="true">◆</div>
+      <div>
+        <h1>Zig Markdown Viewer</h1>
+        <p>Local Markdown, rendered by Zig</p>
+      </div>
+    </header>
+
+    <nav aria-label="Popup sections">
+      <button type="button" class="tab is-active" data-tab="recent">Recent</button>
+      <button type="button" class="tab" data-tab="settings">Settings</button>
+    </nav>
+
+    <main>
+      <section id="recent" class="panel is-active">
+        <div class="section-title">
+          <h2>Recent documents</h2>
+          <button type="button" id="clear-recent" class="text-button">Clear</button>
+        </div>
+        <input id="recent-search" type="search" placeholder="Search documents…" autocomplete="off">
+        <div id="recent-list"></div>
+      </section>
+
+      <section id="settings" class="panel">
+        <label class="row toggle-row">
+          <span><strong>Enabled</strong><small>Render matching Markdown URLs</small></span>
+          <input id="enabled" type="checkbox">
+        </label>
+
+        <label class="row">
+          <span><strong>Theme</strong></span>
+          <select id="theme">
+            <option value="auto">System</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </label>
+
+        <label class="row toggle-row">
+          <span><strong>Centered layout</strong><small>Keep long lines readable</small></span>
+          <input id="centered" type="checkbox">
+        </label>
+
+        <label class="stacked">
+          <span><strong>Maximum width</strong><output id="maxWidth-output">960px</output></span>
+          <input id="maxWidth" type="range" min="600" max="1400" step="40">
+        </label>
+
+        <label class="stacked">
+          <span><strong>Font size</strong><output id="fontSize-output">16px</output></span>
+          <input id="fontSize" type="range" min="13" max="22" step="1">
+        </label>
+
+        <label class="stacked">
+          <span><strong>Line height</strong><output id="lineHeight-output">1.65</output></span>
+          <input id="lineHeight" type="range" min="1.3" max="2" step="0.05">
+        </label>
+
+        <label class="row toggle-row">
+          <span><strong>Table of contents</strong><small>Show headings in a sidebar</small></span>
+          <input id="tocVisible" type="checkbox">
+        </label>
+
+        <label class="row toggle-row">
+          <span><strong>Wrap code</strong><small>Wrap instead of horizontal scroll</small></span>
+          <input id="codeWrap" type="checkbox">
+        </label>
+
+        <label class="row toggle-row">
+          <span><strong>Auto-refresh</strong><small>Re-fetch when a source changes</small></span>
+          <input id="autoRefresh" type="checkbox">
+        </label>
+
+        <label class="row">
+          <span><strong>Refresh interval</strong></span>
+          <select id="autoRefreshInterval">
+            <option value="1">1 second</option>
+            <option value="3">3 seconds</option>
+            <option value="5">5 seconds</option>
+            <option value="10">10 seconds</option>
+          </select>
+        </label>
+
+        <button type="button" id="reset-settings" class="wide-button">Reset settings</button>
+      </section>
+    </main>
+
+    <footer>
+      <span id="version"></span>
+      <span>Enable file access in extension details for local files.</span>
+    </footer>
+    <script src="js/popup.js"></script>
+  </body>
+</html>
+

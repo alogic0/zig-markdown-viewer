@@ -1,0 +1,82 @@
+{
+  "manifest_version": 3,
+  "name": "Zig Markdown Viewer",
+  "short_name": "Zig MD",
+  "version": "0.1.0",
+  "description": "Fast, local-first Markdown rendering powered by Zig and WebAssembly.",
+  "permissions": ["storage"],
+  "host_permissions": ["file:///*", "http://*/*", "https://*/*"],
+  "action": {
+    "default_title": "Zig Markdown Viewer",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "js/background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "file://*/*.md",
+        "file://*/*.markdown",
+        "file://*/*.mkd",
+        "file://*/*.mdx",
+        "file://*/*.MD",
+        "file://*/*.MARKDOWN",
+        "file://*/*.MKD",
+        "file://*/*.MDX",
+        "http://*/*.md",
+        "http://*/*.markdown",
+        "http://*/*.mkd",
+        "http://*/*.mdx",
+        "https://*/*.md",
+        "https://*/*.markdown",
+        "https://*/*.mkd",
+        "https://*/*.mdx",
+        "http://*/*.MD",
+        "http://*/*.MARKDOWN",
+        "http://*/*.MKD",
+        "http://*/*.MDX",
+        "https://*/*.MD",
+        "https://*/*.MARKDOWN",
+        "https://*/*.MKD",
+        "https://*/*.MDX",
+        "http://*/*.md?*",
+        "http://*/*.markdown?*",
+        "http://*/*.mkd?*",
+        "http://*/*.mdx?*",
+        "https://*/*.md?*",
+        "https://*/*.markdown?*",
+        "https://*/*.mkd?*",
+        "https://*/*.mdx?*",
+        "http://*/*.MD?*",
+        "http://*/*.MARKDOWN?*",
+        "http://*/*.MKD?*",
+        "http://*/*.MDX?*",
+        "https://*/*.MD?*",
+        "https://*/*.MARKDOWN?*",
+        "https://*/*.MKD?*",
+        "https://*/*.MDX?*",
+        "file://*/*.md?*",
+        "file://*/*.markdown?*",
+        "file://*/*.mkd?*",
+        "file://*/*.mdx?*",
+        "file://*/*.MD?*",
+        "file://*/*.MARKDOWN?*",
+        "file://*/*.MKD?*",
+        "file://*/*.MDX?*"
+      ],
+      "js": ["js/wasm.js", "js/content.js"],
+      "css": ["css/content.css"],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["renderer.wasm"],
+      "matches": ["file:///*", "http://*/*", "https://*/*"]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+  }
+}

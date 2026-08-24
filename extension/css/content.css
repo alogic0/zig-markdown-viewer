@@ -1,0 +1,449 @@
+:root {
+  color-scheme: light dark;
+  --zig-md-bg: #ffffff;
+  --zig-md-surface: #f6f8fa;
+  --zig-md-surface-raised: #ffffff;
+  --zig-md-text: #24292f;
+  --zig-md-muted: #656d76;
+  --zig-md-border: #d0d7de;
+  --zig-md-accent: #0969da;
+  --zig-md-accent-soft: #ddf4ff;
+  --zig-md-code: #f6f8fa;
+  --zig-md-shadow: 0 8px 32px rgba(31, 35, 40, 0.08);
+}
+
+:root[data-zig-markdown-theme='dark'] {
+  --zig-md-bg: #0d1117;
+  --zig-md-surface: #161b22;
+  --zig-md-surface-raised: #161b22;
+  --zig-md-text: #e6edf3;
+  --zig-md-muted: #8b949e;
+  --zig-md-border: #30363d;
+  --zig-md-accent: #58a6ff;
+  --zig-md-accent-soft: #13233a;
+  --zig-md-code: #161b22;
+  --zig-md-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-zig-markdown-theme='auto'] {
+    --zig-md-bg: #0d1117;
+    --zig-md-surface: #161b22;
+    --zig-md-surface-raised: #161b22;
+    --zig-md-text: #e6edf3;
+    --zig-md-muted: #8b949e;
+    --zig-md-border: #30363d;
+    --zig-md-accent: #58a6ff;
+    --zig-md-accent-soft: #13233a;
+    --zig-md-code: #161b22;
+    --zig-md-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+}
+
+html,
+body.zig-md-page {
+  min-height: 100%;
+  margin: 0;
+  background: var(--zig-md-bg);
+  color: var(--zig-md-text);
+}
+
+body.zig-md-page {
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+#zig-md-shell {
+  --zig-md-width: 960px;
+  --zig-md-font-size: 16px;
+  --zig-md-line-height: 1.65;
+  min-height: 100vh;
+}
+
+#zig-md-main {
+  min-width: 0;
+  transition: margin-left 160ms ease;
+}
+
+#zig-md-shell.has-toc #zig-md-main {
+  margin-left: 260px;
+}
+
+#zig-md-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  min-height: 52px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-sizing: border-box;
+  padding: 8px 20px;
+  border-bottom: 1px solid color-mix(in srgb, var(--zig-md-border) 75%, transparent);
+  background: color-mix(in srgb, var(--zig-md-bg) 88%, transparent);
+  backdrop-filter: blur(14px);
+}
+
+.zig-md-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--zig-md-text);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.zig-md-brand span {
+  color: #f7a41d;
+}
+
+.zig-md-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.zig-md-actions button,
+.zig-md-copy,
+#zig-md-scroll-top {
+  border: 1px solid var(--zig-md-border);
+  border-radius: 7px;
+  background: var(--zig-md-surface-raised);
+  color: var(--zig-md-text);
+  font: 600 12px/1.2 Inter, ui-sans-serif, sans-serif;
+  cursor: pointer;
+}
+
+.zig-md-actions button {
+  padding: 7px 10px;
+}
+
+.zig-md-actions button:hover,
+.zig-md-copy:hover {
+  border-color: var(--zig-md-accent);
+  color: var(--zig-md-accent);
+}
+
+#zig-md-document {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 48px clamp(24px, 6vw, 80px) 100px;
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", serif;
+  font-size: var(--zig-md-font-size);
+  line-height: var(--zig-md-line-height);
+  overflow-wrap: break-word;
+}
+
+#zig-md-shell.is-centered #zig-md-document {
+  max-width: var(--zig-md-width);
+  margin: 0 auto;
+}
+
+#zig-md-document > :first-child {
+  margin-top: 0;
+}
+
+#zig-md-document h1,
+#zig-md-document h2,
+#zig-md-document h3,
+#zig-md-document h4,
+#zig-md-document h5,
+#zig-md-document h6 {
+  position: relative;
+  margin: 1.65em 0 0.65em;
+  color: var(--zig-md-text);
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.22;
+  letter-spacing: -0.025em;
+  scroll-margin-top: 72px;
+}
+
+#zig-md-document h1 {
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--zig-md-border);
+  font-size: 2.25em;
+}
+
+#zig-md-document h2 {
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--zig-md-border);
+  font-size: 1.65em;
+}
+
+#zig-md-document h3 { font-size: 1.3em; }
+#zig-md-document h4 { font-size: 1.1em; }
+
+.zig-md-heading-anchor {
+  position: absolute;
+  right: 100%;
+  box-sizing: border-box;
+  width: 30px;
+  padding-right: 8px;
+  color: var(--zig-md-accent);
+  font-weight: 500;
+  text-decoration: none;
+  opacity: 0;
+}
+
+#zig-md-document :is(h1,h2,h3,h4,h5,h6):hover .zig-md-heading-anchor,
+.zig-md-heading-anchor:focus {
+  opacity: 1;
+}
+
+#zig-md-document p,
+#zig-md-document ul,
+#zig-md-document ol,
+#zig-md-document blockquote,
+#zig-md-document pre,
+#zig-md-document table {
+  margin: 0 0 1.15em;
+}
+
+#zig-md-document a {
+  color: var(--zig-md-accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+#zig-md-document blockquote {
+  padding: 0.2em 1em;
+  border-left: 4px solid var(--zig-md-border);
+  color: var(--zig-md-muted);
+}
+
+#zig-md-document blockquote > :last-child { margin-bottom: 0; }
+
+#zig-md-document hr {
+  height: 1px;
+  margin: 2em 0;
+  border: 0;
+  background: var(--zig-md-border);
+}
+
+#zig-md-document code {
+  border-radius: 5px;
+  background: var(--zig-md-code);
+  font: 0.88em/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+#zig-md-document :not(pre) > code {
+  padding: 0.15em 0.38em;
+}
+
+#zig-md-document pre {
+  position: relative;
+  overflow: auto;
+  padding: 18px 20px;
+  border: 1px solid var(--zig-md-border);
+  border-radius: 9px;
+  background: var(--zig-md-code);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--zig-md-bg) 50%, transparent);
+}
+
+#zig-md-document pre[data-language]::before {
+  content: attr(data-language);
+  display: block;
+  margin: -5px 58px 8px 0;
+  color: var(--zig-md-muted);
+  font: 600 10px/1.2 Inter, ui-sans-serif, sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#zig-md-document pre code {
+  display: block;
+  min-width: max-content;
+  padding: 0;
+  background: transparent;
+  color: var(--zig-md-text);
+  white-space: pre;
+}
+
+#zig-md-shell.code-wrap #zig-md-document pre code {
+  min-width: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.zig-md-copy {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 5px 8px;
+  opacity: 0;
+}
+
+#zig-md-document pre:hover .zig-md-copy,
+.zig-md-copy:focus { opacity: 1; }
+
+#zig-md-document table {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow: auto;
+  border-spacing: 0;
+  border-collapse: collapse;
+  font-family: Inter, ui-sans-serif, sans-serif;
+  font-size: 0.92em;
+}
+
+#zig-md-document th,
+#zig-md-document td {
+  padding: 8px 13px;
+  border: 1px solid var(--zig-md-border);
+}
+
+#zig-md-document th { background: var(--zig-md-surface); }
+#zig-md-document tr:nth-child(even) { background: color-mix(in srgb, var(--zig-md-surface) 65%, transparent); }
+
+#zig-md-document img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1.5em auto;
+  border-radius: 6px;
+}
+
+#zig-md-document input[type='checkbox'] {
+  margin: 0 0.4em 0.2em -1.35em;
+  vertical-align: middle;
+  accent-color: var(--zig-md-accent);
+}
+
+#zig-md-document .footnotes {
+  margin-top: 3em;
+  padding-top: 1em;
+  border-top: 1px solid var(--zig-md-border);
+  color: var(--zig-md-muted);
+  font-size: 0.9em;
+}
+
+#zig-md-toc {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 25;
+  display: none;
+  box-sizing: border-box;
+  width: 260px;
+  overflow: auto;
+  padding: 24px 18px;
+  border-right: 1px solid var(--zig-md-border);
+  background: var(--zig-md-surface);
+}
+
+#zig-md-shell.has-toc #zig-md-toc { display: block; }
+
+.zig-md-toc-heading {
+  margin: 2px 8px 16px;
+  color: var(--zig-md-muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+#zig-md-toc nav { display: grid; gap: 2px; }
+
+#zig-md-toc nav a {
+  display: block;
+  overflow: hidden;
+  padding: 6px 8px;
+  border-radius: 6px;
+  color: var(--zig-md-muted);
+  font-size: 13px;
+  line-height: 1.35;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#zig-md-toc nav a:hover {
+  background: var(--zig-md-accent-soft);
+  color: var(--zig-md-accent);
+}
+
+#zig-md-toc nav a.level-2 { padding-left: 18px; }
+#zig-md-toc nav a.level-3 { padding-left: 30px; font-size: 12px; }
+.zig-md-toc-empty { padding: 0 8px; color: var(--zig-md-muted); font-size: 13px; }
+
+.zig-md-raw {
+  min-height: 70vh;
+  overflow: visible !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  white-space: pre-wrap !important;
+}
+
+#zig-md-scroll-top {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 40px;
+  height: 40px;
+  box-shadow: var(--zig-md-shadow);
+  font-size: 18px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: 150ms ease;
+}
+
+#zig-md-scroll-top.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.zig-md-notification {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 100;
+  padding: 10px 14px;
+  border: 1px solid var(--zig-md-border);
+  border-radius: 8px;
+  background: var(--zig-md-surface-raised);
+  box-shadow: var(--zig-md-shadow);
+  color: var(--zig-md-text);
+  font: 600 13px/1.3 Inter, ui-sans-serif, sans-serif;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: 150ms ease;
+}
+
+.zig-md-notification.is-visible { opacity: 1; transform: translateY(0); }
+.zig-md-notification.is-error { border-color: #d1242f; color: #d1242f; }
+
+@media (max-width: 900px) {
+  #zig-md-toc { width: 220px; }
+  #zig-md-shell.has-toc #zig-md-main { margin-left: 220px; }
+  #zig-md-document { padding-inline: 30px; }
+}
+
+@media (max-width: 680px) {
+  #zig-md-shell.has-toc #zig-md-main { margin-left: 0; }
+  #zig-md-toc {
+    inset: 52px 0 auto;
+    width: auto;
+    max-height: 52vh;
+    border-right: 0;
+    border-bottom: 1px solid var(--zig-md-border);
+    box-shadow: var(--zig-md-shadow);
+  }
+  .zig-md-brand { font-size: 0; }
+  .zig-md-brand span { font-size: 18px; }
+  .zig-md-actions button { padding-inline: 8px; }
+  #zig-md-document { padding: 32px 20px 80px; }
+}
+
+@media print {
+  #zig-md-toolbar,
+  #zig-md-toc,
+  #zig-md-scroll-top,
+  .zig-md-copy,
+  .zig-md-heading-anchor { display: none !important; }
+  #zig-md-shell.has-toc #zig-md-main { margin-left: 0; }
+  #zig-md-document { max-width: none !important; padding: 0; }
+}
+
