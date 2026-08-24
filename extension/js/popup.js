@@ -39,12 +39,12 @@
       const input = document.getElementById(key);
       if (!input) continue;
       const value = settings[key] ?? fallback;
-      if (input.type === 'checkbox') input.checked = value;
+      if (input.type === 'checkbox') input.checked = key === 'centered' ? !value : value;
       else input.value = String(value);
       updateOutput(key, value);
       input.addEventListener('input', () => {
         const next = input.type === 'checkbox'
-          ? input.checked
+          ? key === 'centered' ? !input.checked : input.checked
           : input.type === 'range' || key === 'autoRefreshInterval'
             ? Number(input.value)
             : input.value;

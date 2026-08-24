@@ -14,10 +14,10 @@
 }
 
 :root[data-zig-markdown-theme='dark'] {
-  --zig-md-bg: #0d1117;
+  --zig-md-bg: #0f141b;
   --zig-md-surface: #161b22;
   --zig-md-surface-raised: #161b22;
-  --zig-md-text: #e6edf3;
+  --zig-md-text: #c8d0d8;
   --zig-md-muted: #8b949e;
   --zig-md-border: #30363d;
   --zig-md-accent: #58a6ff;
@@ -28,10 +28,10 @@
 
 @media (prefers-color-scheme: dark) {
   :root[data-zig-markdown-theme='auto'] {
-    --zig-md-bg: #0d1117;
+    --zig-md-bg: #0f141b;
     --zig-md-surface: #161b22;
     --zig-md-surface-raised: #161b22;
-    --zig-md-text: #e6edf3;
+    --zig-md-text: #c8d0d8;
     --zig-md-muted: #8b949e;
     --zig-md-border: #30363d;
     --zig-md-accent: #58a6ff;
