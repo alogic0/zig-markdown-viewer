@@ -242,7 +242,6 @@
     content.append(sanitize(html));
     enhanceHeadings(content);
     enhanceCodeBlocks(content);
-    enhanceTaskLists(content);
     buildToc(content);
   }
 
@@ -273,12 +272,6 @@
         setTimeout(() => { button.textContent = 'Copy'; }, 1200);
       });
       pre.append(button);
-    });
-  }
-
-  function enhanceTaskLists(content) {
-    content.querySelectorAll('li > input[type="checkbox"]').forEach(checkbox => {
-      checkbox.parentElement.classList.add('zig-md-task-item');
     });
   }
 

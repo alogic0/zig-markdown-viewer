@@ -96,6 +96,30 @@ fn renderNode(
 ) std.Io.Writer.Error!void {
     const view = document.nodeAt(@backingInt(node)).?;
     switch (view.tag) {
+        .list_item => {
+            const item = view.data.list_item;
+            if (item.task == .none) {
+                try writer.writeAll("<li>");
+            } else {
+                try writer.writeAll("<li class=\"zig-md-task-item\">");
+            }
+            switch (item.task) {
+                .none => {},
+                .unchecked => try writer.writeAll("<input type=\"checkbox\" disabled=\"\" /> "),
+                .checked => try writer.writeAll("<input type=\"checkbox\" checked=\"\" disabled=\"\" /> "),
+            }
+            for (document.children(node)) |child| {
+                const child_view = document.nodeAt(@backingInt(child)).?;
+                if (item.tight and child_view.tag == .paragraph) {
+                    for (document.children(child)) |paragraph_child| {
+                        try renderer.renderFn(renderer, document, paragraph_child, writer);
+                    }
+                } else {
+                    try renderer.renderFn(renderer, document, child, writer);
+                }
+            }
+            try writer.writeAll("</li>\n");
+        },
         .code_block => {
             const language = document.string(view.data.code_block.tag);
             const content = document.string(view.data.code_block.content);
@@ -133,7 +157,19 @@ test "renders the viewer's core Markdown features" {
     try std.testing.expect(std.mem.indexOf(u8, html, "<h1>Viewer</h1>") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "<table>") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "checked=\"\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "<li class=\"zig-md-task-item\">") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-zig\"") != null);
+}
+
+test "adds a class only to task list items" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\- [x] done
+        \\- plain
+    );
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expect(std.mem.indexOf(u8, html, "<li class=\"zig-md-task-item\">") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "<li>plain</li>") != null);
 }
 
 test "escapes code block language and source" {

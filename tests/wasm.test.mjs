@@ -52,6 +52,7 @@ const answer = 42;
   assert.match(html, /<h1>Hello<\/h1>/);
   assert.match(html, /<table>/);
   assert.match(html, /type="checkbox" checked="" disabled=""/);
+  assert.match(html, /<li class="zig-md-task-item">/);
   assert.match(html, /class="language-zig"/);
 });
 
@@ -68,4 +69,3 @@ test('reuses the renderer and replaces invalid UTF-8', () => {
   assert.equal(html, '<p>�</p>\n');
   wasm.releaseSource();
 });
-
