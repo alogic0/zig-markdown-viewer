@@ -1,6 +1,7 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const markdown = @import("markdown");
+const unicode_slug = @import("unicode_slug.zig");
 
 const allocator = if (builtin.target.cpu.arch.isWasm())
     std.heap.wasm_allocator
@@ -247,13 +248,13 @@ fn appendSlugCodepoint(
     wrote_content: *bool,
     pending_separator: *bool,
 ) std.Io.Writer.Error!void {
-    if (codepoint == '-' or isUnicodeWhitespace(codepoint)) {
+    if (codepoint == '-' or unicode_slug.isWhitespace(codepoint)) {
         if (wrote_content.*) pending_separator.* = true;
         return;
     }
 
-    const folded = foldSlugCodepoint(codepoint) orelse return;
-    if (isCombiningMark(folded) or isUnicodePunctuationOrSymbol(folded)) return;
+    const folded = unicode_slug.fold(codepoint);
+    if (!unicode_slug.isLetter(folded) and !unicode_slug.isNumber(folded)) return;
 
     if (pending_separator.*) {
         try writer.writeByte('-');
@@ -263,112 +264,6 @@ fn appendSlugCodepoint(
     const length = std.unicode.utf8Encode(folded, &encoded) catch unreachable;
     try writer.writeAll(encoded[0..length]);
     wrote_content.* = true;
-}
-
-// Zig's standard library does not provide Unicode normalization or category
-// tables. Fold the Latin forms produced by NFKD in typical document titles,
-// lowercase common alphabet ranges, and preserve letters from other scripts.
-fn foldSlugCodepoint(codepoint: u21) ?u21 {
-    if (codepoint <= std.math.maxInt(u8)) {
-        const byte: u8 = @intCast(codepoint);
-        if (std.ascii.isAlphanumeric(byte)) return std.ascii.toLower(byte);
-        if (byte < 0x80) return null;
-    }
-
-    return switch (codepoint) {
-        0x00AA => 'a',
-        0x00B2 => '2',
-        0x00B3 => '3',
-        0x00B5 => 0x03BC,
-        0x00B9 => '1',
-        0x00BA => 'o',
-        'À', 'Á', 'Â', 'Ã', 'Ä', 'Å', 'à', 'á', 'â', 'ã', 'ä', 'å' => 'a',
-        'Æ', 'Ð', 'Ø', 'Þ' => codepoint + 0x20,
-        'Ç', 'ç' => 'c',
-        'È', 'É', 'Ê', 'Ë', 'è', 'é', 'ê', 'ë' => 'e',
-        'Ì', 'Í', 'Î', 'Ï', 'ì', 'í', 'î', 'ï' => 'i',
-        'Ñ', 'ñ' => 'n',
-        'Ò', 'Ó', 'Ô', 'Õ', 'Ö', 'ò', 'ó', 'ô', 'õ', 'ö' => 'o',
-        'Ù', 'Ú', 'Û', 'Ü', 'ù', 'ú', 'û', 'ü' => 'u',
-        'Ý', 'Ÿ', 'ý', 'ÿ' => 'y',
-        'Ā', 'Ă', 'Ą', 'ā', 'ă', 'ą' => 'a',
-        'Ć', 'Ĉ', 'Ċ', 'Č', 'ć', 'ĉ', 'ċ', 'č' => 'c',
-        'Ď', 'ď' => 'd',
-        'Ē', 'Ĕ', 'Ė', 'Ę', 'Ě', 'ē', 'ĕ', 'ė', 'ę', 'ě' => 'e',
-        'Ĝ', 'Ğ', 'Ġ', 'Ģ', 'ĝ', 'ğ', 'ġ', 'ģ' => 'g',
-        'Ĥ', 'ĥ' => 'h',
-        'Ĩ', 'Ī', 'Ĭ', 'Į', 'İ', 'ĩ', 'ī', 'ĭ', 'į', 'ı' => 'i',
-        'Ĵ', 'ĵ' => 'j',
-        'Ķ', 'ķ' => 'k',
-        'Ĺ', 'Ļ', 'Ľ', 'ĺ', 'ļ', 'ľ' => 'l',
-        'Ń', 'Ņ', 'Ň', 'ń', 'ņ', 'ň' => 'n',
-        'Ō', 'Ŏ', 'Ő', 'ō', 'ŏ', 'ő' => 'o',
-        'Ŕ', 'Ŗ', 'Ř', 'ŕ', 'ŗ', 'ř' => 'r',
-        'Ś', 'Ŝ', 'Ş', 'Š', 'ś', 'ŝ', 'ş', 'š' => 's',
-        'Ţ', 'Ť', 'ţ', 'ť' => 't',
-        'Ũ', 'Ū', 'Ŭ', 'Ů', 'Ű', 'Ų', 'ũ', 'ū', 'ŭ', 'ů', 'ű', 'ų' => 'u',
-        'Ŵ', 'ŵ' => 'w',
-        'Ŷ', 'ŷ' => 'y',
-        'Ź', 'Ż', 'Ž', 'ź', 'ż', 'ž' => 'z',
-        0x0391...0x03A1, 0x03A3...0x03AB, 0x0410...0x042F => codepoint + 0x20,
-        0x0400...0x040F => codepoint + 0x50,
-        else => codepoint,
-    };
-}
-
-fn isUnicodeWhitespace(codepoint: u21) bool {
-    if (codepoint <= std.math.maxInt(u8) and std.ascii.isWhitespace(@intCast(codepoint))) {
-        return true;
-    }
-    return switch (codepoint) {
-        0x00A0,
-        0x1680,
-        0x2000...0x200A,
-        0x2028,
-        0x2029,
-        0x202F,
-        0x205F,
-        0x3000,
-        0xFEFF,
-        => true,
-        else => false,
-    };
-}
-
-fn isCombiningMark(codepoint: u21) bool {
-    return switch (codepoint) {
-        0x0300...0x036F,
-        0x1AB0...0x1AFF,
-        0x1DC0...0x1DFF,
-        0x20D0...0x20FF,
-        0xFE20...0xFE2F,
-        => true,
-        else => false,
-    };
-}
-
-fn isUnicodePunctuationOrSymbol(codepoint: u21) bool {
-    if (codepoint < 0x80) return !std.ascii.isAlphanumeric(@intCast(codepoint));
-    return switch (codepoint) {
-        0x00A1...0x00BF,
-        0x00D7,
-        0x00F7,
-        0x200B...0x206F,
-        0x20A0...0x20CF,
-        0x2100...0x2BFF,
-        0x2E00...0x2E7F,
-        0x3001...0x3006,
-        0x3008...0x303F,
-        0xFE10...0xFE1F,
-        0xFE30...0xFE6F,
-        0xFF01...0xFF0F,
-        0xFF1A...0xFF20,
-        0xFF3B...0xFF40,
-        0xFF5B...0xFF65,
-        0x1F000...0x1FAFF,
-        => true,
-        else => false,
-    };
 }
 
 fn renderNode(
@@ -501,6 +396,17 @@ test "percent-encodes Unicode heading fragments" {
 
     try std.testing.expect(std.mem.indexOf(u8, html, "id=\"東京\"") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "href=\"#%E6%9D%B1%E4%BA%AC\"") != null);
+}
+
+test "classifies non-Latin heading slugs with generated Unicode data" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\# ПРИВЕТ
+        \\# مرحبا، ١٢٣ 😀
+    );
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expect(std.mem.indexOf(u8, html, "id=\"привет\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "id=\"مرحبا-١٢٣\"") != null);
 }
 
 test "adds a class only to task list items" {

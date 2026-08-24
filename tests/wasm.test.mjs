@@ -60,10 +60,14 @@ test('generates stable heading ids and anchors in WebAssembly', () => {
   const html = render(`# 2.1 Core Directories and Purposes
 # Café déjà
 # Café *déjà*
+# ПРИВЕТ
+# مرحبا، ١٢٣ 😀
 `);
   assert.match(html, /id="21-core-directories-and-purposes"/);
   assert.match(html, /id="cafe-deja"/);
   assert.match(html, /id="cafe-deja-2"/);
+  assert.match(html, /id="привет"/);
+  assert.match(html, /id="مرحبا-١٢٣"/);
   assert.match(html, /aria-label="Link to Café déjà"/);
 });
 

@@ -16,5 +16,6 @@
         "extension",
         "src",
         "tests",
+        "tools",
     },
 }

@@ -54,4 +54,17 @@ pub fn build(b: *std.Build) void {
     });
     const test_step = b.step("test", "Run renderer tests");
     test_step.dependOn(&b.addRunArtifact(tests).step);
+
+    const unicode_generator = b.addExecutable(.{
+        .name = "generate-unicode-slug-data",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("tools/gen_unicode_slug_data.zig"),
+            .target = b.graph.host,
+            .optimize = .debug,
+        }),
+    });
+    const run_unicode_generator = b.addRunArtifact(unicode_generator);
+    run_unicode_generator.setCwd(b.path("."));
+    const unicode_step = b.step("generate-unicode", "Regenerate focused Unicode slug tables");
+    unicode_step.dependOn(&run_unicode_generator.step);
 }
