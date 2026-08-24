@@ -49,11 +49,22 @@ test('renders GFM-style features through WebAssembly', () => {
 const answer = 42;
 ~~~
 `);
-  assert.match(html, /<h1>Hello<\/h1>/);
+  assert.match(html, /<h1 id="hello"><a class="zig-md-heading-anchor" href="#hello"/);
   assert.match(html, /<table>/);
   assert.match(html, /type="checkbox" checked="" disabled=""/);
   assert.match(html, /<li class="zig-md-task-item">/);
   assert.match(html, /class="language-zig"/);
+});
+
+test('generates stable heading ids and anchors in WebAssembly', () => {
+  const html = render(`# 2.1 Core Directories and Purposes
+# Café déjà
+# Café *déjà*
+`);
+  assert.match(html, /id="21-core-directories-and-purposes"/);
+  assert.match(html, /id="cafe-deja"/);
+  assert.match(html, /id="cafe-deja-2"/);
+  assert.match(html, /aria-label="Link to Café déjà"/);
 });
 
 test('reuses the renderer and replaces invalid UTF-8', () => {

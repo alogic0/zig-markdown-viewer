@@ -74,22 +74,6 @@
     favicon.href = chrome.runtime.getURL('icons/favicon.svg');
   }
 
-  function slugger() {
-    const counts = new Map();
-    return text => {
-      const base = text
-        .normalize('NFKD')
-        .toLowerCase()
-        .trim()
-        .replace(/[^\p{Letter}\p{Number}\s-]/gu, '')
-        .replace(/[\s_-]+/g, '-')
-        .replace(/^-|-$/g, '') || 'section';
-      const count = counts.get(base) || 0;
-      counts.set(base, count + 1);
-      return count === 0 ? base : `${base}-${count + 1}`;
-    };
-  }
-
   function sanitize(html) {
     const template = document.createElement('template');
     template.innerHTML = html;
@@ -240,23 +224,8 @@
 
     const html = state.renderer.render(state.source);
     content.append(sanitize(html));
-    enhanceHeadings(content);
     enhanceCodeBlocks(content);
     buildToc(content);
-  }
-
-  function enhanceHeadings(content) {
-    const slug = slugger();
-    content.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(heading => {
-      const id = heading.id || slug(heading.textContent || '');
-      heading.id = id;
-      const anchor = document.createElement('a');
-      anchor.className = 'zig-md-heading-anchor';
-      anchor.href = `#${encodeURIComponent(id)}`;
-      anchor.setAttribute('aria-label', `Link to ${heading.textContent}`);
-      anchor.textContent = '#';
-      heading.prepend(anchor);
-    });
   }
 
   function enhanceCodeBlocks(content) {
