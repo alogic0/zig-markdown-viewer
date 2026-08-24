@@ -72,7 +72,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["renderer.wasm"],
+      "resources": ["renderer.wasm", "icons/favicon.svg"],
       "matches": ["file:///*", "http://*/*", "https://*/*"]
     }
   ],

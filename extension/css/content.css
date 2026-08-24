@@ -311,6 +311,10 @@ body.zig-md-page {
   accent-color: var(--zig-md-accent);
 }
 
+#zig-md-document li.zig-md-task-item {
+  list-style: none;
+}
+
 #zig-md-document .footnotes {
   margin-top: 3em;
   padding-top: 1em;

@@ -62,6 +62,18 @@
     });
   }
 
+  function setFavicon() {
+    let favicon = document.querySelector('link[data-zig-md-favicon]');
+    if (!favicon) {
+      favicon = document.createElement('link');
+      favicon.rel = 'icon';
+      favicon.type = 'image/svg+xml';
+      favicon.dataset.zigMdFavicon = '';
+      document.head.append(favicon);
+    }
+    favicon.href = chrome.runtime.getURL('icons/favicon.svg');
+  }
+
   function slugger() {
     const counts = new Map();
     return text => {
@@ -139,6 +151,7 @@
 
   function buildShell() {
     document.documentElement.dataset.zigMarkdownTheme = state.settings.theme;
+    setFavicon();
     document.body.replaceChildren();
     document.body.className = 'zig-md-page';
 
@@ -229,6 +242,7 @@
     content.append(sanitize(html));
     enhanceHeadings(content);
     enhanceCodeBlocks(content);
+    enhanceTaskLists(content);
     buildToc(content);
   }
 
@@ -259,6 +273,12 @@
         setTimeout(() => { button.textContent = 'Copy'; }, 1200);
       });
       pre.append(button);
+    });
+  }
+
+  function enhanceTaskLists(content) {
+    content.querySelectorAll('li > input[type="checkbox"]').forEach(checkbox => {
+      checkbox.parentElement.classList.add('zig-md-task-item');
     });
   }
 
@@ -374,6 +394,7 @@
     state.tocEntries = [];
     state.activeHeadingId = null;
     document.documentElement.removeAttribute('data-zig-markdown-theme');
+    document.querySelector('link[data-zig-md-favicon]')?.remove();
     document.body.className = '';
     const pre = document.createElement('pre');
     pre.textContent = state.source;
