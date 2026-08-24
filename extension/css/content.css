@@ -76,27 +76,13 @@ body.zig-md-page {
   display: flex;
   min-height: 52px;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 16px;
   box-sizing: border-box;
   padding: 8px 20px;
   border-bottom: 1px solid color-mix(in srgb, var(--zig-md-border) 75%, transparent);
   background: color-mix(in srgb, var(--zig-md-bg) 88%, transparent);
   backdrop-filter: blur(14px);
-}
-
-.zig-md-brand {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  color: var(--zig-md-text);
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-
-.zig-md-brand span {
-  color: #f7a41d;
 }
 
 .zig-md-actions {
@@ -116,7 +102,21 @@ body.zig-md-page {
 }
 
 .zig-md-actions button {
-  padding: 7px 10px;
+  display: grid;
+  width: 36px;
+  height: 34px;
+  padding: 0;
+  place-items: center;
+}
+
+.zig-md-actions svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
 }
 
 .zig-md-actions button:hover,
@@ -416,6 +416,23 @@ body.zig-md-page {
 .zig-md-notification.is-visible { opacity: 1; transform: translateY(0); }
 .zig-md-notification.is-error { border-color: #d1242f; color: #d1242f; }
 
+@media (min-width: 1100px) {
+  #zig-md-toolbar {
+    position: fixed;
+    top: auto;
+    right: 19px;
+    bottom: 76px;
+    min-height: 0;
+    padding: 6px;
+    border: 1px solid color-mix(in srgb, var(--zig-md-border) 75%, transparent);
+    border-radius: 9px;
+    box-shadow: var(--zig-md-shadow);
+    transform: none;
+  }
+
+  .zig-md-actions { flex-direction: column; }
+}
+
 @media (max-width: 900px) {
   #zig-md-toc { width: 220px; }
   #zig-md-shell.has-toc #zig-md-main { margin-left: 220px; }
@@ -432,9 +449,6 @@ body.zig-md-page {
     border-bottom: 1px solid var(--zig-md-border);
     box-shadow: var(--zig-md-shadow);
   }
-  .zig-md-brand { font-size: 0; }
-  .zig-md-brand span { font-size: 18px; }
-  .zig-md-actions button { padding-inline: 8px; }
   #zig-md-document { padding: 32px 20px 80px; }
 }
 

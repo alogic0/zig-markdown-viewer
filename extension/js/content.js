@@ -147,13 +147,20 @@
         <nav></nav>
       </aside>
       <div id="zig-md-main">
-        <header id="zig-md-toolbar">
-          <div class="zig-md-brand"><span aria-hidden="true">◆</span> Zig Markdown</div>
+        <header id="zig-md-toolbar" aria-label="Document tools">
           <div class="zig-md-actions">
-            <button type="button" data-action="toc" title="Toggle table of contents">Contents</button>
-            <button type="button" data-action="raw" title="Toggle rendered and raw Markdown">Raw</button>
-            <button type="button" data-action="theme" title="Cycle color theme">Theme</button>
-            <button type="button" data-action="print" title="Print document">Print</button>
+            <button type="button" data-action="toc" title="Toggle table of contents" aria-label="Toggle table of contents">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+            <button type="button" data-action="raw" title="Toggle rendered and raw Markdown" aria-label="Toggle rendered and raw Markdown">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18-6-6 6-6M15 6l6 6-6 6"/></svg>
+            </button>
+            <button type="button" data-action="theme" title="Cycle color theme" aria-label="Cycle color theme">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9Z"/></svg>
+            </button>
+            <button type="button" data-action="print" title="Print document" aria-label="Print document">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/></svg>
+            </button>
           </div>
         </header>
         <main id="zig-md-document" tabindex="-1"></main>
