@@ -5,6 +5,7 @@
     .minimum_zig_version = "0.17.0-dev.1756+613c03321",
     .dependencies = .{
         .markdown_parser = .{ .path = "../zig-markdown-parser" },
+        .native_syntax = .{ .path = "../zig-native-syntax" },
     },
     .paths = .{
         "LICENSE",

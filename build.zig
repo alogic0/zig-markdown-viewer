@@ -13,6 +13,7 @@ pub fn build(b: *std.Build) void {
         .target = wasm_target,
         .optimize = optimize,
     }).module("markdown");
+    const native_syntax = nativeSyntaxDependency(b, wasm_target, optimize);
 
     const renderer = b.addExecutable(.{
         .name = "renderer",
@@ -22,7 +23,7 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
             .single_threaded = true,
             .strip = optimize != .debug,
-            .imports = &.{.{ .name = "markdown", .module = markdown }},
+            .imports = rendererImports(b, markdown, native_syntax),
         }),
     });
     renderer.rdynamic = true;
@@ -43,13 +44,14 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/renderer.zig"),
             .target = b.graph.host,
             .optimize = .debug,
-            .imports = &.{.{
-                .name = "markdown",
-                .module = b.dependency("markdown_parser", .{
+            .imports = rendererImports(
+                b,
+                b.dependency("markdown_parser", .{
                     .target = b.graph.host,
                     .optimize = .debug,
                 }).module("markdown"),
-            }},
+                nativeSyntaxDependency(b, b.graph.host, .debug),
+            ),
         }),
     });
     const test_step = b.step("test", "Run renderer tests");
@@ -67,4 +69,42 @@ pub fn build(b: *std.Build) void {
     run_unicode_generator.setCwd(b.path("."));
     const unicode_step = b.step("generate-unicode", "Regenerate focused Unicode slug tables");
     unicode_step.dependOn(&run_unicode_generator.step);
+}
+
+fn nativeSyntaxDependency(
+    b: *std.Build,
+    target: std.Build.ResolvedTarget,
+    optimize: std.builtin.OptimizeMode,
+) *std.Build.Dependency {
+    return b.dependency("native_syntax", .{
+        .target = target,
+        .optimize = optimize,
+        .@"backend-ziggy" = true,
+        .@"backend-ziggy-schema" = true,
+        .@"backend-scripty" = true,
+        .@"backend-html" = true,
+        .@"backend-xml" = true,
+        .@"backend-css" = true,
+        .@"backend-superhtml" = true,
+        .@"backend-markdown" = true,
+    });
+}
+
+fn rendererImports(
+    b: *std.Build,
+    markdown: *std.Build.Module,
+    native_syntax: *std.Build.Dependency,
+) []const std.Build.Module.Import {
+    return b.allocator.dupe(std.Build.Module.Import, &.{
+        .{ .name = "markdown", .module = markdown },
+        .{ .name = "native_syntax", .module = native_syntax.module("native_syntax") },
+        .{ .name = "native_syntax_ziggy", .module = native_syntax.module("native_syntax_ziggy") },
+        .{ .name = "native_syntax_ziggy_schema", .module = native_syntax.module("native_syntax_ziggy_schema") },
+        .{ .name = "native_syntax_scripty", .module = native_syntax.module("native_syntax_scripty") },
+        .{ .name = "native_syntax_html", .module = native_syntax.module("native_syntax_html") },
+        .{ .name = "native_syntax_xml", .module = native_syntax.module("native_syntax_xml") },
+        .{ .name = "native_syntax_css", .module = native_syntax.module("native_syntax_css") },
+        .{ .name = "native_syntax_superhtml", .module = native_syntax.module("native_syntax_superhtml") },
+        .{ .name = "native_syntax_markdown", .module = native_syntax.module("native_syntax_markdown") },
+    }) catch @panic("out of memory");
 }

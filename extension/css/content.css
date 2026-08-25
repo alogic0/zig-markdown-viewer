@@ -11,6 +11,16 @@
   --zig-md-accent-soft: #ddf4ff;
   --zig-md-code: #f6f8fa;
   --zig-md-shadow: 0 8px 32px rgba(31, 35, 40, 0.08);
+  --zig-md-syntax-comment: #6e7781;
+  --zig-md-syntax-keyword: #cf222e;
+  --zig-md-syntax-string: #0a3069;
+  --zig-md-syntax-number: #0550ae;
+  --zig-md-syntax-function: #8250df;
+  --zig-md-syntax-type: #953800;
+  --zig-md-syntax-property: #953800;
+  --zig-md-syntax-tag: #116329;
+  --zig-md-syntax-muted: #57606a;
+  --zig-md-syntax-invalid-bg: #ffebe9;
 }
 
 :root[data-zig-markdown-theme='dark'] {
@@ -24,6 +34,16 @@
   --zig-md-accent-soft: #13233a;
   --zig-md-code: #161b22;
   --zig-md-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --zig-md-syntax-comment: #8b949e;
+  --zig-md-syntax-keyword: #ff7b72;
+  --zig-md-syntax-string: #a5d6ff;
+  --zig-md-syntax-number: #79c0ff;
+  --zig-md-syntax-function: #d2a8ff;
+  --zig-md-syntax-type: #ffa657;
+  --zig-md-syntax-property: #ffa657;
+  --zig-md-syntax-tag: #7ee787;
+  --zig-md-syntax-muted: #8b949e;
+  --zig-md-syntax-invalid-bg: #490202;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -38,6 +58,16 @@
     --zig-md-accent-soft: #13233a;
     --zig-md-code: #161b22;
     --zig-md-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    --zig-md-syntax-comment: #8b949e;
+    --zig-md-syntax-keyword: #ff7b72;
+    --zig-md-syntax-string: #a5d6ff;
+    --zig-md-syntax-number: #79c0ff;
+    --zig-md-syntax-function: #d2a8ff;
+    --zig-md-syntax-type: #ffa657;
+    --zig-md-syntax-property: #ffa657;
+    --zig-md-syntax-tag: #7ee787;
+    --zig-md-syntax-muted: #8b949e;
+    --zig-md-syntax-invalid-bg: #490202;
   }
 }
 
@@ -258,6 +288,52 @@ body.zig-md-page {
   background: transparent;
   color: var(--zig-md-text);
   white-space: pre;
+}
+
+#zig-md-document :is(.syntax-comment, .syntax-documentation) {
+  color: var(--zig-md-syntax-comment);
+}
+
+#zig-md-document :is(.syntax-keyword, .syntax-macro) {
+  color: var(--zig-md-syntax-keyword);
+}
+
+#zig-md-document :is(.syntax-string, .syntax-escape, .syntax-markup-code) {
+  color: var(--zig-md-syntax-string);
+}
+
+#zig-md-document :is(.syntax-number, .syntax-boolean, .syntax-constant, .syntax-builtin) {
+  color: var(--zig-md-syntax-number);
+}
+
+#zig-md-document :is(.syntax-function, .syntax-constructor) {
+  color: var(--zig-md-syntax-function);
+}
+
+#zig-md-document :is(.syntax-type, .syntax-namespace) {
+  color: var(--zig-md-syntax-type);
+}
+
+#zig-md-document :is(.syntax-attribute, .syntax-label, .syntax-parameter, .syntax-property) {
+  color: var(--zig-md-syntax-property);
+}
+
+#zig-md-document :is(.syntax-tag, .syntax-markup-heading, .syntax-markup-strong) {
+  color: var(--zig-md-syntax-tag);
+}
+
+#zig-md-document :is(.syntax-operator, .syntax-punctuation, .syntax-special) {
+  color: var(--zig-md-syntax-muted);
+}
+
+#zig-md-document :is(.syntax-markup-emphasis, .syntax-markup-link, .syntax-markup-list,
+  .syntax-markup-quote, .syntax-markup-strikethrough) {
+  color: var(--zig-md-accent);
+}
+
+#zig-md-document .syntax-invalid {
+  color: var(--zig-md-syntax-keyword);
+  background: var(--zig-md-syntax-invalid-bg);
 }
 
 #zig-md-shell.code-wrap #zig-md-document pre code {

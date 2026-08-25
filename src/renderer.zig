@@ -1,6 +1,7 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const markdown = @import("markdown");
+const highlight = @import("highlight.zig");
 const unicode_slug = @import("unicode_slug.zig");
 
 const allocator = if (builtin.target.cpu.arch.isWasm())
@@ -326,7 +327,13 @@ fn renderNode(
                     .{ markdown.fmtHtml(language), markdown.fmtHtml(language) },
                 );
             }
-            try writer.print("{f}</code></pre>\n", .{markdown.fmtHtml(content)});
+            if (highlight.renderAlloc(renderer.context.allocator, language, content)) |html| {
+                defer renderer.context.allocator.free(html);
+                try writer.writeAll(html);
+            } else {
+                try writer.print("{f}", .{markdown.fmtHtml(content)});
+            }
+            try writer.writeAll("</code></pre>\n");
         },
         else => try renderer.renderDefault(document, node, writer),
     }
@@ -368,6 +375,7 @@ test "renders the viewer's core Markdown features" {
     try std.testing.expect(std.mem.indexOf(u8, html, "checked=\"\"") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "<li class=\"zig-md-task-item\">") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-zig\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "syntax-keyword") != null);
 }
 
 test "generates compatible unique heading anchors" {
@@ -425,4 +433,39 @@ test "escapes code block language and source" {
     defer std.testing.allocator.free(html);
     try std.testing.expect(std.mem.indexOf(u8, html, "language-x&amp;amp") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "&lt;a&gt;") != null);
+}
+
+test "highlights core, optional, and aliased fenced languages" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\```js
+        \\const answer = 42;
+        \\```
+        \\```html
+        \\<main class="page">Hello</main>
+        \\```
+        \\```css
+        \\.page { color: red; }
+        \\```
+        \\```ziggy
+        \\answer = 42
+        \\```
+    );
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-js\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "syntax-keyword") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "syntax-tag") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "syntax-property") != null);
+}
+
+test "unknown fenced languages remain safely escaped" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\```unknown-language
+        \\<script>alert("no")</script>
+        \\```
+    );
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expect(std.mem.indexOf(u8, html, "&lt;script&gt;") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "syntax-") == null);
 }

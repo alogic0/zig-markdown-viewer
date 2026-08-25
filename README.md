@@ -3,11 +3,9 @@
 A local-first Chrome/Chromium extension that renders `.md`, `.markdown`,
 `.mkd`, and `.mdx` documents with a small Zig WebAssembly core.
 
-The renderer uses the sibling `zig-markdown-parser` package. That parser was
-extracted from Zine's Markdown work, so syntax fixes can flow into the browser
-without bringing Zine's site-generation semantics into the extension.
-SuperHTML is intentionally not a runtime dependency yet; it is the natural
-source for a future native HTML/CSS syntax-highlighting layer.
+The renderer uses the sibling `zig-markdown-parser` and `zig-native-syntax`
+packages. Markdown parsing and all source highlighting run in the same WebAssembly
+module without a JavaScript highlighting library or runtime network dependency.
 
 ## Build and load
 
@@ -19,12 +17,15 @@ Then open `chrome://extensions`, enable Developer mode, choose **Load
 unpacked**, and select `zig-out/extension`. Enable **Allow access to file
 URLs** on the extension's details page to render local files.
 
-No npm install, remote script, CDN, or build-time network access is required.
+No npm install, remote script, or CDN is required. Zig package dependencies used
+by optional highlighting backends are pinned by `zig-native-syntax`.
 
 ## Included behavior
 
 - Common Markdown plus tables, task lists, footnotes, strikethrough,
-  autolinks, smart punctuation, and fenced-code language labels
+  autolinks, smart punctuation, and highlighted fenced code
+- all 80 dependency-free and eight optional `zig-native-syntax` language backends,
+  with common fence aliases and escaped plain-text fallback
 - local and remote Markdown URLs
 - safe handling of raw HTML before DOM insertion
 - relative link and image resolution
@@ -34,9 +35,7 @@ No npm install, remote script, CDN, or build-time network access is required.
 - optional auto-refresh and a recent-document list
 - a Manifest V3 service worker and settings popup
 
-Mermaid, KaTeX, and broad token-level source highlighting from Markview are
-not bundled in this first version. Fenced blocks retain their language class,
-which gives us a stable hook for adding Zine/SuperHTML-backed highlighting.
+Mermaid and KaTeX rendering from Markview are not bundled.
 
 ## Verification
 

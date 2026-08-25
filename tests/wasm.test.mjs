@@ -54,6 +54,29 @@ const answer = 42;
   assert.match(html, /type="checkbox" checked="" disabled=""/);
   assert.match(html, /<li class="zig-md-task-item">/);
   assert.match(html, /class="language-zig"/);
+  assert.match(html, /class="syntax-keyword">const<\/span>/);
+});
+
+test('highlights core and optional languages through WebAssembly', () => {
+  const html = render(`~~~js
+const answer = 42;
+~~~
+
+~~~html
+<main class="page">Hello</main>
+~~~
+
+~~~css
+.page { color: red; }
+~~~
+
+~~~ziggy
+answer = 42
+~~~
+`);
+  assert.match(html, /class="syntax-keyword">const<\/span>/);
+  assert.match(html, /syntax-tag/);
+  assert.match(html, /syntax-property/);
 });
 
 test('generates stable heading ids and anchors in WebAssembly', () => {
