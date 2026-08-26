@@ -126,6 +126,11 @@ pick abc123 render safely
 exec echo done
 ~~~
 
+~~~gettext
+msgid "file"
+msgstr[0] "Datei"
+~~~
+
 ~~~docker
 RUN echo "$HOME"
 ~~~
@@ -157,6 +162,8 @@ RUN echo "$HOME"
   assert.match(html, /syntax-keyword syntax-markup-heading">feat<\/span>/);
   assert.match(html, /class="language-gitrebase"/);
   assert.match(html, /class="syntax-constant">abc123<\/span>/);
+  assert.match(html, /class="language-gettext"/);
+  assert.match(html, /class="syntax-keyword">msgstr<\/span>/);
   assert.match(html, /class="language-docker"/);
   assert.match(html, /syntax-builtin syntax-embedded syntax-function">echo<\/span>/);
 });

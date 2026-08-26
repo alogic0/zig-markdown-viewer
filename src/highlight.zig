@@ -21,6 +21,7 @@ const verified_backends = [_]syntax.Backend{
     syntax.languages.ssh_config.backend,
     syntax.languages.gitcommit.backend,
     syntax.languages.git_rebase.backend,
+    syntax.languages.po.backend,
     syntax.languages.diff.backend,
     @import("native_syntax_ziggy").backend,
     @import("native_syntax_ziggy_schema").backend,
@@ -47,6 +48,7 @@ const aliases = [_]struct {
     .{ .alias = "sshconfig", .canonical = "ssh-config" },
     .{ .alias = "git-commit", .canonical = "gitcommit" },
     .{ .alias = "gitrebase", .canonical = "git-rebase" },
+    .{ .alias = "gettext", .canonical = "po" },
     .{ .alias = "js", .canonical = "javascript" },
     .{ .alias = "rs", .canonical = "rust" },
     .{ .alias = "ts", .canonical = "typescript" },
@@ -380,6 +382,22 @@ test "renders exact composed Git rebase classifications" {
             "<span class=\"syntax-builtin syntax-embedded syntax-function\">echo</span>" ++
             "<span class=\"syntax-embedded\"> </span>" ++
             "<span class=\"syntax-embedded syntax-keyword\">done</span>",
+        html,
+    );
+}
+
+test "renders exact Gettext PO lexical classifications" {
+    const html = renderAlloc(std.testing.allocator, "gettext", "msgid \"file\"\nmsgstr[0] \"Datei\"").?;
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expectEqualStrings(
+        "<span class=\"syntax-keyword\">msgid</span> " ++
+            "<span class=\"syntax-string\">&quot;file&quot;</span>\n" ++
+            "<span class=\"syntax-keyword\">msgstr</span>" ++
+            "<span class=\"syntax-punctuation\">[</span>" ++
+            "<span class=\"syntax-number\">0</span>" ++
+            "<span class=\"syntax-punctuation\">]</span> " ++
+            "<span class=\"syntax-string\">&quot;Datei&quot;</span>",
         html,
     );
 }
