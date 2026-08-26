@@ -121,6 +121,11 @@ Host demo
 feat: render safely
 ~~~
 
+~~~gitrebase
+pick abc123 render safely
+exec echo done
+~~~
+
 ~~~docker
 RUN echo "$HOME"
 ~~~
@@ -150,6 +155,8 @@ RUN echo "$HOME"
   assert.match(html, /class="syntax-property">Port<\/span>/);
   assert.match(html, /class="language-git-commit"/);
   assert.match(html, /syntax-keyword syntax-markup-heading">feat<\/span>/);
+  assert.match(html, /class="language-gitrebase"/);
+  assert.match(html, /class="syntax-constant">abc123<\/span>/);
   assert.match(html, /class="language-docker"/);
   assert.match(html, /syntax-builtin syntax-embedded syntax-function">echo<\/span>/);
 });

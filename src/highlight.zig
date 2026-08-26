@@ -20,6 +20,7 @@ const verified_backends = [_]syntax.Backend{
     syntax.languages.kdl.backend,
     syntax.languages.ssh_config.backend,
     syntax.languages.gitcommit.backend,
+    syntax.languages.git_rebase.backend,
     syntax.languages.diff.backend,
     @import("native_syntax_ziggy").backend,
     @import("native_syntax_ziggy_schema").backend,
@@ -45,6 +46,7 @@ const aliases = [_]struct {
     .{ .alias = "makefile", .canonical = "make" },
     .{ .alias = "sshconfig", .canonical = "ssh-config" },
     .{ .alias = "git-commit", .canonical = "gitcommit" },
+    .{ .alias = "gitrebase", .canonical = "git-rebase" },
     .{ .alias = "js", .canonical = "javascript" },
     .{ .alias = "rs", .canonical = "rust" },
     .{ .alias = "ts", .canonical = "typescript" },
@@ -362,6 +364,22 @@ test "renders exact Git commit lexical classifications" {
         "<span class=\"syntax-keyword syntax-markup-heading\">feat</span>" ++
             "<span class=\"syntax-punctuation syntax-markup-heading\">:</span>" ++
             "<span class=\"syntax-markup-heading\"> render safely</span>",
+        html,
+    );
+}
+
+test "renders exact composed Git rebase classifications" {
+    const html = renderAlloc(std.testing.allocator, "gitrebase", "pick abc123 render safely\nexec echo done").?;
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expectEqualStrings(
+        "<span class=\"syntax-keyword\">pick</span> " ++
+            "<span class=\"syntax-constant\">abc123</span> " ++
+            "<span class=\"syntax-string\">render safely</span>\n" ++
+            "<span class=\"syntax-keyword\">exec</span> " ++
+            "<span class=\"syntax-builtin syntax-embedded syntax-function\">echo</span>" ++
+            "<span class=\"syntax-embedded\"> </span>" ++
+            "<span class=\"syntax-embedded syntax-keyword\">done</span>",
         html,
     );
 }

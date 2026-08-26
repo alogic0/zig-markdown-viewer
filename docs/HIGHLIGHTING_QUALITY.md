@@ -56,9 +56,10 @@ Verified lexical backends:
 - KDL;
 - SSH config;
 - Git commit messages;
+- composed Git rebase plans;
 - Diff/patch.
 
-Accepted aliases are deliberately narrow: `sh`, `shell`, `rpm-bash`, `js`, `ts`, `rs`, `patch`, `docker`, `yml`, `py`, `terraform`, `makefile`, `sshconfig`, `git-commit`,
+Accepted aliases are deliberately narrow: `sh`, `shell`, `rpm-bash`, `js`, `ts`, `rs`, `patch`, `docker`, `yml`, `py`, `terraform`, `makefile`, `sshconfig`, `git-commit`, `gitrebase`,
 `md`, `smd`, `supermd`, `markdown-inline`, `csproj`, and `props`.
 
 The viewer does not map JSX or TSX to parsers that do not understand those dialects. It likewise
