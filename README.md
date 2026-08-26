@@ -32,6 +32,7 @@ by optional highlighting backends are pinned by `zig-native-syntax`.
 - automatic heading anchors and table of contents
 - light, dark, and system themes
 - raw/rendered toggle, print, code-copy buttons, scroll-to-top
+- one-click standalone HTML export with embedded viewer CSS and JavaScript
 - optional auto-refresh and a recent-document list
 - a Manifest V3 service worker and settings popup
 
@@ -45,9 +46,11 @@ admission criteria, and parser/tokenizer policy.
 ```sh
 ./build.sh test
 node --test tests/wasm.test.mjs
+node --test tests/standalone.test.cjs
 node --check extension/js/background.js
 node --check extension/js/content.js
 node --check extension/js/popup.js
+node --check extension/js/standalone.js
 node --check extension/js/wasm.js
 ```
 

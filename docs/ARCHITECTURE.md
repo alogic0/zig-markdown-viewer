@@ -45,3 +45,9 @@ in the content script before any nodes enter the live page. Scripts, embedded
 documents, active media, forms, unsafe URL schemes, event handlers, and active
 attributes are removed. Relative links and images are resolved against the
 Markdown document URL after validation.
+
+Standalone export runs the source through the same renderer and sanitizer. The
+content script then serializes the safe document, current layout settings, table
+of contents, viewer stylesheet, and a small interaction script into one HTML
+file. Images remain resolved links; extension code and WebAssembly are not
+included in the exported page.

@@ -65,14 +65,14 @@
         "file://*/*.MKD?*",
         "file://*/*.MDX?*"
       ],
-      "js": ["js/wasm.js", "js/content.js"],
+      "js": ["js/standalone.js", "js/wasm.js", "js/content.js"],
       "css": ["css/content.css"],
       "run_at": "document_end"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["renderer.wasm", "icons/favicon.svg"],
+      "resources": ["renderer.wasm", "icons/favicon.svg", "css/content.css"],
       "matches": ["file:///*", "http://*/*", "https://*/*"]
     }
   ],

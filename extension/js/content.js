@@ -24,6 +24,7 @@
     activeHeadingId: null,
     scrollFrame: null,
     documentTitle: document.title || fileName(window.location.href),
+    exportStylesPromise: null,
   };
 
   function storageGet(keys) {
@@ -161,6 +162,9 @@
             <button type="button" data-action="print" title="Print document" aria-label="Print document">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/></svg>
             </button>
+            <button type="button" data-action="download" title="Download standalone HTML" aria-label="Download standalone HTML">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+            </button>
           </div>
         </header>
         <main id="zig-md-document" tabindex="-1"></main>
@@ -179,6 +183,9 @@
     });
     shell.querySelector('[data-action="theme"]').addEventListener('click', cycleTheme);
     shell.querySelector('[data-action="print"]').addEventListener('click', () => window.print());
+    shell.querySelector('[data-action="download"]').addEventListener('click', event => {
+      downloadStandalone(event.currentTarget);
+    });
     shell.querySelector('#zig-md-scroll-top').addEventListener('click', () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
@@ -242,6 +249,77 @@
       });
       pre.append(button);
     });
+  }
+
+  function standaloneTocHtml(content) {
+    const nav = document.createElement('nav');
+    for (const heading of content.querySelectorAll('h1,h2,h3')) {
+      const link = document.createElement('a');
+      link.href = `#${encodeURIComponent(heading.id)}`;
+      link.className = `level-${heading.tagName.slice(1)}`;
+      link.textContent = heading.textContent.replace(/^#/, '').trim();
+      nav.append(link);
+    }
+    if (!nav.hasChildNodes()) {
+      const empty = document.createElement('p');
+      empty.className = 'zig-md-toc-empty';
+      empty.textContent = 'No headings';
+      nav.append(empty);
+    }
+    return nav.innerHTML;
+  }
+
+  async function exportStyles() {
+    if (!state.exportStylesPromise) {
+      state.exportStylesPromise = fetch(chrome.runtime.getURL('css/content.css')).then(response => {
+        if (!response.ok) throw new Error(`Unable to load viewer styles (${response.status})`);
+        return response.text();
+      });
+    }
+    try {
+      return await state.exportStylesPromise;
+    } catch (error) {
+      state.exportStylesPromise = null;
+      throw error;
+    }
+  }
+
+  async function downloadStandalone(button) {
+    button.disabled = true;
+    try {
+      const content = document.createElement('main');
+      content.append(sanitize(state.renderer.render(state.source)));
+      enhanceCodeBlocks(content);
+
+      const html = globalThis.ZigMarkdownStandalone.buildHtml({
+        title: state.documentTitle,
+        theme: state.settings.theme,
+        centered: state.settings.centered,
+        tocVisible: state.settings.tocVisible,
+        codeWrap: state.settings.codeWrap,
+        maxWidth: state.settings.maxWidth,
+        fontSize: state.settings.fontSize,
+        lineHeight: state.settings.lineHeight,
+        css: await exportStyles(),
+        documentHtml: content.innerHTML,
+        tocHtml: standaloneTocHtml(content),
+      });
+      const name = globalThis.ZigMarkdownStandalone.downloadName(window.location.href);
+      const objectUrl = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = name;
+      document.body.append(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+      notify(`Downloaded ${name}`);
+    } catch (error) {
+      console.error('Unable to export standalone HTML:', error);
+      notify('Unable to download HTML', true);
+    } finally {
+      button.disabled = false;
+    }
   }
 
   function buildToc(content) {
