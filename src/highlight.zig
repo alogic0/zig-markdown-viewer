@@ -13,6 +13,7 @@ const verified_backends = [_]syntax.Backend{
     syntax.languages.yaml.backend,
     syntax.languages.dockerfile.backend,
     syntax.languages.python.backend,
+    syntax.languages.sql.backend,
     syntax.languages.diff.backend,
     @import("native_syntax_ziggy").backend,
     @import("native_syntax_ziggy_schema").backend,
@@ -241,6 +242,25 @@ test "renders exact structural Python classifications" {
             "<span class=\"syntax-function syntax-property\">upper</span>" ++
             "<span class=\"syntax-punctuation\">(</span>" ++
             "<span class=\"syntax-punctuation\">)</span>",
+        html,
+    );
+}
+
+test "renders exact SQL lexical classifications" {
+    const html = renderAlloc(std.testing.allocator, "sql", "SELECT count(\"user_id\") WHERE id = :id;").?;
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expectEqualStrings(
+        "<span class=\"syntax-keyword\">SELECT</span> " ++
+            "<span class=\"syntax-function\">count</span>" ++
+            "<span class=\"syntax-punctuation\">(</span>" ++
+            "<span class=\"syntax-property\">&quot;user_id&quot;</span>" ++
+            "<span class=\"syntax-punctuation\">)</span> " ++
+            "<span class=\"syntax-keyword\">WHERE</span> " ++
+            "<span class=\"syntax-variable\">id</span> " ++
+            "<span class=\"syntax-operator\">=</span> " ++
+            "<span class=\"syntax-parameter\">:id</span>" ++
+            "<span class=\"syntax-punctuation\">;</span>",
         html,
     );
 }

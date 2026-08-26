@@ -49,6 +49,7 @@ Verified lexical backends:
 - JSON;
 - TOML;
 - YAML;
+- SQL;
 - Diff/patch.
 
 Accepted aliases are deliberately narrow: `sh`, `shell`, `rpm-bash`, `js`, `ts`, `rs`, `patch`, `docker`, `yml`, `py`,

@@ -88,6 +88,10 @@ def greet(name: str):
     return name.upper()
 ~~~
 
+~~~sql
+SELECT count("user_id") WHERE id = :id;
+~~~
+
 ~~~docker
 RUN echo "$HOME"
 ~~~
@@ -103,6 +107,8 @@ RUN echo "$HOME"
   assert.match(html, /class="language-py"/);
   assert.match(html, /class="syntax-parameter">name<\/span>/);
   assert.match(html, /class="syntax-function syntax-property">upper<\/span>/);
+  assert.match(html, /class="language-sql"/);
+  assert.match(html, /class="syntax-parameter">:id<\/span>/);
   assert.match(html, /class="language-docker"/);
   assert.match(html, /syntax-builtin syntax-embedded syntax-function">echo<\/span>/);
 });
