@@ -22,6 +22,7 @@ const verified_backends = [_]syntax.Backend{
     syntax.languages.gitcommit.backend,
     syntax.languages.git_rebase.backend,
     syntax.languages.po.backend,
+    syntax.languages.ninja.backend,
     syntax.languages.diff.backend,
     @import("native_syntax_ziggy").backend,
     @import("native_syntax_ziggy_schema").backend,
@@ -398,6 +399,25 @@ test "renders exact Gettext PO lexical classifications" {
             "<span class=\"syntax-number\">0</span>" ++
             "<span class=\"syntax-punctuation\">]</span> " ++
             "<span class=\"syntax-string\">&quot;Datei&quot;</span>",
+        html,
+    );
+}
+
+test "renders exact Ninja lexical classifications" {
+    const html = renderAlloc(std.testing.allocator, "ninja", "rule cc\n  command = cc $in\nbuild app: cc main.c").?;
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expectEqualStrings(
+        "<span class=\"syntax-keyword\">rule</span> " ++
+            "<span class=\"syntax-label\">cc</span>\n  " ++
+            "<span class=\"syntax-property\">command</span> " ++
+            "<span class=\"syntax-operator\">=</span> cc " ++
+            "<span class=\"syntax-variable\">$in</span>\n" ++
+            "<span class=\"syntax-keyword\">build</span> " ++
+            "<span class=\"syntax-label\">app</span>" ++
+            "<span class=\"syntax-operator\">:</span> " ++
+            "<span class=\"syntax-type\">cc</span> " ++
+            "<span class=\"syntax-string\">main.c</span>",
         html,
     );
 }

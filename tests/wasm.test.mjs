@@ -131,6 +131,12 @@ msgid "file"
 msgstr[0] "Datei"
 ~~~
 
+~~~ninja
+rule cc
+  command = cc $in
+build app: cc main.c
+~~~
+
 ~~~docker
 RUN echo "$HOME"
 ~~~
@@ -164,6 +170,8 @@ RUN echo "$HOME"
   assert.match(html, /class="syntax-constant">abc123<\/span>/);
   assert.match(html, /class="language-gettext"/);
   assert.match(html, /class="syntax-keyword">msgstr<\/span>/);
+  assert.match(html, /class="language-ninja"/);
+  assert.match(html, /class="syntax-type">cc<\/span>/);
   assert.match(html, /class="language-docker"/);
   assert.match(html, /syntax-builtin syntax-embedded syntax-function">echo<\/span>/);
 });
