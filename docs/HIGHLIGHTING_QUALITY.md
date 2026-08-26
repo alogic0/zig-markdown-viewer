@@ -45,6 +45,7 @@ Verified lexical backends:
 - HTML and XML;
 - CSS;
 - JSON;
+- TOML;
 - Diff/patch.
 
 Accepted aliases are deliberately narrow: `sh`, `shell`, `rpm-bash`, `js`, `ts`, `rs`, `patch`,

@@ -73,10 +73,16 @@ const answer = 42;
 ~~~ziggy
 answer = 42
 ~~~
+
+~~~toml
+title = "demo"
+~~~
 `);
   assert.match(html, /class="syntax-keyword">const<\/span>/);
   assert.match(html, /syntax-tag/);
   assert.match(html, /syntax-property/);
+  assert.match(html, /class="language-toml"/);
+  assert.match(html, /class="syntax-property">title<\/span>/);
 });
 
 test('preserves exact structural highlighting through WebAssembly', () => {

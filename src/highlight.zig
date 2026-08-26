@@ -9,6 +9,7 @@ const verified_backends = [_]syntax.Backend{
     syntax.languages.typescript.backend,
     syntax.languages.rust.backend,
     syntax.languages.json.backend,
+    syntax.languages.toml.backend,
     syntax.languages.diff.backend,
     @import("native_syntax_ziggy").backend,
     @import("native_syntax_ziggy_schema").backend,
@@ -154,6 +155,22 @@ test "renders exact verified lexical classifications" {
             "<span class=\"syntax-punctuation\">:</span> " ++
             "<span class=\"syntax-boolean\">true</span>" ++
             "<span class=\"syntax-punctuation\">}</span>",
+        html,
+    );
+}
+
+test "renders exact TOML key and value classifications" {
+    const html = renderAlloc(
+        std.testing.allocator,
+        "toml",
+        "title = \"demo\"",
+    ).?;
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expectEqualStrings(
+        "<span class=\"syntax-property\">title</span> " ++
+            "<span class=\"syntax-operator\">=</span> " ++
+            "<span class=\"syntax-string\">&quot;demo&quot;</span>",
         html,
     );
 }
