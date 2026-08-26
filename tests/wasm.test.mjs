@@ -7,7 +7,7 @@ const bytes = await readFile(wasmPath);
 const { instance } = await WebAssembly.instantiate(bytes, {});
 const wasm = instance.exports;
 const encoder = new TextEncoder();
-const decoder = new TextDecoder();
+const decoder = new TextDecoder('utf-8', { fatal: true });
 
 function render(source) {
   const sourceBytes = encoder.encode(source);
@@ -77,6 +77,49 @@ answer = 42
   assert.match(html, /class="syntax-keyword">const<\/span>/);
   assert.match(html, /syntax-tag/);
   assert.match(html, /syntax-property/);
+});
+
+test('preserves exact structural highlighting through WebAssembly', () => {
+  assert.equal(
+    render(`~~~javascript
+const answer = thing.value();
+~~~
+`),
+    '<pre data-language="javascript"><code class="language-javascript">' +
+      '<span class="syntax-keyword">const</span> ' +
+      '<span class="syntax-variable">answer</span> ' +
+      '<span class="syntax-operator">=</span> ' +
+      '<span class="syntax-variable">thing</span>' +
+      '<span class="syntax-punctuation">.</span>' +
+      '<span class="syntax-function syntax-property">value</span>' +
+      '<span class="syntax-punctuation">(</span>' +
+      '<span class="syntax-punctuation">)</span>' +
+      '<span class="syntax-punctuation">;</span>\n' +
+      '</code></pre>\n'
+  );
+});
+
+test('keeps Unicode Bash source intact through highlighting', () => {
+  const html = render(`~~~bash
+├── Builds Docker image
+~~~
+`);
+  assert.match(html, /<code class="language-bash">├── /);
+  assert.doesNotMatch(html, /�/);
+});
+
+test('leaves experimental and unsupported dialect fences plain', () => {
+  const html = render(`~~~python
+def answer(): pass
+~~~
+
+~~~jsx
+const node = <main />;
+~~~
+`);
+  assert.match(html, /class="language-python">def answer\(\): pass/);
+  assert.match(html, /class="language-jsx">const node = &lt;main \/&gt;;/);
+  assert.doesNotMatch(html, /syntax-/);
 });
 
 test('generates stable heading ids and anchors in WebAssembly', () => {

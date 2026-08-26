@@ -19,14 +19,19 @@ HTML sanitizer -> relative URL resolution -> document UI
 
 - `zig-markdown-parser` owns Markdown syntax, source spans, and deterministic
   document rendering.
-- `zig-native-syntax` classifies fenced source with all of its core and optional
-  backends. Its safe HTML renderer emits only escaped source and stable
-  `syntax-*` span classes; unknown languages remain escaped plain text.
+- `zig-native-syntax` supplies core and optional backends plus independent quality
+  metadata. The viewer owns an explicit allowlist of verified backends rather than
+  registering every available scanner. Its safe HTML renderer emits only escaped
+  source and stable `syntax-*` span classes; experimental, unsupported, and unknown
+  languages remain escaped plain text.
 - Zine is the parser's upstream integration and behavior reference. Zine page
   metadata, directives, templates, and asset pipelines do not belong in a
   document-viewer extension.
 - SuperHTML provides the HTML, XML, and CSS tokenizers selected by the optional
   native-syntax backends and is compiled into the same WebAssembly module.
+
+The registry and promotion requirements are defined in
+[Highlighting quality](HIGHLIGHTING_QUALITY.md).
 
 ## WebAssembly ABI
 

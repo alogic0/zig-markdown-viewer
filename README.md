@@ -24,8 +24,8 @@ by optional highlighting backends are pinned by `zig-native-syntax`.
 
 - Common Markdown plus tables, task lists, footnotes, strikethrough,
   autolinks, smart punctuation, and highlighted fenced code
-- all 80 dependency-free and eight optional `zig-native-syntax` language backends,
-  with common fence aliases and escaped plain-text fallback
+- a curated set of quality-verified `zig-native-syntax` backends, with escaped
+  plain-text fallback for experimental, unsupported, or unknown fence languages
 - local and remote Markdown URLs
 - safe handling of raw HTML before DOM insertion
 - relative link and image resolution
@@ -36,6 +36,9 @@ by optional highlighting backends are pinned by `zig-native-syntax`.
 - a Manifest V3 service worker and settings popup
 
 Mermaid and KaTeX rendering from Markview are not bundled.
+
+See [Highlighting quality](docs/HIGHLIGHTING_QUALITY.md) for the supported-language registry,
+admission criteria, and parser/tokenizer policy.
 
 ## Verification
 
