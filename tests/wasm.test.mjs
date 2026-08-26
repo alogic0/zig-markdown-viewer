@@ -102,6 +102,12 @@ app:
 	echo hi
 ~~~
 
+~~~cmake
+if(ON)
+  message("ready")
+endif()
+~~~
+
 ~~~docker
 RUN echo "$HOME"
 ~~~
@@ -123,6 +129,8 @@ RUN echo "$HOME"
   assert.match(html, /class="syntax-function">format<\/span>/);
   assert.match(html, /class="language-makefile"/);
   assert.match(html, /syntax-builtin syntax-embedded syntax-function">echo<\/span>/);
+  assert.match(html, /class="language-cmake"/);
+  assert.match(html, /class="syntax-function">message<\/span>/);
   assert.match(html, /class="language-docker"/);
   assert.match(html, /syntax-builtin syntax-embedded syntax-function">echo<\/span>/);
 });

@@ -52,6 +52,7 @@ Verified lexical backends:
 - YAML;
 - SQL;
 - HCL;
+- CMake;
 - Diff/patch.
 
 Accepted aliases are deliberately narrow: `sh`, `shell`, `rpm-bash`, `js`, `ts`, `rs`, `patch`, `docker`, `yml`, `py`, `terraform`, `makefile`,

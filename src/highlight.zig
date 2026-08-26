@@ -16,6 +16,7 @@ const verified_backends = [_]syntax.Backend{
     syntax.languages.sql.backend,
     syntax.languages.hcl.backend,
     syntax.languages.make.backend,
+    syntax.languages.cmake.backend,
     syntax.languages.diff.backend,
     @import("native_syntax_ziggy").backend,
     @import("native_syntax_ziggy_schema").backend,
@@ -296,6 +297,26 @@ test "renders exact composed Make classifications" {
             "<span class=\"syntax-operator\">:</span>\n\t" ++
             "<span class=\"syntax-builtin syntax-embedded syntax-function\">echo</span>" ++
             "<span class=\"syntax-embedded\"> hi</span>",
+        html,
+    );
+}
+
+test "renders exact CMake lexical classifications" {
+    const html = renderAlloc(std.testing.allocator, "cmake", "if(ON)\n  message(\"ready\")\nendif()").?;
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expectEqualStrings(
+        "<span class=\"syntax-keyword\">if</span>" ++
+            "<span class=\"syntax-punctuation\">(</span>" ++
+            "<span class=\"syntax-boolean\">ON</span>" ++
+            "<span class=\"syntax-punctuation\">)</span>\n  " ++
+            "<span class=\"syntax-function\">message</span>" ++
+            "<span class=\"syntax-punctuation\">(</span>" ++
+            "<span class=\"syntax-string\">&quot;ready&quot;</span>" ++
+            "<span class=\"syntax-punctuation\">)</span>\n" ++
+            "<span class=\"syntax-keyword\">endif</span>" ++
+            "<span class=\"syntax-punctuation\">(</span>" ++
+            "<span class=\"syntax-punctuation\">)</span>",
         html,
     );
 }
