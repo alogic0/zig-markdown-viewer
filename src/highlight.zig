@@ -10,6 +10,7 @@ const verified_backends = [_]syntax.Backend{
     syntax.languages.rust.backend,
     syntax.languages.json.backend,
     syntax.languages.toml.backend,
+    syntax.languages.dockerfile.backend,
     syntax.languages.diff.backend,
     @import("native_syntax_ziggy").backend,
     @import("native_syntax_ziggy_schema").backend,
@@ -28,6 +29,7 @@ const aliases = [_]struct {
     .{ .alias = "sh", .canonical = "bash" },
     .{ .alias = "shell", .canonical = "bash" },
     .{ .alias = "patch", .canonical = "diff" },
+    .{ .alias = "docker", .canonical = "dockerfile" },
     .{ .alias = "js", .canonical = "javascript" },
     .{ .alias = "rs", .canonical = "rust" },
     .{ .alias = "ts", .canonical = "typescript" },
@@ -171,6 +173,25 @@ test "renders exact TOML key and value classifications" {
         "<span class=\"syntax-property\">title</span> " ++
             "<span class=\"syntax-operator\">=</span> " ++
             "<span class=\"syntax-string\">&quot;demo&quot;</span>",
+        html,
+    );
+}
+
+test "renders exact composed Dockerfile classifications" {
+    const html = renderAlloc(
+        std.testing.allocator,
+        "dockerfile",
+        "RUN echo \"$HOME\"",
+    ).?;
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expectEqualStrings(
+        "<span class=\"syntax-keyword\">RUN</span> " ++
+            "<span class=\"syntax-builtin syntax-embedded syntax-function\">echo</span>" ++
+            "<span class=\"syntax-embedded\"> </span>" ++
+            "<span class=\"syntax-embedded syntax-string\">&quot;</span>" ++
+            "<span class=\"syntax-embedded syntax-string syntax-variable\">$HOME</span>" ++
+            "<span class=\"syntax-embedded syntax-string\">&quot;</span>",
         html,
     );
 }

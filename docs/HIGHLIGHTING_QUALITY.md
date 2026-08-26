@@ -37,6 +37,7 @@ Verified structural backends:
 - Ziggy Schema;
 - Scripty;
 - Markdown;
+- composed Dockerfile;
 - composed SuperHTML.
 
 Verified lexical backends:
@@ -48,7 +49,7 @@ Verified lexical backends:
 - TOML;
 - Diff/patch.
 
-Accepted aliases are deliberately narrow: `sh`, `shell`, `rpm-bash`, `js`, `ts`, `rs`, `patch`,
+Accepted aliases are deliberately narrow: `sh`, `shell`, `rpm-bash`, `js`, `ts`, `rs`, `patch`, `docker`,
 `md`, `smd`, `supermd`, `markdown-inline`, `csproj`, and `props`.
 
 The viewer does not map JSX or TSX to parsers that do not understand those dialects. It likewise

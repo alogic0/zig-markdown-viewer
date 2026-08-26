@@ -77,12 +77,18 @@ answer = 42
 ~~~toml
 title = "demo"
 ~~~
+
+~~~docker
+RUN echo "$HOME"
+~~~
 `);
   assert.match(html, /class="syntax-keyword">const<\/span>/);
   assert.match(html, /syntax-tag/);
   assert.match(html, /syntax-property/);
   assert.match(html, /class="language-toml"/);
   assert.match(html, /class="syntax-property">title<\/span>/);
+  assert.match(html, /class="language-docker"/);
+  assert.match(html, /syntax-builtin syntax-embedded syntax-function">echo<\/span>/);
 });
 
 test('preserves exact structural highlighting through WebAssembly', () => {
