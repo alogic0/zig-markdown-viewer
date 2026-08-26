@@ -32,7 +32,7 @@ by optional highlighting backends are pinned by `zig-native-syntax`.
 - automatic heading anchors and table of contents
 - light, dark, and system themes
 - raw/rendered toggle, print, code-copy buttons, scroll-to-top
-- one-click standalone HTML export with embedded viewer CSS and JavaScript
+- one-click standalone HTML export with embedded viewer CSS, Contents and theme controls
 - optional auto-refresh and a recent-document list
 - a Manifest V3 service worker and settings popup
 

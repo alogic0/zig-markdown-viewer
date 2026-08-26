@@ -4,6 +4,37 @@
   const PAGE_SCRIPT = `(() => {
   'use strict';
 
+  const root = document.documentElement;
+  const shell = document.querySelector('#zig-md-shell');
+  const tocToggle = document.querySelector('[data-action="toc"]');
+  const themeToggle = document.querySelector('[data-action="theme"]');
+
+  function updateTocToggle() {
+    const visible = shell?.classList.contains('has-toc') || false;
+    tocToggle?.setAttribute('aria-pressed', String(visible));
+  }
+
+  tocToggle?.addEventListener('click', () => {
+    shell?.classList.toggle('has-toc');
+    updateTocToggle();
+  });
+
+  function updateThemeToggle() {
+    const setting = root.dataset.zigMarkdownTheme;
+    const dark = setting === 'dark' ||
+      (setting === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
+    themeToggle?.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+    themeToggle?.setAttribute('title', dark ? 'Switch to light theme' : 'Switch to dark theme');
+  }
+
+  themeToggle?.addEventListener('click', () => {
+    const setting = root.dataset.zigMarkdownTheme;
+    const dark = setting === 'dark' ||
+      (setting === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
+    root.dataset.zigMarkdownTheme = dark ? 'light' : 'dark';
+    updateThemeToggle();
+  });
+
   function copyText(text) {
     if (navigator.clipboard?.writeText) return navigator.clipboard.writeText(text);
     const textarea = document.createElement('textarea');
@@ -64,6 +95,8 @@
       updateScrollState();
     });
   }, { passive: true });
+  updateTocToggle();
+  updateThemeToggle();
   updateScrollState();
 })();`;
 
@@ -108,6 +141,16 @@ ${options.css}
       <nav>${options.tocHtml}</nav>
     </aside>
     <div id="zig-md-main">
+      <header id="zig-md-toolbar" aria-label="Document tools">
+        <div class="zig-md-actions">
+          <button type="button" data-action="toc" title="Toggle table of contents" aria-label="Toggle table of contents">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <button type="button" data-action="theme" title="Switch color theme" aria-label="Switch color theme">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9Z"/></svg>
+          </button>
+        </div>
+      </header>
       <main id="zig-md-document">${options.documentHtml}</main>
       <button id="zig-md-scroll-top" type="button" aria-label="Scroll to top">↑</button>
     </div>

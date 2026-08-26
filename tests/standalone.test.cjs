@@ -5,6 +5,44 @@ const test = require('node:test');
 const vm = require('node:vm');
 const standalone = require('../extension/js/standalone.js');
 
+class FakeClassList {
+  constructor(...names) {
+    this.names = new Set(names);
+  }
+
+  contains(name) {
+    return this.names.has(name);
+  }
+
+  toggle(name) {
+    if (this.names.has(name)) {
+      this.names.delete(name);
+      return false;
+    }
+    this.names.add(name);
+    return true;
+  }
+}
+
+class FakeButton {
+  constructor() {
+    this.attributes = new Map();
+    this.listeners = new Map();
+  }
+
+  addEventListener(name, listener) {
+    this.listeners.set(name, listener);
+  }
+
+  setAttribute(name, value) {
+    this.attributes.set(name, value);
+  }
+
+  click() {
+    this.listeners.get('click')();
+  }
+}
+
 test('builds one standalone document with embedded CSS and JavaScript', () => {
   const html = standalone.buildHtml({
     title: 'Example <document>',
@@ -16,7 +54,7 @@ test('builds one standalone document with embedded CSS and JavaScript', () => {
     fontSize: 17,
     lineHeight: 1.7,
     css: '#zig-md-document { color: red; }',
-    documentHtml: '<h1 id="hello">Hello</h1><pre><code>const x = 1;</code><button class="zig-md-copy">Copy</button></pre>',
+    documentHtml: '<h1 id="hello">Hello</h1><div class="zig-md-code-block"><pre><code>const x = 1;</code></pre><button class="zig-md-copy">Copy</button></div>',
     tocHtml: '<a class="level-1" href="#hello">Hello</a>',
   });
 
@@ -27,11 +65,48 @@ test('builds one standalone document with embedded CSS and JavaScript', () => {
   assert.match(html, /--zig-md-width:1080px;--zig-md-font-size:17px;--zig-md-line-height:1.7/);
   assert.match(html, /<style>\s*#zig-md-document \{ color: red; \}\s*<\/style>/);
   assert.match(html, /<main id="zig-md-document"><h1 id="hello">Hello<\/h1>/);
+  assert.match(html, /data-action="toc"/);
+  assert.match(html, /data-action="theme"/);
+  assert.match(html, /classList\.toggle\('has-toc'\)/);
+  assert.match(html, /zigMarkdownTheme = dark \? 'light' : 'dark'/);
   assert.match(html, /<script>\s*\(\(\) => \{/);
   assert.doesNotMatch(html, /<(?:link|script)[^>]+(?:href|src)=/);
 
   const embeddedScript = html.match(/<script>\s*([\s\S]*?)\s*<\/script>/)[1];
   assert.doesNotThrow(() => new vm.Script(embeddedScript));
+
+  const root = { dataset: { zigMarkdownTheme: 'dark' }, scrollHeight: 1000 };
+  const shell = { classList: new FakeClassList('has-toc') };
+  const tocToggle = new FakeButton();
+  const themeToggle = new FakeButton();
+  const context = vm.createContext({
+    document: {
+      documentElement: root,
+      querySelector(selector) {
+        return {
+          '#zig-md-shell': shell,
+          '[data-action="toc"]': tocToggle,
+          '[data-action="theme"]': themeToggle,
+        }[selector] || null;
+      },
+      querySelectorAll() { return []; },
+    },
+    navigator: {},
+    window: { addEventListener() {}, scrollTo() {} },
+    requestAnimationFrame() { return 1; },
+    matchMedia() { return { matches: false }; },
+    scrollY: 0,
+    innerHeight: 800,
+    setTimeout,
+  });
+  new vm.Script(embeddedScript).runInContext(context);
+
+  tocToggle.click();
+  assert.equal(shell.classList.contains('has-toc'), false);
+  assert.equal(tocToggle.attributes.get('aria-pressed'), 'false');
+  themeToggle.click();
+  assert.equal(root.dataset.zigMarkdownTheme, 'light');
+  assert.equal(themeToggle.attributes.get('aria-label'), 'Switch to dark theme');
 });
 
 test('creates safe HTML filenames from Markdown URLs', () => {

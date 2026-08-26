@@ -238,6 +238,20 @@
   function enhanceCodeBlocks(content) {
     content.querySelectorAll('pre > code').forEach(code => {
       const pre = code.parentElement;
+      if (pre.parentElement?.classList.contains('zig-md-code-block')) return;
+
+      const block = document.createElement('div');
+      block.className = 'zig-md-code-block';
+      pre.before(block);
+      block.append(pre);
+
+      if (pre.dataset.language) {
+        const language = document.createElement('span');
+        language.className = 'zig-md-language';
+        language.textContent = pre.dataset.language;
+        block.append(language);
+      }
+
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'zig-md-copy';
@@ -247,7 +261,7 @@
         button.textContent = 'Copied';
         setTimeout(() => { button.textContent = 'Copy'; }, 1200);
       });
-      pre.append(button);
+      block.append(button);
     });
   }
 
