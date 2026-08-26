@@ -472,16 +472,12 @@ test "unknown fenced languages remain safely escaped" {
 
 test "experimental and unsupported dialect fences remain plain" {
     const html = try renderAlloc(std.testing.allocator,
-        \\```python
-        \\def answer(): pass
-        \\```
         \\```jsx
         \\const node = <main />;
         \\```
     );
     defer std.testing.allocator.free(html);
 
-    try std.testing.expect(std.mem.indexOf(u8, html, "language-python") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "language-jsx") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "&lt;main /&gt;") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "syntax-") == null);

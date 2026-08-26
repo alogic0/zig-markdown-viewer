@@ -12,6 +12,7 @@ const verified_backends = [_]syntax.Backend{
     syntax.languages.toml.backend,
     syntax.languages.yaml.backend,
     syntax.languages.dockerfile.backend,
+    syntax.languages.python.backend,
     syntax.languages.diff.backend,
     @import("native_syntax_ziggy").backend,
     @import("native_syntax_ziggy_schema").backend,
@@ -32,6 +33,7 @@ const aliases = [_]struct {
     .{ .alias = "patch", .canonical = "diff" },
     .{ .alias = "docker", .canonical = "dockerfile" },
     .{ .alias = "yml", .canonical = "yaml" },
+    .{ .alias = "py", .canonical = "python" },
     .{ .alias = "js", .canonical = "javascript" },
     .{ .alias = "rs", .canonical = "rust" },
     .{ .alias = "ts", .canonical = "typescript" },
@@ -112,7 +114,6 @@ test "routes aliases and ignores fence attributes" {
 
 test "does not route experimental or unsupported dialect aliases" {
     for ([_][]const u8{
-        "python",
         "jsx",
         "tsx",
         "glsl",
@@ -217,9 +218,36 @@ test "renders exact composed Dockerfile classifications" {
     );
 }
 
-test "experimental languages request plain-text fallback" {
+test "renders exact structural Python classifications" {
+    const html = renderAlloc(
+        std.testing.allocator,
+        "py",
+        "def greet(name: str):\n    return name.upper()",
+    ).?;
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expectEqualStrings(
+        "<span class=\"syntax-keyword\">def</span> " ++
+            "<span class=\"syntax-function\">greet</span>" ++
+            "<span class=\"syntax-punctuation\">(</span>" ++
+            "<span class=\"syntax-parameter\">name</span>" ++
+            "<span class=\"syntax-operator\">:</span> " ++
+            "<span class=\"syntax-builtin syntax-type\">str</span>" ++
+            "<span class=\"syntax-punctuation\">)</span>" ++
+            "<span class=\"syntax-operator\">:</span>\n    " ++
+            "<span class=\"syntax-keyword\">return</span> " ++
+            "<span class=\"syntax-variable\">name</span>" ++
+            "<span class=\"syntax-punctuation\">.</span>" ++
+            "<span class=\"syntax-function syntax-property\">upper</span>" ++
+            "<span class=\"syntax-punctuation\">(</span>" ++
+            "<span class=\"syntax-punctuation\">)</span>",
+        html,
+    );
+}
+
+test "unsupported dialects request plain-text fallback" {
     try std.testing.expectEqual(
         null,
-        renderAlloc(std.testing.allocator, "python", "def answer(): pass"),
+        renderAlloc(std.testing.allocator, "jsx", "const node = <main />"),
     );
 }

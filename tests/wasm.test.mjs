@@ -83,6 +83,11 @@ name: "demo"
 enabled: true
 ~~~
 
+~~~py
+def greet(name: str):
+    return name.upper()
+~~~
+
 ~~~docker
 RUN echo "$HOME"
 ~~~
@@ -95,6 +100,9 @@ RUN echo "$HOME"
   assert.match(html, /class="language-yml"/);
   assert.match(html, /class="syntax-property">enabled<\/span>/);
   assert.match(html, /class="syntax-boolean">true<\/span>/);
+  assert.match(html, /class="language-py"/);
+  assert.match(html, /class="syntax-parameter">name<\/span>/);
+  assert.match(html, /class="syntax-function syntax-property">upper<\/span>/);
   assert.match(html, /class="language-docker"/);
   assert.match(html, /syntax-builtin syntax-embedded syntax-function">echo<\/span>/);
 });
@@ -129,15 +137,10 @@ test('keeps Unicode Bash source intact through highlighting', () => {
 });
 
 test('leaves experimental and unsupported dialect fences plain', () => {
-  const html = render(`~~~python
-def answer(): pass
-~~~
-
-~~~jsx
+  const html = render(`~~~jsx
 const node = <main />;
 ~~~
 `);
-  assert.match(html, /class="language-python">def answer\(\): pass/);
   assert.match(html, /class="language-jsx">const node = &lt;main \/&gt;;/);
   assert.doesNotMatch(html, /syntax-/);
 });
