@@ -10,6 +10,7 @@ const verified_backends = [_]syntax.Backend{
     syntax.languages.rust.backend,
     syntax.languages.json.backend,
     syntax.languages.toml.backend,
+    syntax.languages.yaml.backend,
     syntax.languages.dockerfile.backend,
     syntax.languages.diff.backend,
     @import("native_syntax_ziggy").backend,
@@ -30,6 +31,7 @@ const aliases = [_]struct {
     .{ .alias = "shell", .canonical = "bash" },
     .{ .alias = "patch", .canonical = "diff" },
     .{ .alias = "docker", .canonical = "dockerfile" },
+    .{ .alias = "yml", .canonical = "yaml" },
     .{ .alias = "js", .canonical = "javascript" },
     .{ .alias = "rs", .canonical = "rust" },
     .{ .alias = "ts", .canonical = "typescript" },
@@ -173,6 +175,25 @@ test "renders exact TOML key and value classifications" {
         "<span class=\"syntax-property\">title</span> " ++
             "<span class=\"syntax-operator\">=</span> " ++
             "<span class=\"syntax-string\">&quot;demo&quot;</span>",
+        html,
+    );
+}
+
+test "renders exact YAML key and value classifications" {
+    const html = renderAlloc(
+        std.testing.allocator,
+        "yml",
+        "name: \"demo\"\nenabled: true",
+    ).?;
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expectEqualStrings(
+        "<span class=\"syntax-property\">name</span>" ++
+            "<span class=\"syntax-operator\">:</span> " ++
+            "<span class=\"syntax-string\">&quot;demo&quot;</span>\n" ++
+            "<span class=\"syntax-property\">enabled</span>" ++
+            "<span class=\"syntax-operator\">:</span> " ++
+            "<span class=\"syntax-boolean\">true</span>",
         html,
     );
 }

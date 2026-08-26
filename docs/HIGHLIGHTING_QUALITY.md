@@ -47,9 +47,10 @@ Verified lexical backends:
 - CSS;
 - JSON;
 - TOML;
+- YAML;
 - Diff/patch.
 
-Accepted aliases are deliberately narrow: `sh`, `shell`, `rpm-bash`, `js`, `ts`, `rs`, `patch`, `docker`,
+Accepted aliases are deliberately narrow: `sh`, `shell`, `rpm-bash`, `js`, `ts`, `rs`, `patch`, `docker`, `yml`,
 `md`, `smd`, `supermd`, `markdown-inline`, `csproj`, and `props`.
 
 The viewer does not map JSX or TSX to parsers that do not understand those dialects. It likewise

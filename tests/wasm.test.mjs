@@ -78,6 +78,11 @@ answer = 42
 title = "demo"
 ~~~
 
+~~~yml
+name: "demo"
+enabled: true
+~~~
+
 ~~~docker
 RUN echo "$HOME"
 ~~~
@@ -87,6 +92,9 @@ RUN echo "$HOME"
   assert.match(html, /syntax-property/);
   assert.match(html, /class="language-toml"/);
   assert.match(html, /class="syntax-property">title<\/span>/);
+  assert.match(html, /class="language-yml"/);
+  assert.match(html, /class="syntax-property">enabled<\/span>/);
+  assert.match(html, /class="syntax-boolean">true<\/span>/);
   assert.match(html, /class="language-docker"/);
   assert.match(html, /syntax-builtin syntax-embedded syntax-function">echo<\/span>/);
 });
