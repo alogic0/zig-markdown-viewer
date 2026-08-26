@@ -1,9 +1,12 @@
 'use strict';
 
 const assert = require('node:assert/strict');
+const { readFileSync } = require('node:fs');
+const path = require('node:path');
 const test = require('node:test');
 const vm = require('node:vm');
 const standalone = require('../extension/js/standalone.js');
+const contentCss = readFileSync(path.join(__dirname, '../extension/css/content.css'), 'utf8');
 
 class FakeClassList {
   constructor(...names) {
@@ -14,13 +17,22 @@ class FakeClassList {
     return this.names.has(name);
   }
 
-  toggle(name) {
+  toggle(name, force) {
+    if (force !== undefined) {
+      if (force) this.names.add(name);
+      else this.names.delete(name);
+      return force;
+    }
     if (this.names.has(name)) {
       this.names.delete(name);
       return false;
     }
     this.names.add(name);
     return true;
+  }
+
+  remove(name) {
+    this.names.delete(name);
   }
 }
 
@@ -36,6 +48,10 @@ class FakeButton {
 
   setAttribute(name, value) {
     this.attributes.set(name, value);
+  }
+
+  removeAttribute(name) {
+    this.attributes.delete(name);
   }
 
   click() {
@@ -79,6 +95,11 @@ test('builds one standalone document with embedded CSS and JavaScript', () => {
   const shell = { classList: new FakeClassList('has-toc') };
   const tocToggle = new FakeButton();
   const themeToggle = new FakeButton();
+  const tocLink = new FakeButton();
+  tocLink.hash = '#hello';
+  tocLink.classList = new FakeClassList('level-1');
+  const heading = { getBoundingClientRect: () => ({ top: 0 }) };
+  const mobileQuery = { matches: true, addEventListener() {} };
   const context = vm.createContext({
     document: {
       documentElement: root,
@@ -89,19 +110,31 @@ test('builds one standalone document with embedded CSS and JavaScript', () => {
           '[data-action="theme"]': themeToggle,
         }[selector] || null;
       },
-      querySelectorAll() { return []; },
+      querySelectorAll(selector) {
+        return selector === '#zig-md-toc nav a' ? [tocLink] : [];
+      },
+      getElementById(id) { return id === 'hello' ? heading : null; },
     },
     navigator: {},
     window: { addEventListener() {}, scrollTo() {} },
     requestAnimationFrame() { return 1; },
-    matchMedia() { return { matches: false }; },
+    matchMedia(query) {
+      return query === '(max-width: 680px)'
+        ? mobileQuery
+        : { matches: false, addEventListener() {} };
+    },
     scrollY: 0,
     innerHeight: 800,
     setTimeout,
   });
   new vm.Script(embeddedScript).runInContext(context);
 
+  assert.equal(shell.classList.contains('has-toc'), false);
+  assert.equal(tocToggle.attributes.get('aria-pressed'), 'false');
   tocToggle.click();
+  assert.equal(shell.classList.contains('has-toc'), true);
+  assert.equal(tocToggle.attributes.get('aria-pressed'), 'true');
+  tocLink.click();
   assert.equal(shell.classList.contains('has-toc'), false);
   assert.equal(tocToggle.attributes.get('aria-pressed'), 'false');
   themeToggle.click();
@@ -119,6 +152,13 @@ test('creates safe HTML filenames from Markdown URLs', () => {
     'report.html'
   );
   assert.equal(standalone.downloadName('not a URL'), 'markdown-document.html');
+});
+
+test('keeps code copy controls visible without hover', () => {
+  assert.match(
+    contentCss,
+    /@media \(hover: none\), \(pointer: coarse\) \{\s*\.zig-md-code-block > \.zig-md-copy \{ opacity: 1; \}/
+  );
 });
 
 test('falls back to safe display settings', () => {

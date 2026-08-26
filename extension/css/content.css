@@ -369,6 +369,10 @@ body.zig-md-page {
 #zig-md-document .zig-md-code-block:hover > .zig-md-copy,
 .zig-md-copy:focus { opacity: 1; }
 
+@media (hover: none), (pointer: coarse) {
+  .zig-md-code-block > .zig-md-copy { opacity: 1; }
+}
+
 #zig-md-document table {
   display: block;
   width: max-content;

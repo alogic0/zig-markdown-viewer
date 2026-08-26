@@ -8,6 +8,7 @@
   const shell = document.querySelector('#zig-md-shell');
   const tocToggle = document.querySelector('[data-action="toc"]');
   const themeToggle = document.querySelector('[data-action="theme"]');
+  const mobileToc = matchMedia('(max-width: 680px)');
 
   function updateTocToggle() {
     const visible = shell?.classList.contains('has-toc') || false;
@@ -18,6 +19,12 @@
     shell?.classList.toggle('has-toc');
     updateTocToggle();
   });
+
+  function closeMobileToc() {
+    if (!mobileToc.matches) return;
+    shell?.classList.remove('has-toc');
+    updateTocToggle();
+  }
 
   function updateThemeToggle() {
     const setting = root.dataset.zigMarkdownTheme;
@@ -63,6 +70,7 @@
   const entries = [...document.querySelectorAll('#zig-md-toc nav a')]
     .map(link => ({ link, heading: document.getElementById(decodeURIComponent(link.hash.slice(1))) }))
     .filter(entry => entry.heading);
+  for (const entry of entries) entry.link.addEventListener('click', closeMobileToc);
   let scrollFrame = null;
 
   function updateScrollState() {
@@ -95,6 +103,8 @@
       updateScrollState();
     });
   }, { passive: true });
+  mobileToc.addEventListener('change', closeMobileToc);
+  closeMobileToc();
   updateTocToggle();
   updateThemeToggle();
   updateScrollState();

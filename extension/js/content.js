@@ -13,6 +13,7 @@
     autoRefresh: false,
     autoRefreshInterval: 3,
   };
+  const mobileToc = window.matchMedia('(max-width: 680px)');
 
   const state = {
     source: '',
@@ -23,6 +24,7 @@
     tocEntries: [],
     activeHeadingId: null,
     scrollFrame: null,
+    tocOpen: true,
     documentTitle: document.title || fileName(window.location.href),
     exportStylesPromise: null,
   };
@@ -173,7 +175,8 @@
     document.body.append(shell);
 
     shell.querySelector('[data-action="toc"]').addEventListener('click', () => {
-      state.settings.tocVisible = !state.settings.tocVisible;
+      state.tocOpen = !state.tocOpen;
+      state.settings.tocVisible = state.tocOpen;
       applySettings();
       storageSet({ tocVisible: state.settings.tocVisible });
     });
@@ -200,7 +203,7 @@
     shell.style.setProperty('--zig-md-font-size', `${state.settings.fontSize}px`);
     shell.style.setProperty('--zig-md-line-height', state.settings.lineHeight);
     shell.classList.toggle('is-centered', state.settings.centered);
-    shell.classList.toggle('has-toc', state.settings.tocVisible);
+    shell.classList.toggle('has-toc', state.tocOpen);
     shell.classList.toggle('code-wrap', state.settings.codeWrap);
     startAutoRefresh();
   }
@@ -283,6 +286,12 @@
     return nav.innerHTML;
   }
 
+  function closeMobileToc() {
+    if (!mobileToc.matches || !state.tocOpen) return;
+    state.tocOpen = false;
+    applySettings();
+  }
+
   async function exportStyles() {
     if (!state.exportStylesPromise) {
       state.exportStylesPromise = fetch(chrome.runtime.getURL('css/content.css')).then(response => {
@@ -309,7 +318,7 @@
         title: state.documentTitle,
         theme: state.settings.theme,
         centered: state.settings.centered,
-        tocVisible: state.settings.tocVisible,
+        tocVisible: state.tocOpen,
         codeWrap: state.settings.codeWrap,
         maxWidth: state.settings.maxWidth,
         fontSize: state.settings.fontSize,
@@ -354,6 +363,7 @@
       link.href = `#${encodeURIComponent(heading.id)}`;
       link.className = `level-${heading.tagName.slice(1)}`;
       link.textContent = heading.textContent.replace(/^#/, '').trim();
+      link.addEventListener('click', closeMobileToc);
       nav.append(link);
       state.tocEntries.push({ heading, link });
     }
@@ -459,6 +469,7 @@
     const extractedSource = extractSource() || document.body?.innerText || '';
     const stored = await storageGet(DEFAULTS);
     state.settings = { ...DEFAULTS, ...stored };
+    state.tocOpen = state.settings.tocVisible && !mobileToc.matches;
     if (!state.settings.enabled) return;
 
     // Chromium can decode a raw local Markdown page using a legacy charset
@@ -488,6 +499,7 @@
     for (const [key, change] of Object.entries(changes)) {
       if (key in DEFAULTS) state.settings[key] = change.newValue;
     }
+    if (changes.tocVisible) state.tocOpen = changes.tocVisible.newValue;
     if (changes.enabled?.newValue === false) {
       restoreRawDocument();
       return;
@@ -496,6 +508,11 @@
       initialize();
       return;
     }
+    applySettings();
+  });
+
+  mobileToc.addEventListener('change', event => {
+    state.tocOpen = event.matches ? false : state.settings.tocVisible;
     applySettings();
   });
 

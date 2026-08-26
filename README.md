@@ -29,9 +29,9 @@ by optional highlighting backends are pinned by `zig-native-syntax`.
 - local and remote Markdown URLs
 - safe handling of raw HTML before DOM insertion
 - relative link and image resolution
-- automatic heading anchors and table of contents
+- automatic heading anchors and responsive table of contents
 - light, dark, and system themes
-- raw/rendered toggle, print, code-copy buttons, scroll-to-top
+- raw/rendered toggle, print, touch-accessible code-copy buttons, scroll-to-top
 - one-click standalone HTML export with embedded viewer CSS, Contents and theme controls
 - optional auto-refresh and a recent-document list
 - a Manifest V3 service worker and settings popup
