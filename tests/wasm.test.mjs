@@ -108,6 +108,10 @@ if(ON)
 endif()
 ~~~
 
+~~~kdl
+service image="demo" enabled=true
+~~~
+
 ~~~docker
 RUN echo "$HOME"
 ~~~
@@ -131,6 +135,8 @@ RUN echo "$HOME"
   assert.match(html, /syntax-builtin syntax-embedded syntax-function">echo<\/span>/);
   assert.match(html, /class="language-cmake"/);
   assert.match(html, /class="syntax-function">message<\/span>/);
+  assert.match(html, /class="language-kdl"/);
+  assert.match(html, /class="syntax-tag">service<\/span>/);
   assert.match(html, /class="language-docker"/);
   assert.match(html, /syntax-builtin syntax-embedded syntax-function">echo<\/span>/);
 });

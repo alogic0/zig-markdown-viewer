@@ -17,6 +17,7 @@ const verified_backends = [_]syntax.Backend{
     syntax.languages.hcl.backend,
     syntax.languages.make.backend,
     syntax.languages.cmake.backend,
+    syntax.languages.kdl.backend,
     syntax.languages.diff.backend,
     @import("native_syntax_ziggy").backend,
     @import("native_syntax_ziggy_schema").backend,
@@ -317,6 +318,22 @@ test "renders exact CMake lexical classifications" {
             "<span class=\"syntax-keyword\">endif</span>" ++
             "<span class=\"syntax-punctuation\">(</span>" ++
             "<span class=\"syntax-punctuation\">)</span>",
+        html,
+    );
+}
+
+test "renders exact KDL lexical classifications" {
+    const html = renderAlloc(std.testing.allocator, "kdl", "service image=\"demo\" enabled=true").?;
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expectEqualStrings(
+        "<span class=\"syntax-tag\">service</span> " ++
+            "<span class=\"syntax-property\">image</span>" ++
+            "<span class=\"syntax-operator\">=</span>" ++
+            "<span class=\"syntax-string\">&quot;demo&quot;</span> " ++
+            "<span class=\"syntax-property\">enabled</span>" ++
+            "<span class=\"syntax-operator\">=</span>" ++
+            "<span class=\"syntax-boolean\">true</span>",
         html,
     );
 }
