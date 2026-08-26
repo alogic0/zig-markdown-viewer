@@ -92,6 +92,11 @@ def greet(name: str):
 SELECT count("user_id") WHERE id = :id;
 ~~~
 
+~~~terraform
+enabled = true
+name = format("app")
+~~~
+
 ~~~docker
 RUN echo "$HOME"
 ~~~
@@ -109,6 +114,8 @@ RUN echo "$HOME"
   assert.match(html, /class="syntax-function syntax-property">upper<\/span>/);
   assert.match(html, /class="language-sql"/);
   assert.match(html, /class="syntax-parameter">:id<\/span>/);
+  assert.match(html, /class="language-terraform"/);
+  assert.match(html, /class="syntax-function">format<\/span>/);
   assert.match(html, /class="language-docker"/);
   assert.match(html, /syntax-builtin syntax-embedded syntax-function">echo<\/span>/);
 });

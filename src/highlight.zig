@@ -14,6 +14,7 @@ const verified_backends = [_]syntax.Backend{
     syntax.languages.dockerfile.backend,
     syntax.languages.python.backend,
     syntax.languages.sql.backend,
+    syntax.languages.hcl.backend,
     syntax.languages.diff.backend,
     @import("native_syntax_ziggy").backend,
     @import("native_syntax_ziggy_schema").backend,
@@ -35,6 +36,7 @@ const aliases = [_]struct {
     .{ .alias = "docker", .canonical = "dockerfile" },
     .{ .alias = "yml", .canonical = "yaml" },
     .{ .alias = "py", .canonical = "python" },
+    .{ .alias = "terraform", .canonical = "hcl" },
     .{ .alias = "js", .canonical = "javascript" },
     .{ .alias = "rs", .canonical = "rust" },
     .{ .alias = "ts", .canonical = "typescript" },
@@ -261,6 +263,24 @@ test "renders exact SQL lexical classifications" {
             "<span class=\"syntax-operator\">=</span> " ++
             "<span class=\"syntax-parameter\">:id</span>" ++
             "<span class=\"syntax-punctuation\">;</span>",
+        html,
+    );
+}
+
+test "renders exact HCL lexical classifications" {
+    const html = renderAlloc(std.testing.allocator, "terraform", "enabled = true\nname = format(\"app\")").?;
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expectEqualStrings(
+        "<span class=\"syntax-property\">enabled</span> " ++
+            "<span class=\"syntax-operator\">=</span> " ++
+            "<span class=\"syntax-boolean\">true</span>\n" ++
+            "<span class=\"syntax-property\">name</span> " ++
+            "<span class=\"syntax-operator\">=</span> " ++
+            "<span class=\"syntax-function\">format</span>" ++
+            "<span class=\"syntax-punctuation\">(</span>" ++
+            "<span class=\"syntax-string\">&quot;app&quot;</span>" ++
+            "<span class=\"syntax-punctuation\">)</span>",
         html,
     );
 }
