@@ -19,6 +19,7 @@ const verified_backends = [_]syntax.Backend{
     syntax.languages.cmake.backend,
     syntax.languages.kdl.backend,
     syntax.languages.ssh_config.backend,
+    syntax.languages.gitcommit.backend,
     syntax.languages.diff.backend,
     @import("native_syntax_ziggy").backend,
     @import("native_syntax_ziggy_schema").backend,
@@ -43,6 +44,7 @@ const aliases = [_]struct {
     .{ .alias = "terraform", .canonical = "hcl" },
     .{ .alias = "makefile", .canonical = "make" },
     .{ .alias = "sshconfig", .canonical = "ssh-config" },
+    .{ .alias = "git-commit", .canonical = "gitcommit" },
     .{ .alias = "js", .canonical = "javascript" },
     .{ .alias = "rs", .canonical = "rust" },
     .{ .alias = "ts", .canonical = "typescript" },
@@ -348,6 +350,18 @@ test "renders exact SSH config lexical classifications" {
         "<span class=\"syntax-keyword\">Host</span> demo\n  " ++
             "<span class=\"syntax-property\">Port</span> " ++
             "<span class=\"syntax-number\">2222</span>",
+        html,
+    );
+}
+
+test "renders exact Git commit lexical classifications" {
+    const html = renderAlloc(std.testing.allocator, "git-commit", "feat: render safely").?;
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expectEqualStrings(
+        "<span class=\"syntax-keyword syntax-markup-heading\">feat</span>" ++
+            "<span class=\"syntax-punctuation syntax-markup-heading\">:</span>" ++
+            "<span class=\"syntax-markup-heading\"> render safely</span>",
         html,
     );
 }

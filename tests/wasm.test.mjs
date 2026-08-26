@@ -117,6 +117,10 @@ Host demo
   Port 2222
 ~~~
 
+~~~git-commit
+feat: render safely
+~~~
+
 ~~~docker
 RUN echo "$HOME"
 ~~~
@@ -144,6 +148,8 @@ RUN echo "$HOME"
   assert.match(html, /class="syntax-tag">service<\/span>/);
   assert.match(html, /class="language-sshconfig"/);
   assert.match(html, /class="syntax-property">Port<\/span>/);
+  assert.match(html, /class="language-git-commit"/);
+  assert.match(html, /syntax-keyword syntax-markup-heading">feat<\/span>/);
   assert.match(html, /class="language-docker"/);
   assert.match(html, /syntax-builtin syntax-embedded syntax-function">echo<\/span>/);
 });
