@@ -15,6 +15,7 @@ const verified_backends = [_]syntax.Backend{
     syntax.languages.python.backend,
     syntax.languages.sql.backend,
     syntax.languages.hcl.backend,
+    syntax.languages.make.backend,
     syntax.languages.diff.backend,
     @import("native_syntax_ziggy").backend,
     @import("native_syntax_ziggy_schema").backend,
@@ -37,6 +38,7 @@ const aliases = [_]struct {
     .{ .alias = "yml", .canonical = "yaml" },
     .{ .alias = "py", .canonical = "python" },
     .{ .alias = "terraform", .canonical = "hcl" },
+    .{ .alias = "makefile", .canonical = "make" },
     .{ .alias = "js", .canonical = "javascript" },
     .{ .alias = "rs", .canonical = "rust" },
     .{ .alias = "ts", .canonical = "typescript" },
@@ -281,6 +283,19 @@ test "renders exact HCL lexical classifications" {
             "<span class=\"syntax-punctuation\">(</span>" ++
             "<span class=\"syntax-string\">&quot;app&quot;</span>" ++
             "<span class=\"syntax-punctuation\">)</span>",
+        html,
+    );
+}
+
+test "renders exact composed Make classifications" {
+    const html = renderAlloc(std.testing.allocator, "makefile", "app:\n\techo hi").?;
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expectEqualStrings(
+        "<span class=\"syntax-label\">app</span>" ++
+            "<span class=\"syntax-operator\">:</span>\n\t" ++
+            "<span class=\"syntax-builtin syntax-embedded syntax-function\">echo</span>" ++
+            "<span class=\"syntax-embedded\"> hi</span>",
         html,
     );
 }

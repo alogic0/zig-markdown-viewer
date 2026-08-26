@@ -97,6 +97,11 @@ enabled = true
 name = format("app")
 ~~~
 
+~~~makefile
+app:
+	echo hi
+~~~
+
 ~~~docker
 RUN echo "$HOME"
 ~~~
@@ -116,6 +121,8 @@ RUN echo "$HOME"
   assert.match(html, /class="syntax-parameter">:id<\/span>/);
   assert.match(html, /class="language-terraform"/);
   assert.match(html, /class="syntax-function">format<\/span>/);
+  assert.match(html, /class="language-makefile"/);
+  assert.match(html, /syntax-builtin syntax-embedded syntax-function">echo<\/span>/);
   assert.match(html, /class="language-docker"/);
   assert.match(html, /syntax-builtin syntax-embedded syntax-function">echo<\/span>/);
 });
