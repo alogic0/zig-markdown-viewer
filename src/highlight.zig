@@ -18,6 +18,7 @@ const verified_backends = [_]syntax.Backend{
     syntax.languages.make.backend,
     syntax.languages.cmake.backend,
     syntax.languages.kdl.backend,
+    syntax.languages.ssh_config.backend,
     syntax.languages.diff.backend,
     @import("native_syntax_ziggy").backend,
     @import("native_syntax_ziggy_schema").backend,
@@ -41,6 +42,7 @@ const aliases = [_]struct {
     .{ .alias = "py", .canonical = "python" },
     .{ .alias = "terraform", .canonical = "hcl" },
     .{ .alias = "makefile", .canonical = "make" },
+    .{ .alias = "sshconfig", .canonical = "ssh-config" },
     .{ .alias = "js", .canonical = "javascript" },
     .{ .alias = "rs", .canonical = "rust" },
     .{ .alias = "ts", .canonical = "typescript" },
@@ -334,6 +336,18 @@ test "renders exact KDL lexical classifications" {
             "<span class=\"syntax-property\">enabled</span>" ++
             "<span class=\"syntax-operator\">=</span>" ++
             "<span class=\"syntax-boolean\">true</span>",
+        html,
+    );
+}
+
+test "renders exact SSH config lexical classifications" {
+    const html = renderAlloc(std.testing.allocator, "sshconfig", "Host demo\n  Port 2222").?;
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expectEqualStrings(
+        "<span class=\"syntax-keyword\">Host</span> demo\n  " ++
+            "<span class=\"syntax-property\">Port</span> " ++
+            "<span class=\"syntax-number\">2222</span>",
         html,
     );
 }

@@ -112,6 +112,11 @@ endif()
 service image="demo" enabled=true
 ~~~
 
+~~~sshconfig
+Host demo
+  Port 2222
+~~~
+
 ~~~docker
 RUN echo "$HOME"
 ~~~
@@ -137,6 +142,8 @@ RUN echo "$HOME"
   assert.match(html, /class="syntax-function">message<\/span>/);
   assert.match(html, /class="language-kdl"/);
   assert.match(html, /class="syntax-tag">service<\/span>/);
+  assert.match(html, /class="language-sshconfig"/);
+  assert.match(html, /class="syntax-property">Port<\/span>/);
   assert.match(html, /class="language-docker"/);
   assert.match(html, /syntax-builtin syntax-embedded syntax-function">echo<\/span>/);
 });
