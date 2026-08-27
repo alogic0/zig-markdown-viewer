@@ -1,66 +1,6 @@
 const std = @import("std");
 const syntax = @import("native_syntax");
-
-const verified_backends = [_]syntax.Backend{
-    syntax.languages.zig.backend,
-    syntax.languages.bash.backend,
-    syntax.languages.rpmbash.backend,
-    syntax.languages.javascript.backend,
-    syntax.languages.typescript.backend,
-    syntax.languages.rust.backend,
-    syntax.languages.json.backend,
-    syntax.languages.toml.backend,
-    syntax.languages.yaml.backend,
-    syntax.languages.dockerfile.backend,
-    syntax.languages.python.backend,
-    syntax.languages.sql.backend,
-    syntax.languages.hcl.backend,
-    syntax.languages.make.backend,
-    syntax.languages.cmake.backend,
-    syntax.languages.kdl.backend,
-    syntax.languages.ssh_config.backend,
-    syntax.languages.gitcommit.backend,
-    syntax.languages.git_rebase.backend,
-    syntax.languages.po.backend,
-    syntax.languages.ninja.backend,
-    syntax.languages.diff.backend,
-    @import("native_syntax_ziggy").backend,
-    @import("native_syntax_ziggy_schema").backend,
-    @import("native_syntax_scripty").backend,
-    @import("native_syntax_html").backend,
-    @import("native_syntax_xml").backend,
-    @import("native_syntax_css").backend,
-    @import("native_syntax_superhtml").backend,
-    @import("native_syntax_markdown").backend,
-};
-
-const aliases = [_]struct {
-    alias: []const u8,
-    canonical: []const u8,
-}{
-    .{ .alias = "sh", .canonical = "bash" },
-    .{ .alias = "shell", .canonical = "bash" },
-    .{ .alias = "patch", .canonical = "diff" },
-    .{ .alias = "docker", .canonical = "dockerfile" },
-    .{ .alias = "yml", .canonical = "yaml" },
-    .{ .alias = "py", .canonical = "python" },
-    .{ .alias = "terraform", .canonical = "hcl" },
-    .{ .alias = "makefile", .canonical = "make" },
-    .{ .alias = "sshconfig", .canonical = "ssh-config" },
-    .{ .alias = "git-commit", .canonical = "gitcommit" },
-    .{ .alias = "gitrebase", .canonical = "git-rebase" },
-    .{ .alias = "gettext", .canonical = "po" },
-    .{ .alias = "js", .canonical = "javascript" },
-    .{ .alias = "rs", .canonical = "rust" },
-    .{ .alias = "ts", .canonical = "typescript" },
-    .{ .alias = "md", .canonical = "markdown" },
-    .{ .alias = "smd", .canonical = "markdown" },
-    .{ .alias = "supermd", .canonical = "markdown" },
-    .{ .alias = "markdown-inline", .canonical = "markdown" },
-    .{ .alias = "rpm-bash", .canonical = "rpmbash" },
-    .{ .alias = "csproj", .canonical = "xml" },
-    .{ .alias = "props", .canonical = "xml" },
-};
+const syntax_registry = @import("native_syntax_registry");
 
 pub fn fenceLanguage(info: []const u8) []const u8 {
     var start: usize = 0;
@@ -72,14 +12,7 @@ pub fn fenceLanguage(info: []const u8) []const u8 {
 }
 
 pub fn backendFor(name: []const u8) ?syntax.Backend {
-    if (canonicalBackendFor(name)) |backend| return backend;
-
-    for (aliases) |entry| {
-        if (std.ascii.eqlIgnoreCase(name, entry.alias)) {
-            return canonicalBackendFor(entry.canonical);
-        }
-    }
-    return null;
+    return syntax_registry.backendForName(name);
 }
 
 pub fn renderAlloc(
@@ -99,19 +32,12 @@ pub fn renderAlloc(
     return writer.toOwnedSlice() catch null;
 }
 
-fn canonicalBackendFor(name: []const u8) ?syntax.Backend {
-    for (verified_backends) |backend| {
-        if (std.ascii.eqlIgnoreCase(name, backend.info.canonical_name)) return backend;
-    }
-    return null;
-}
-
 fn isInfoWhitespace(byte: u8) bool {
     return byte == ' ' or byte == '\t' or byte == '\r' or byte == '\n';
 }
 
 test "routes every quality-verified backend" {
-    for (verified_backends) |backend| {
+    for (syntax_registry.backends) |backend| {
         try std.testing.expect(backend.info.support_level != .experimental);
         try std.testing.expectEqualStrings(
             backend.info.canonical_name,

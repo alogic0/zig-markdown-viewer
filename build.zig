@@ -98,13 +98,6 @@ fn rendererImports(
     return b.allocator.dupe(std.Build.Module.Import, &.{
         .{ .name = "markdown", .module = markdown },
         .{ .name = "native_syntax", .module = native_syntax.module("native_syntax") },
-        .{ .name = "native_syntax_ziggy", .module = native_syntax.module("native_syntax_ziggy") },
-        .{ .name = "native_syntax_ziggy_schema", .module = native_syntax.module("native_syntax_ziggy_schema") },
-        .{ .name = "native_syntax_scripty", .module = native_syntax.module("native_syntax_scripty") },
-        .{ .name = "native_syntax_html", .module = native_syntax.module("native_syntax_html") },
-        .{ .name = "native_syntax_xml", .module = native_syntax.module("native_syntax_xml") },
-        .{ .name = "native_syntax_css", .module = native_syntax.module("native_syntax_css") },
-        .{ .name = "native_syntax_superhtml", .module = native_syntax.module("native_syntax_superhtml") },
-        .{ .name = "native_syntax_markdown", .module = native_syntax.module("native_syntax_markdown") },
+        .{ .name = "native_syntax_registry", .module = native_syntax.module("native_syntax_registry") },
     }) catch @panic("out of memory");
 }
