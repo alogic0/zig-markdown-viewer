@@ -9,35 +9,36 @@ pub fn build(b: *std.Build) void {
         .os_tag = .freestanding,
     });
 
-    const markdown = b.dependency("markdown_parser", .{
-        .target = wasm_target,
-        .optimize = optimize,
-    }).module("markdown");
-    const native_syntax = nativeSyntaxDependency(b, wasm_target, optimize);
-
-    const renderer = b.addExecutable(.{
-        .name = "renderer",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/renderer.zig"),
-            .target = wasm_target,
-            .optimize = optimize,
-            .single_threaded = true,
-            .strip = optimize != .debug,
-            .imports = rendererImports(b, markdown, native_syntax),
-        }),
-    });
-    renderer.rdynamic = true;
-    renderer.entry = .disabled;
+    const renderer = addWasmRenderer(b, "renderer", wasm_target, optimize);
+    const checked_renderer = if (optimize == .small)
+        renderer
+    else
+        addWasmRenderer(b, "renderer", wasm_target, .small);
 
     b.installDirectory(.{
         .source_dir = b.path("extension"),
         .install_dir = .prefix,
         .install_subdir = "extension",
     });
-    b.getInstallStep().dependOn(&b.addInstallFile(
+    const install_renderer = b.addInstallFile(
         renderer.getEmittedBin(),
         "extension/renderer.wasm",
-    ).step);
+    );
+    b.getInstallStep().dependOn(&install_renderer.step);
+
+    const size_checker = b.addExecutable(.{
+        .name = "check-wasm-size",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("tools/check_wasm_size.zig"),
+            .target = b.graph.host,
+            .optimize = .debug,
+        }),
+    });
+    const run_size_checker = b.addRunArtifact(size_checker);
+    run_size_checker.addFileArg(checked_renderer.getEmittedBin());
+    run_size_checker.addArg("575000");
+    const size_step = b.step("check-wasm-size", "Enforce the release-small renderer Wasm size budget");
+    size_step.dependOn(&run_size_checker.step);
 
     const renderer_core = rendererCoreModule(b, b.graph.host, optimize);
     const assets = b.addOptions();
@@ -77,6 +78,9 @@ pub fn build(b: *std.Build) void {
     const tests = b.addTest(.{ .root_module = rendererCoreModule(b, b.graph.host, .debug) });
     const test_step = b.step("test", "Run renderer tests");
     test_step.dependOn(&b.addRunArtifact(tests).step);
+    const install_test_renderer = b.addInstallFile(checked_renderer.getEmittedBin(), "extension/renderer.wasm");
+    test_step.dependOn(&install_test_renderer.step);
+    test_step.dependOn(&run_size_checker.step);
 
     const render_html_tests_root = b.createModule(.{
         .root_source_file = b.path("tools/render_html.zig"),
@@ -102,6 +106,33 @@ pub fn build(b: *std.Build) void {
     run_unicode_generator.setCwd(b.path("."));
     const unicode_step = b.step("generate-unicode", "Regenerate focused Unicode slug tables");
     unicode_step.dependOn(&run_unicode_generator.step);
+}
+
+fn addWasmRenderer(
+    b: *std.Build,
+    name: []const u8,
+    target: std.Build.ResolvedTarget,
+    optimize: std.builtin.OptimizeMode,
+) *std.Build.Step.Compile {
+    const markdown = b.dependency("markdown_parser", .{
+        .target = target,
+        .optimize = optimize,
+    }).module("markdown");
+    const native_syntax = nativeSyntaxDependency(b, target, optimize);
+    const renderer = b.addExecutable(.{
+        .name = name,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/renderer.zig"),
+            .target = target,
+            .optimize = optimize,
+            .single_threaded = true,
+            .strip = optimize != .debug,
+            .imports = rendererImports(b, markdown, native_syntax),
+        }),
+    });
+    renderer.rdynamic = true;
+    renderer.entry = .disabled;
+    return renderer;
 }
 
 fn rendererCoreModule(

@@ -49,6 +49,7 @@ A backend can enter the viewer registry only after all applicable requirements a
 6. Every accepted alias represents syntax the backend actually understands.
 7. Native and WebAssembly paths produce the same source-preserving result.
 8. Backend failure falls back to escaped plain text.
+9. The complete release-small renderer remains within the reviewed Wasm size budget.
 
 Promotion is a reviewed `SupportLevel` change in `zig-native-syntax`. Once its conformance gate
 passes, the configured registry makes the backend visible to the viewer without a viewer source

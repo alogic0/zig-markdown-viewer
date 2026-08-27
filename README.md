@@ -63,6 +63,7 @@ admission criteria, and parser/tokenizer policy.
 
 ```sh
 ./build.sh test
+./build.sh check-wasm-size
 node --test tests/wasm.test.mjs
 node --test tests/standalone.test.cjs
 node --check extension/js/background.js
@@ -71,6 +72,10 @@ node --check extension/js/popup.js
 node --check extension/js/standalone.js
 node --check extension/js/wasm.js
 ```
+
+The normal test step rebuilds the release-small renderer used by the Node test
+and enforces its 575,000-byte size budget. Raising that budget requires an
+explicit reviewed change.
 
 ## Provenance
 
