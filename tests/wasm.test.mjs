@@ -196,6 +196,54 @@ const answer = thing.value();
   );
 });
 
+test('renders newly verified language families through WebAssembly', () => {
+  const html = render(`~~~c++
+class Widget { void render(int value) {} };
+~~~
+
+~~~mlir
+func.func @add(%lhs: i32, %rhs: i32) -> i32
+~~~
+
+~~~tablegen
+def ADD : Instruction { let Pattern = !if(true, $lhs, $rhs); }
+~~~
+
+~~~fortran
+MODULE Demo
+INTEGER :: Count
+END MODULE Demo
+~~~
+
+~~~vue
+<script>function greet(name) { return name; }</script><p>{{ greet(user.name) }}</p>
+~~~
+
+~~~astro
+---
+const title = makeTitle(user.name);
+---
+<h1>{title}</h1>
+~~~
+`);
+
+  assert.match(html, /class="language-c\+\+"/);
+  assert.match(html, /class="syntax-type">Widget<\/span>/);
+  assert.match(html, /class="syntax-parameter">value<\/span>/);
+  assert.match(html, /class="language-mlir"/);
+  assert.match(html, /class="syntax-function">@add<\/span>/);
+  assert.match(html, /class="syntax-variable">%lhs<\/span>/);
+  assert.match(html, /class="language-tablegen"/);
+  assert.match(html, /class="syntax-constant">ADD<\/span>/);
+  assert.match(html, /class="syntax-builtin">!if<\/span>/);
+  assert.match(html, /class="language-fortran"/);
+  assert.match(html, /class="syntax-keyword">MODULE<\/span>/);
+  assert.match(html, /class="language-vue"/);
+  assert.match(html, /syntax-embedded syntax-function">greet<\/span>/);
+  assert.match(html, /class="language-astro"/);
+  assert.match(html, /syntax-embedded syntax-function">makeTitle<\/span>/);
+});
+
 test('keeps Unicode Bash source intact through highlighting', () => {
   const html = render(`~~~bash
 ├── Builds Docker image
