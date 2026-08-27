@@ -244,6 +244,48 @@ const title = makeTitle(user.name);
   assert.match(html, /syntax-embedded syntax-function">makeTitle<\/span>/);
 });
 
+test('renders PHP Objective-C Nix and Fish structural roles through WebAssembly', () => {
+  const html = render(`~~~php
+<main><?php class Greeter { function greet(string $name) { return new Result(); } } ?></main>
+~~~
+
+~~~objective-c
+@interface Greeter : NSObject
+@property(nonatomic, copy) NSString *prefix;
+- (NSString *)greet:(NSString *)name;
+@end
+~~~
+
+~~~nixos
+let render = { name }: { service.title = "Hello \${name}"; }; in render
+~~~
+
+~~~fish-shell
+function greet --argument-names name
+    printf '%s' $name | string collect
+end
+~~~
+`);
+
+  assert.match(html, /class="language-php"/);
+  assert.match(html, /class="syntax-embedded syntax-tag">main<\/span>/);
+  assert.match(html, /syntax-embedded syntax-type syntax-variable">Greeter<\/span>/);
+  assert.match(html, /syntax-embedded syntax-parameter syntax-variable">\$name<\/span>/);
+  assert.match(html, /syntax-constructor syntax-embedded syntax-function">Result<\/span>/);
+  assert.match(html, /class="language-objective-c"/);
+  assert.match(html, /class="syntax-keyword">@interface<\/span>/);
+  assert.match(html, /class="syntax-property syntax-variable">prefix<\/span>/);
+  assert.match(html, /class="syntax-parameter syntax-variable">name<\/span>/);
+  assert.match(html, /class="language-nixos"/);
+  assert.match(html, /class="syntax-variable">render<\/span>/);
+  assert.match(html, /class="syntax-property">service<\/span>/);
+  assert.match(html, /syntax-special syntax-string">\$\{<\/span>/);
+  assert.match(html, /class="language-fish-shell"/);
+  assert.match(html, /class="syntax-function">greet<\/span>/);
+  assert.match(html, /class="syntax-parameter">name<\/span>/);
+  assert.match(html, /syntax-builtin syntax-function">printf<\/span>/);
+});
+
 test('keeps Unicode Bash source intact through highlighting', () => {
   const html = render(`~~~bash
 ├── Builds Docker image
