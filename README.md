@@ -34,7 +34,7 @@ a normal build. If `-o` is omitted, the tool replaces a Markdown extension with
 theme switch, and code-copy controls in one file. Raw HTML is escaped and unsafe
 link and image URL schemes are removed.
 
-Use `./build.sh render-html -- --help` for theme, wide-screen, wrapping, and
+Use `./build.sh render-html --help` for theme, wide-screen, wrapping, and
 table-of-contents options. This native tool imports the same Zig rendering core
 as the extension; it does not instantiate the WebAssembly renderer.
 
