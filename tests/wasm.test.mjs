@@ -887,6 +887,36 @@ if (.TRUE. .and. VALUE >= 0) VALUE = VALUE &
   assert.match(html, /class="syntax-operator">\.and\.<\/span>/);
 });
 
+test('renders structural Fortran roles through WebAssembly', () => {
+  const html = render(`~~~fortran
+module Geometry
+  use, intrinsic :: iso_fortran_env
+  type, extends(shape) :: Circle
+    real :: radius
+  contains
+    procedure :: area => circle_area
+  end type Circle
+contains
+  pure function circle_area(self, scale) result(total)
+    type(Circle), intent(in) :: self
+    total = self%radius * scale
+    call report(total)
+  end function circle_area
+end module Geometry
+~~~
+`);
+  assert.match(html, /class="syntax-namespace">Geometry<\/span>/);
+  assert.match(html, /class="syntax-namespace">iso_fortran_env<\/span>/);
+  assert.match(html, /class="syntax-type">shape<\/span>/);
+  assert.match(html, /class="syntax-type">Circle<\/span>/);
+  assert.match(html, /class="syntax-property">radius<\/span>/);
+  assert.match(html, /class="syntax-property">area<\/span>/);
+  assert.match(html, /class="syntax-function">circle_area<\/span>/);
+  assert.match(html, /class="syntax-parameter">self<\/span>/);
+  assert.match(html, /class="syntax-parameter">scale<\/span>/);
+  assert.match(html, /class="syntax-function">report<\/span>/);
+});
+
 test('keeps Unicode Bash source intact through highlighting', () => {
   const html = render(`~~~bash
 ├── Builds Docker image

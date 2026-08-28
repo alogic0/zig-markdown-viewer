@@ -82,11 +82,10 @@ registry. Exclusion takes precedence when the same name appears in both lists.
 
 The reviewed release-small budget is 640,000 bytes. Release builds remove the
 optional WebAssembly function-name custom section after linking while debug
-builds retain it. After replacing generic Fortran highlighting with its
-dedicated free- and fixed-form scanner, the complete stripped renderer measures
-627,419 bytes. Fortran has a 3,822-byte marginal contribution when excluded
-from the complete build and leaves 12,581 bytes for reviewed language-quality
-work. The hard limit guards against large accidental
+builds retain it. After promoting structural Fortran highlighting, the complete
+stripped renderer measures 632,941 bytes. Fortran has an 8,904-byte marginal
+contribution when excluded from the complete build and leaves 7,059 bytes for
+reviewed language-quality work. The hard limit guards against large accidental
 regressions; every language slice still records its actual size rather than
 treating the available headroom as a target. Shared implementations should be
 measured with the group-reporting option because excluding one retaining
