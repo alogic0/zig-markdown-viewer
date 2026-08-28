@@ -4,7 +4,8 @@ import test from 'node:test';
 
 const wasmPath = new URL('../zig-out/extension/renderer.wasm', import.meta.url);
 const bytes = await readFile(wasmPath);
-const { instance } = await WebAssembly.instantiate(bytes, {});
+const module = new WebAssembly.Module(bytes);
+const instance = new WebAssembly.Instance(module, {});
 const wasm = instance.exports;
 const encoder = new TextEncoder();
 const decoder = new TextDecoder('utf-8', { fatal: true });
@@ -23,6 +24,7 @@ function render(source) {
 }
 
 test('exports the browser ABI', () => {
+  assert.equal(WebAssembly.Module.customSections(module, 'name').length, 0);
   for (const name of [
     'memory',
     'allocateSource',

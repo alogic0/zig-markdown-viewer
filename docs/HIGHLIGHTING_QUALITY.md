@@ -56,9 +56,11 @@ the marginal linked bytes for the selected core backends. Override the default
 set with `-Dsize-report-backends=php,nix,...`; these measurement variants do not
 change the complete default registry.
 
-The reviewed release-small budget is 603,000 bytes. After promoting structural
-Gleam, the complete renderer measures 602,829 bytes. Gleam contributes 2,370
-marginal bytes, leaving 171 bytes without weakening the default registry.
+The reviewed release-small budget is 603,000 bytes. Release builds remove the
+optional WebAssembly function-name custom section after linking while debug
+builds retain it. After promoting structural Gleam, the complete stripped
+renderer measures 580,300 bytes, leaving 22,700 bytes without weakening the
+default registry or changing runtime code.
 
 Promotion is a reviewed `SupportLevel` change in `zig-native-syntax`. Once its conformance gate
 passes, the configured registry makes the backend visible to the viewer without a viewer source

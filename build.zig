@@ -8,17 +8,25 @@ pub fn build(b: *std.Build) void {
         .cpu_arch = .wasm32,
         .os_tag = .freestanding,
     });
+    const strip_wasm_names = b.addExecutable(.{
+        .name = "strip-wasm-names",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("tools/strip_wasm_names.zig"),
+            .target = b.graph.host,
+            .optimize = .debug,
+        }),
+    });
     const syntax_exclusions = b.option(
         []const u8,
         "size-analysis-exclude-backends",
         "Comma-separated native syntax backends omitted only for code-size analysis",
     ) orelse "";
 
-    const renderer = addWasmRenderer(b, "renderer", wasm_target, optimize, syntax_exclusions);
+    const renderer = addWasmRenderer(b, strip_wasm_names, "renderer", wasm_target, optimize, syntax_exclusions);
     const checked_renderer = if (optimize == .small)
         renderer
     else
-        addWasmRenderer(b, "renderer", wasm_target, .small, syntax_exclusions);
+        addWasmRenderer(b, strip_wasm_names, "renderer", wasm_target, .small, syntax_exclusions);
 
     b.installDirectory(.{
         .source_dir = b.path("extension"),
@@ -26,7 +34,7 @@ pub fn build(b: *std.Build) void {
         .install_subdir = "extension",
     });
     const install_renderer = b.addInstallFile(
-        renderer.getEmittedBin(),
+        renderer,
         "extension/renderer.wasm",
     );
     b.getInstallStep().dependOn(&install_renderer.step);
@@ -40,7 +48,7 @@ pub fn build(b: *std.Build) void {
         }),
     });
     const run_size_checker = b.addRunArtifact(size_checker);
-    run_size_checker.addFileArg(checked_renderer.getEmittedBin());
+    run_size_checker.addFileArg(checked_renderer);
     run_size_checker.addArg("603000");
     const size_step = b.step("check-wasm-size", "Enforce the release-small renderer Wasm size budget");
     size_step.dependOn(&run_size_checker.step);
@@ -59,21 +67,22 @@ pub fn build(b: *std.Build) void {
         }),
     });
     const run_size_report = b.addRunArtifact(report_tool);
-    const report_baseline = addWasmRenderer(b, "renderer", wasm_target, .small, "");
-    run_size_report.addFileArg(report_baseline.getEmittedBin());
+    const report_baseline = addWasmRenderer(b, strip_wasm_names, "renderer", wasm_target, .small, "");
+    run_size_report.addFileArg(report_baseline);
     var backend_names = std.mem.splitScalar(u8, size_report_backends, ',');
     while (backend_names.next()) |raw_name| {
         const name = std.mem.trim(u8, raw_name, " \t");
         if (name.len == 0) continue;
         const variant = addWasmRenderer(
             b,
+            strip_wasm_names,
             "renderer",
             wasm_target,
             .small,
             name,
         );
         run_size_report.addArg(name);
-        run_size_report.addFileArg(variant.getEmittedBin());
+        run_size_report.addFileArg(variant);
     }
     const size_report_step = b.step("wasm-size-report", "Measure marginal Wasm bytes for selected syntax backends");
     size_report_step.dependOn(&run_size_report.step);
@@ -116,9 +125,17 @@ pub fn build(b: *std.Build) void {
     const tests = b.addTest(.{ .root_module = rendererCoreModule(b, b.graph.host, .debug, syntax_exclusions) });
     const test_step = b.step("test", "Run renderer tests");
     test_step.dependOn(&b.addRunArtifact(tests).step);
-    const install_test_renderer = b.addInstallFile(checked_renderer.getEmittedBin(), "extension/renderer.wasm");
+    const install_test_renderer = b.addInstallFile(checked_renderer, "extension/renderer.wasm");
     test_step.dependOn(&install_test_renderer.step);
     test_step.dependOn(&run_size_checker.step);
+    const strip_wasm_names_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("tools/strip_wasm_names.zig"),
+            .target = b.graph.host,
+            .optimize = .debug,
+        }),
+    });
+    test_step.dependOn(&b.addRunArtifact(strip_wasm_names_tests).step);
 
     const render_html_tests_root = b.createModule(.{
         .root_source_file = b.path("tools/render_html.zig"),
@@ -148,30 +165,43 @@ pub fn build(b: *std.Build) void {
 
 fn addWasmRenderer(
     b: *std.Build,
+    strip_wasm_names: *std.Build.Step.Compile,
     name: []const u8,
     target: std.Build.ResolvedTarget,
     optimize: std.builtin.OptimizeMode,
     syntax_exclusions: []const u8,
-) *std.Build.Step.Compile {
+) std.Build.LazyPath {
     const markdown = b.dependency("markdown_parser", .{
         .target = target,
         .optimize = optimize,
     }).module("markdown");
     const native_syntax = nativeSyntaxDependency(b, target, optimize, syntax_exclusions);
+    const renderer_module = b.createModule(.{
+        .root_source_file = b.path("src/renderer.zig"),
+        .target = target,
+        .optimize = optimize,
+        .single_threaded = true,
+        .strip = optimize != .debug,
+        .imports = rendererImports(b, markdown, native_syntax),
+    });
+    renderer_module.export_symbol_names = &.{
+        "allocateSource",
+        "renderMarkdown",
+        "renderedLength",
+        "errorCode",
+        "releaseSource",
+        "releaseOutput",
+    };
     const renderer = b.addExecutable(.{
         .name = name,
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/renderer.zig"),
-            .target = target,
-            .optimize = optimize,
-            .single_threaded = true,
-            .strip = optimize != .debug,
-            .imports = rendererImports(b, markdown, native_syntax),
-        }),
+        .root_module = renderer_module,
     });
-    renderer.rdynamic = true;
     renderer.entry = .disabled;
-    return renderer;
+    if (optimize == .debug) return renderer.getEmittedBin();
+
+    const run_strip = b.addRunArtifact(strip_wasm_names);
+    run_strip.addFileArg(renderer.getEmittedBin());
+    return run_strip.addOutputFileArg(b.fmt("{s}.wasm", .{name}));
 }
 
 fn rendererCoreModule(
