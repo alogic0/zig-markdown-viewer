@@ -604,6 +604,28 @@ test('renders Scheme structural roles through WebAssembly', () => {
   assert.match(html, /class="syntax-macro">whenready<\/span>/);
 });
 
+test('renders Nim structural roles through WebAssembly', () => {
+  const html = render(`~~~nim
+import std/strformat
+type
+  Person* = object
+    name*: string
+const Limit* = 42
+proc render*(person: Person, prefix: string): string {.inline.} = prefix & person.name
+proc makePerson(name: string): Person = Person(name: name)
+~~~
+`);
+
+  assert.match(html, /class="language-nim"/);
+  assert.match(html, /class="syntax-namespace">std<\/span>/);
+  assert.match(html, /class="syntax-type">Person<\/span>/);
+  assert.match(html, /class="syntax-property">name<\/span>/);
+  assert.match(html, /class="syntax-constant">Limit<\/span>/);
+  assert.match(html, /class="syntax-function">render<\/span>/);
+  assert.match(html, /class="syntax-parameter">person<\/span>/);
+  assert.match(html, /class="syntax-constructor">Person<\/span>/);
+});
+
 test('keeps Unicode Bash source intact through highlighting', () => {
   const html = render(`~~~bash
 ├── Builds Docker image

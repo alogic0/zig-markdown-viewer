@@ -907,6 +907,30 @@ test "highlights promoted Scheme structural roles" {
     try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-macro\">whenready</span>") != null);
 }
 
+test "highlights promoted Nim structural roles" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\```nim
+        \\import std/strformat
+        \\type
+        \\  Person* = object
+        \\    name*: string
+        \\const Limit* = 42
+        \\proc render*(person: Person, prefix: string): string {.inline.} = prefix & person.name
+        \\proc makePerson(name: string): Person = Person(name: name)
+        \\```
+    );
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-nim\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-namespace\">std</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-type\">Person</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-property\">name</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-constant\">Limit</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-function\">render</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-parameter\">person</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-constructor\">Person</span>") != null);
+}
+
 test "unknown fenced languages remain safely escaped" {
     const html = try renderAlloc(std.testing.allocator,
         \\```unknown-language
