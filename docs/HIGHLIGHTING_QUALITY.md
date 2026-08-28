@@ -51,6 +51,11 @@ A backend can enter the viewer registry only after all applicable requirements a
 8. Backend failure falls back to escaped plain text.
 9. The complete release-small renderer remains within the reviewed Wasm size budget.
 
+Run `./build.sh wasm-size-report` to report the release-small renderer size and
+the marginal linked bytes for the selected core backends. Override the default
+set with `-Dsize-report-backends=php,nix,...`; these measurement variants do not
+change the complete default registry.
+
 Promotion is a reviewed `SupportLevel` change in `zig-native-syntax`. Once its conformance gate
 passes, the configured registry makes the backend visible to the viewer without a viewer source
 change. External backends must also be enabled by the native-syntax dependency options.
