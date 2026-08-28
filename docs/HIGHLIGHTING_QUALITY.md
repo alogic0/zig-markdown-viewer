@@ -80,10 +80,11 @@ registry. Exclusion takes precedence when the same name appears in both lists.
 
 The reviewed release-small budget is 640,000 bytes. Release builds remove the
 optional WebAssembly function-name custom section after linking while debug
-builds retain it. After promoting structural Agda, the complete stripped
-renderer measures 609,736 bytes. Agda has a 2,582-byte marginal contribution
-when excluded from the complete build and leaves 30,264 bytes for reviewed
-language-quality work. The hard limit guards against large accidental regressions; every language
+builds retain it. After promoting structural Vimscript, the complete stripped
+renderer measures 613,150 bytes. Vimscript has a 3,412-byte marginal
+contribution when excluded from the complete build and leaves 26,850 bytes for
+reviewed language-quality work. The hard limit guards against large accidental
+regressions; every language
 slice still records its actual size rather than treating the available headroom
 as a target. Shared implementations should be measured with the group-reporting
 option because excluding one retaining backend removes only its wrapper.

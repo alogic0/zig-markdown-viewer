@@ -751,6 +751,32 @@ select value = value
   assert.doesNotMatch(html, /�/);
 });
 
+test('renders Vimscript structural roles through WebAssembly', () => {
+  const html = render(`~~~vim
+vim9script
+import autoload './util.vim' as util
+def Render(name: string): string
+  const message = util.Format(name)
+  return message
+enddef
+function! s:Legacy(value)
+  let l:item = a:value
+  return s:Render(l:item)
+endfunction
+command! -nargs=1 Show call s:Render(<args>)
+~~~
+`);
+  assert.match(html, /class="language-vim"/);
+  assert.match(html, /class="syntax-namespace">util<\/span>/);
+  assert.match(html, /class="syntax-function">Render<\/span>/);
+  assert.match(html, /class="syntax-parameter">name<\/span>/);
+  assert.match(html, /class="syntax-variable">message<\/span>/);
+  assert.match(html, /class="syntax-function">Format<\/span>/);
+  assert.match(html, /class="syntax-function">Legacy<\/span>/);
+  assert.match(html, /class="syntax-variable">item<\/span>/);
+  assert.match(html, /class="syntax-macro">Show<\/span>/);
+});
+
 test('keeps Unicode Bash source intact through highlighting', () => {
   const html = render(`~~~bash
 ├── Builds Docker image

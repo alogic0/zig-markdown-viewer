@@ -1064,6 +1064,34 @@ test "highlights promoted Agda structural roles" {
     try std.testing.expect(std.mem.indexOf(u8, html, "→") != null);
 }
 
+test "highlights promoted Vimscript structural roles" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\```vim
+        \\vim9script
+        \\import autoload './util.vim' as util
+        \\def Render(name: string): string
+        \\  const message = util.Format(name)
+        \\  return message
+        \\enddef
+        \\function! s:Legacy(value)
+        \\  let l:item = a:value
+        \\  return s:Render(l:item)
+        \\endfunction
+        \\command! -nargs=1 Show call s:Render(<args>)
+        \\```
+    );
+    defer std.testing.allocator.free(html);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-vim\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-namespace\">util</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-function\">Render</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-parameter\">name</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-variable\">message</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-function\">Format</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-function\">Legacy</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-variable\">item</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-macro\">Show</span>") != null);
+}
+
 test "unknown fenced languages remain safely escaped" {
     const html = try renderAlloc(std.testing.allocator,
         \\```unknown-language
