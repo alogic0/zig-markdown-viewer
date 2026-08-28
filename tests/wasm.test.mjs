@@ -842,6 +842,31 @@ test('renders verified DTD declaration roles through WebAssembly', () => {
   assert.match(html, /class="syntax-special">&lt;\?audit source\?&gt;<\/span>/);
 });
 
+test('renders structural CMake roles through WebAssembly', () => {
+  const html = render(`~~~cmake
+#[=[ structural example ]=]
+function(build_target source)
+  set(NAME "$ENV{HOME}")
+  add_executable(app \${source})
+  set_property(TARGET app PROPERTY CXX_STANDARD 23)
+  target_compile_definitions(app PRIVATE "$<$<CONFIG:Debug>:DEBUG_BUILD>")
+endfunction()
+macro(enable_warnings target)
+endmacro()
+~~~
+`);
+  assert.match(html, /class="language-cmake"/);
+  assert.match(html, /class="syntax-function">build_target<\/span>/);
+  assert.match(html, /class="syntax-parameter">source<\/span>/);
+  assert.match(html, /class="syntax-macro">enable_warnings<\/span>/);
+  assert.match(html, /class="syntax-variable">NAME<\/span>/);
+  assert.match(html, /syntax-variable">\$ENV\{HOME\}<\/span>/);
+  assert.match(html, /class="syntax-type">app<\/span>/);
+  assert.match(html, /class="syntax-property">CXX_STANDARD<\/span>/);
+  assert.match(html, /syntax-embedded/);
+  assert.match(html, /syntax-comment">#\[=\[ structural example \]=\]<\/span>/);
+});
+
 test('keeps Unicode Bash source intact through highlighting', () => {
   const html = render(`~~~bash
 ├── Builds Docker image

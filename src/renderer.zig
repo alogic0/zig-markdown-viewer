@@ -1163,6 +1163,33 @@ test "highlights verified DTD declaration roles" {
     try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-special\">&lt;?audit source?&gt;</span>") != null);
 }
 
+test "highlights structural CMake roles" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\```cmake
+        \\#[=[ structural example ]=]
+        \\function(build_target source)
+        \\  set(NAME "$ENV{HOME}")
+        \\  add_executable(app ${source})
+        \\  set_property(TARGET app PROPERTY CXX_STANDARD 23)
+        \\  target_compile_definitions(app PRIVATE "$<$<CONFIG:Debug>:DEBUG_BUILD>")
+        \\endfunction()
+        \\macro(enable_warnings target)
+        \\endmacro()
+        \\```
+    );
+    defer std.testing.allocator.free(html);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-cmake\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-function\">build_target</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-parameter\">source</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-macro\">enable_warnings</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-variable\">NAME</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "syntax-variable\">$ENV{HOME}</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-type\">app</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-property\">CXX_STANDARD</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "syntax-embedded") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "syntax-comment\">#[=[ structural example ]=]</span>") != null);
+}
+
 test "unknown fenced languages remain safely escaped" {
     const html = try renderAlloc(std.testing.allocator,
         \\```unknown-language
