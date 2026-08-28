@@ -384,6 +384,31 @@ let area shape = shape
   assert.match(html, /class="syntax-parameter">shape<\/span>/);
 });
 
+test('renders Gleam structural roles through WebAssembly', () => {
+  const html = render(`~~~gleam
+import gleam/result
+import gleam/string as text
+pub fn render(person: Person) -> String {
+  let Person(name, enabled) = person
+  use suffix <- result.try(Ok("!"))
+  let updated = Person(..person, enabled: False)
+  <<name:utf8>> |> text.append(suffix)
+}
+~~~
+`);
+
+  assert.match(html, /class="language-gleam"/);
+  assert.match(html, /class="syntax-namespace">result<\/span>/);
+  assert.match(html, /class="syntax-namespace">text<\/span>/);
+  assert.match(html, /class="syntax-function">render<\/span>/);
+  assert.match(html, /class="syntax-parameter">suffix<\/span>/);
+  assert.match(html, /class="syntax-constructor">Person<\/span>/);
+  assert.match(html, /class="syntax-property">enabled<\/span>/);
+  assert.match(html, /class="syntax-attribute">utf8<\/span>/);
+  assert.match(html, /class="syntax-function">append<\/span>/);
+  assert.doesNotMatch(html, /�/);
+});
+
 test('keeps Unicode Bash source intact through highlighting', () => {
   const html = render(`~~~bash
 ├── Builds Docker image

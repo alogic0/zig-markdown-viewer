@@ -670,6 +670,32 @@ test "highlights promoted OCaml and F# fences" {
     try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-parameter\">shape</span>") != null);
 }
 
+test "highlights promoted Gleam structural roles" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\```gleam
+        \\import gleam/result
+        \\import gleam/string as text
+        \\pub fn render(person: Person) -> String {
+        \\  let Person(name, enabled) = person
+        \\  use suffix <- result.try(Ok("!"))
+        \\  let updated = Person(..person, enabled: False)
+        \\  <<name:utf8>> |> text.append(suffix)
+        \\}
+        \\```
+    );
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-gleam\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-namespace\">result</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-namespace\">text</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-function\">render</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-parameter\">suffix</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-constructor\">Person</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-property\">enabled</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-attribute\">utf8</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-function\">append</span>") != null);
+}
+
 test "unknown fenced languages remain safely escaped" {
     const html = try renderAlloc(std.testing.allocator,
         \\```unknown-language
