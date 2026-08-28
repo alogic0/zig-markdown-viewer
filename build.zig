@@ -63,6 +63,11 @@ pub fn build(b: *std.Build) void {
         "size-report-backends",
         "Comma-separated core backends included in the Wasm contribution report",
     ) orelse "php,objc,nix,fish,gdscript,nu,awk,typst,elixir,julia,haskell,perl,ocaml,fsharp";
+    const size_report_groups = b.option(
+        []const u8,
+        "size-report-groups",
+        "Semicolon-separated LABEL=BACKEND+BACKEND groups included in the Wasm contribution report",
+    ) orelse "";
     const report_tool = b.addExecutable(.{
         .name = "report-wasm-sizes",
         .root_module = b.createModule(.{
@@ -90,7 +95,33 @@ pub fn build(b: *std.Build) void {
         run_size_report.addArg(name);
         run_size_report.addFileArg(variant);
     }
-    const size_report_step = b.step("wasm-size-report", "Measure marginal Wasm bytes for selected syntax backends");
+    var backend_groups = std.mem.splitScalar(u8, size_report_groups, ';');
+    while (backend_groups.next()) |raw_group| {
+        const group = std.mem.trim(u8, raw_group, " \t");
+        if (group.len == 0) continue;
+        const separator = std.mem.indexOfScalar(u8, group, '=') orelse
+            std.process.fatal("invalid size report group '{s}': expected LABEL=BACKEND+BACKEND", .{group});
+        const label = std.mem.trim(u8, group[0..separator], " \t");
+        const members = std.mem.trim(u8, group[separator + 1 ..], " \t");
+        if (label.len == 0 or members.len == 0)
+            std.process.fatal("invalid size report group '{s}': label and backends must not be empty", .{group});
+        const exclusions = b.allocator.dupe(u8, members) catch @panic("out of memory");
+        for (exclusions) |*byte| if (byte.* == '+') {
+            byte.* = ',';
+        };
+        const variant = addWasmRenderer(
+            b,
+            strip_wasm_names,
+            "renderer",
+            wasm_target,
+            .small,
+            syntax_inclusions,
+            exclusions,
+        );
+        run_size_report.addArg(label);
+        run_size_report.addFileArg(variant);
+    }
+    const size_report_step = b.step("wasm-size-report", "Measure marginal Wasm bytes for selected syntax backends and groups");
     size_report_step.dependOn(&run_size_report.step);
 
     const renderer_core = rendererCoreModule(b, b.graph.host, optimize, syntax_inclusions, syntax_exclusions);

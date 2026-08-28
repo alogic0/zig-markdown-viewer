@@ -8,7 +8,7 @@ pub fn main(init: std.process.Init) !void {
     var stdout_buffer: [1024]u8 = undefined;
     var stdout_writer = std.Io.File.stdout().writer(init.io, &stdout_buffer);
     try stdout_writer.interface.print("release-small renderer: {d} bytes\n", .{baseline});
-    try stdout_writer.interface.writeAll("backend\tmarginal bytes\twithout backend\n");
+    try stdout_writer.interface.writeAll("selection\tmarginal bytes\twithout selection\n");
 
     var index: usize = 2;
     while (index < args.len) : (index += 2) {
@@ -28,7 +28,7 @@ fn fileSize(init: std.process.Init, path: []const u8) !u64 {
 }
 
 fn usage(init: std.process.Init) noreturn {
-    failWithCode(init, 2, "usage: report-wasm-sizes BASELINE [BACKEND EXCLUDED_WASM]...", .{});
+    failWithCode(init, 2, "usage: report-wasm-sizes BASELINE [SELECTION EXCLUDED_WASM]...", .{});
 }
 
 fn fail(init: std.process.Init, comptime format: []const u8, args: anytype) noreturn {

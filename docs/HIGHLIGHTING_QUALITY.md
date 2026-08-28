@@ -56,6 +56,16 @@ the marginal linked bytes for the selected core backends. Override the default
 set with `-Dsize-report-backends=php,nix,...`; these measurement variants do not
 change the complete default registry.
 
+Backends that reuse one implementation must also be measured as a group because
+excluding only one retains their shared code. Groups use a semicolon-separated
+`LABEL=BACKEND+BACKEND` form:
+
+```sh
+./build.sh wasm-size-report \
+  -Dsize-report-backends= \
+  -Dsize-report-groups=assembly-family=asm+nasm
+```
+
 Experimental candidates can be measured without promotion by linking them only
 for analysis and excluding each candidate in the comparison build. For example:
 
