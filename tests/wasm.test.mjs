@@ -535,6 +535,34 @@ render profile = M.fromMaybe "unknown" (Just profile.name)
   assert.match(html, /class="syntax-namespace">M<\/span>/);
 });
 
+test('renders SystemVerilog structural roles through WebAssembly', () => {
+  const html = render(`~~~systemverilog
+\`define DEFAULT_WIDTH 8
+package demo_pkg;
+  typedef enum logic [1:0] { IDLE, RUN } state_t;
+endpackage
+module demo #(parameter int WIDTH = \`DEFAULT_WIDTH) (input logic clk);
+  import demo_pkg::*;
+  state_t state;
+  function int add(input int lhs, input int rhs); return lhs + rhs; endfunction
+  assign ready = state.valid;
+  initial $display("ready", ready);
+endmodule
+~~~
+`);
+
+  assert.match(html, /class="language-systemverilog"/);
+  assert.match(html, /class="syntax-macro">`define<\/span>/);
+  assert.match(html, /class="syntax-namespace">demo_pkg<\/span>/);
+  assert.match(html, /class="syntax-type">demo<\/span>/);
+  assert.match(html, /class="syntax-constant">WIDTH<\/span>/);
+  assert.match(html, /class="syntax-parameter">clk<\/span>/);
+  assert.match(html, /class="syntax-type">state_t<\/span>/);
+  assert.match(html, /class="syntax-function">add<\/span>/);
+  assert.match(html, /class="syntax-property">valid<\/span>/);
+  assert.match(html, /class="syntax-function">\$display<\/span>/);
+});
+
 test('keeps Unicode Bash source intact through highlighting', () => {
   const html = render(`~~~bash
 ├── Builds Docker image

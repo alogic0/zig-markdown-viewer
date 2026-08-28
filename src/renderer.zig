@@ -832,6 +832,36 @@ test "highlights promoted PureScript structural roles" {
     try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-namespace\">M</span>") != null);
 }
 
+test "highlights promoted SystemVerilog structural roles" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\```systemverilog
+        \\`define DEFAULT_WIDTH 8
+        \\package demo_pkg;
+        \\  typedef enum logic [1:0] { IDLE, RUN } state_t;
+        \\endpackage
+        \\module demo #(parameter int WIDTH = `DEFAULT_WIDTH) (input logic clk);
+        \\  import demo_pkg::*;
+        \\  state_t state;
+        \\  function int add(input int lhs, input int rhs); return lhs + rhs; endfunction
+        \\  assign ready = state.valid;
+        \\  initial $display("ready", ready);
+        \\endmodule
+        \\```
+    );
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-systemverilog\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-macro\">`define</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-namespace\">demo_pkg</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-type\">demo</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-constant\">WIDTH</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-parameter\">clk</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-type\">state_t</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-function\">add</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-property\">valid</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-function\">$display</span>") != null);
+}
+
 test "unknown fenced languages remain safely escaped" {
     const html = try renderAlloc(std.testing.allocator,
         \\```unknown-language
