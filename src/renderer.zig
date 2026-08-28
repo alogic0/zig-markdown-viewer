@@ -740,6 +740,28 @@ test "highlights promoted V structural roles" {
     try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-constructor\">Item</span>") != null);
 }
 
+test "highlights promoted Odin structural roles" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\```odin
+        \\package main
+        \\Item :: struct { value: string }
+        \\total :: proc(item: Item, delta: int) -> int { return item.value.len + delta }
+        \\make_item :: proc(name: string) -> Item { return Item{value = name} }
+        \\answer :: 42
+        \\```
+    );
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-odin\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-namespace\">main</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-type\">Item</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-property\">value</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-function\">total</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-parameter\">delta</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-constructor\">Item</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-constant\">answer</span>") != null);
+}
+
 test "unknown fenced languages remain safely escaped" {
     const html = try renderAlloc(std.testing.allocator,
         \\```unknown-language
