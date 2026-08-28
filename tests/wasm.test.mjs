@@ -359,6 +359,31 @@ sub run ($input) { my $pattern = qr/foo/; say $input; }
   assert.match(html, /syntax-special syntax-string">qr<\/span>/);
 });
 
+test('renders OCaml and F# structural roles through WebAssembly', () => {
+  const html = render(`~~~ocaml
+module Geometry = struct
+  type shape = Circle of float
+  let area radius = radius *. radius
+end
+~~~
+
+~~~fsharp
+namespace Demo.Geometry
+type Shape = Circle of radius: float
+let area shape = shape
+~~~
+`);
+
+  assert.match(html, /class="language-ocaml"/);
+  assert.match(html, /class="syntax-namespace">Geometry<\/span>/);
+  assert.match(html, /class="syntax-function">area<\/span>/);
+  assert.match(html, /class="language-fsharp"/);
+  assert.match(html, /class="syntax-namespace">Demo<\/span>/);
+  assert.match(html, /class="syntax-namespace">Geometry<\/span>/);
+  assert.match(html, /class="syntax-property">radius<\/span>/);
+  assert.match(html, /class="syntax-parameter">shape<\/span>/);
+});
+
 test('keeps Unicode Bash source intact through highlighting', () => {
   const html = render(`~~~bash
 ├── Builds Docker image

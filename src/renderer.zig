@@ -644,6 +644,32 @@ test "highlights promoted Elixir Julia Haskell and Perl fences" {
     try std.testing.expect(std.mem.indexOf(u8, html, "syntax-special syntax-string\">qr</span>") != null);
 }
 
+test "highlights promoted OCaml and F# fences" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\```ocaml
+        \\module Geometry = struct
+        \\  type shape = Circle of float
+        \\  let area radius = radius *. radius
+        \\end
+        \\```
+        \\```fsharp
+        \\namespace Demo.Geometry
+        \\type Shape = Circle of radius: float
+        \\let area shape = shape
+        \\```
+    );
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-ocaml\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-namespace\">Geometry</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-function\">area</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-fsharp\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-namespace\">Demo</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-namespace\">Geometry</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-property\">radius</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-parameter\">shape</span>") != null);
+}
+
 test "unknown fenced languages remain safely escaped" {
     const html = try renderAlloc(std.testing.allocator,
         \\```unknown-language

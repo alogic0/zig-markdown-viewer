@@ -49,7 +49,7 @@ pub fn build(b: *std.Build) void {
         []const u8,
         "size-report-backends",
         "Comma-separated core backends included in the Wasm contribution report",
-    ) orelse "php,objc,nix,fish,gdscript,nu,awk,typst,elixir,julia,haskell,perl";
+    ) orelse "php,objc,nix,fish,gdscript,nu,awk,typst,elixir,julia,haskell,perl,ocaml,fsharp";
     const report_tool = b.addExecutable(.{
         .name = "report-wasm-sizes",
         .root_module = b.createModule(.{

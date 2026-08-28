@@ -56,10 +56,11 @@ the marginal linked bytes for the selected core backends. Override the default
 set with `-Dsize-report-backends=php,nix,...`; these measurement variants do not
 change the complete default registry.
 
-The reviewed release-small budget is 603,000 bytes. After expanding the Elixir,
-Julia, Haskell, and Perl structural coverage, the complete renderer measures
-595,652 bytes, leaving 7,348 bytes for ordinary maintenance without weakening
-the default registry.
+The reviewed release-small budget is 603,000 bytes. After adding structural
+OCaml and F# through their shared ML-family parser, the complete renderer
+measures 599,812 bytes, leaving 3,188 bytes for ordinary maintenance without
+weakening the default registry. OCaml contributed 3,157 bytes when it first
+linked the shared parser; F# then added 1,003 bytes.
 
 Promotion is a reviewed `SupportLevel` change in `zig-native-syntax`. Once its conformance gate
 passes, the configured registry makes the backend visible to the viewer without a viewer source
