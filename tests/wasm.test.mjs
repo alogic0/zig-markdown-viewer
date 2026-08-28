@@ -724,6 +724,33 @@ let make_item = fun name enabled => {
   assert.match(html, /class="syntax-variable">item<\/span>/);
 });
 
+test('renders Agda structural roles through WebAssembly', () => {
+  const html = render(`~~~agda
+module Demo.Core where
+open import Data.Nat
+data Item : Set where
+  item : Item
+record Point : Set where
+  field
+    x : Set
+select : Item → Item
+select value = value
+~~~
+`);
+  assert.match(html, /class="language-agda"/);
+  assert.match(html, /class="syntax-namespace">Demo<\/span>/);
+  assert.match(html, /class="syntax-namespace">Core<\/span>/);
+  assert.match(html, /class="syntax-namespace">Data<\/span>/);
+  assert.match(html, /class="syntax-namespace">Nat<\/span>/);
+  assert.match(html, /class="syntax-type">Item<\/span>/);
+  assert.match(html, /class="syntax-constructor">item<\/span>/);
+  assert.match(html, /class="syntax-property">x<\/span>/);
+  assert.match(html, /class="syntax-function">select<\/span>/);
+  assert.match(html, /class="syntax-parameter">value<\/span>/);
+  assert.match(html, /→/);
+  assert.doesNotMatch(html, /�/);
+});
+
 test('keeps Unicode Bash source intact through highlighting', () => {
   const html = render(`~~~bash
 ├── Builds Docker image

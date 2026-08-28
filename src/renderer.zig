@@ -1036,6 +1036,34 @@ test "highlights promoted Nickel structural roles" {
     try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-variable\">item</span>") != null);
 }
 
+test "highlights promoted Agda structural roles" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\```agda
+        \\module Demo.Core where
+        \\open import Data.Nat
+        \\data Item : Set where
+        \\  item : Item
+        \\record Point : Set where
+        \\  field
+        \\    x : Set
+        \\select : Item → Item
+        \\select value = value
+        \\```
+    );
+    defer std.testing.allocator.free(html);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-agda\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-namespace\">Demo</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-namespace\">Core</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-namespace\">Data</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-namespace\">Nat</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-type\">Item</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-constructor\">item</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-property\">x</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-function\">select</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-parameter\">value</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "→") != null);
+}
+
 test "unknown fenced languages remain safely escaped" {
     const html = try renderAlloc(std.testing.allocator,
         \\```unknown-language
