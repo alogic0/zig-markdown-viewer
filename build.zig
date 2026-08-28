@@ -21,12 +21,17 @@ pub fn build(b: *std.Build) void {
         "size-analysis-exclude-backends",
         "Comma-separated native syntax backends omitted only for code-size analysis",
     ) orelse "";
+    const syntax_inclusions = b.option(
+        []const u8,
+        "size-analysis-include-backends",
+        "Comma-separated experimental syntax backends linked only for code-size analysis",
+    ) orelse "";
 
-    const renderer = addWasmRenderer(b, strip_wasm_names, "renderer", wasm_target, optimize, syntax_exclusions);
+    const renderer = addWasmRenderer(b, strip_wasm_names, "renderer", wasm_target, optimize, syntax_inclusions, syntax_exclusions);
     const checked_renderer = if (optimize == .small)
         renderer
     else
-        addWasmRenderer(b, strip_wasm_names, "renderer", wasm_target, .small, syntax_exclusions);
+        addWasmRenderer(b, strip_wasm_names, "renderer", wasm_target, .small, syntax_inclusions, syntax_exclusions);
 
     b.installDirectory(.{
         .source_dir = b.path("extension"),
@@ -67,7 +72,7 @@ pub fn build(b: *std.Build) void {
         }),
     });
     const run_size_report = b.addRunArtifact(report_tool);
-    const report_baseline = addWasmRenderer(b, strip_wasm_names, "renderer", wasm_target, .small, "");
+    const report_baseline = addWasmRenderer(b, strip_wasm_names, "renderer", wasm_target, .small, syntax_inclusions, "");
     run_size_report.addFileArg(report_baseline);
     var backend_names = std.mem.splitScalar(u8, size_report_backends, ',');
     while (backend_names.next()) |raw_name| {
@@ -79,6 +84,7 @@ pub fn build(b: *std.Build) void {
             "renderer",
             wasm_target,
             .small,
+            syntax_inclusions,
             name,
         );
         run_size_report.addArg(name);
@@ -87,7 +93,7 @@ pub fn build(b: *std.Build) void {
     const size_report_step = b.step("wasm-size-report", "Measure marginal Wasm bytes for selected syntax backends");
     size_report_step.dependOn(&run_size_report.step);
 
-    const renderer_core = rendererCoreModule(b, b.graph.host, optimize, syntax_exclusions);
+    const renderer_core = rendererCoreModule(b, b.graph.host, optimize, syntax_inclusions, syntax_exclusions);
     const assets = b.addOptions();
     var css_file = b.root.openFile(
         b.graph.io,
@@ -122,7 +128,7 @@ pub fn build(b: *std.Build) void {
     const render_html_step = b.step("render-html", "Render Markdown as standalone HTML");
     render_html_step.dependOn(&run_render_html.step);
 
-    const tests = b.addTest(.{ .root_module = rendererCoreModule(b, b.graph.host, .debug, syntax_exclusions) });
+    const tests = b.addTest(.{ .root_module = rendererCoreModule(b, b.graph.host, .debug, syntax_inclusions, syntax_exclusions) });
     const test_step = b.step("test", "Run renderer tests");
     test_step.dependOn(&b.addRunArtifact(tests).step);
     const install_test_renderer = b.addInstallFile(checked_renderer, "extension/renderer.wasm");
@@ -142,7 +148,7 @@ pub fn build(b: *std.Build) void {
         .target = b.graph.host,
         .optimize = .debug,
         .imports = &.{
-            .{ .name = "renderer_core", .module = rendererCoreModule(b, b.graph.host, .debug, syntax_exclusions) },
+            .{ .name = "renderer_core", .module = rendererCoreModule(b, b.graph.host, .debug, syntax_inclusions, syntax_exclusions) },
             .{ .name = "viewer_assets", .module = assets_module },
         },
     });
@@ -169,13 +175,14 @@ fn addWasmRenderer(
     name: []const u8,
     target: std.Build.ResolvedTarget,
     optimize: std.builtin.OptimizeMode,
+    syntax_inclusions: []const u8,
     syntax_exclusions: []const u8,
 ) std.Build.LazyPath {
     const markdown = b.dependency("markdown_parser", .{
         .target = target,
         .optimize = optimize,
     }).module("markdown");
-    const native_syntax = nativeSyntaxDependency(b, target, optimize, syntax_exclusions);
+    const native_syntax = nativeSyntaxDependency(b, target, optimize, syntax_inclusions, syntax_exclusions);
     const renderer_module = b.createModule(.{
         .root_source_file = b.path("src/renderer.zig"),
         .target = target,
@@ -208,6 +215,7 @@ fn rendererCoreModule(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
     optimize: std.builtin.OptimizeMode,
+    syntax_inclusions: []const u8,
     syntax_exclusions: []const u8,
 ) *std.Build.Module {
     return b.createModule(.{
@@ -220,7 +228,7 @@ fn rendererCoreModule(
                 .target = target,
                 .optimize = optimize,
             }).module("markdown"),
-            nativeSyntaxDependency(b, target, optimize, syntax_exclusions),
+            nativeSyntaxDependency(b, target, optimize, syntax_inclusions, syntax_exclusions),
         ),
     });
 }
@@ -229,6 +237,7 @@ fn nativeSyntaxDependency(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
     optimize: std.builtin.OptimizeMode,
+    syntax_inclusions: []const u8,
     syntax_exclusions: []const u8,
 ) *std.Build.Dependency {
     return b.dependency("native_syntax", .{
@@ -242,6 +251,7 @@ fn nativeSyntaxDependency(
         .@"backend-css" = true,
         .@"backend-superhtml" = true,
         .@"backend-markdown" = true,
+        .@"size-analysis-include-backends" = syntax_inclusions,
         .@"size-analysis-exclude-backends" = syntax_exclusions,
     });
 }
