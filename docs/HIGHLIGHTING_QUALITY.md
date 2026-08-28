@@ -66,13 +66,15 @@ excluding only one retains their shared code. Groups use a semicolon-separated
   -Dsize-report-groups=assembly-family=asm+nasm
 ```
 
-Experimental candidates can be measured without promotion by linking them only
-for analysis and excluding each candidate in the comparison build. For example:
+The catalog currently has no experimental backends: all 95 supported backends
+have passed a verified lexical or verified structural gate. A future
+experimental candidate can still be measured without promotion by linking its
+canonical name only for analysis and excluding it in the comparison build:
 
 ```sh
 ./build.sh wasm-size-report \
-  -Dsize-analysis-include-backends=d \
-  -Dsize-report-backends=d
+  -Dsize-analysis-include-backends=candidate \
+  -Dsize-report-backends=candidate
 ```
 
 Analysis inclusion does not change a backend's `SupportLevel` or the normal
@@ -84,10 +86,10 @@ builds retain it. After promoting dedicated DTD highlighting, the complete
 stripped renderer measures 619,881 bytes. DTD has a 3,568-byte marginal
 contribution when excluded from the complete build and leaves 20,119 bytes for
 reviewed language-quality work. The hard limit guards against large accidental
-regressions; every language
-slice still records its actual size rather than treating the available headroom
-as a target. Shared implementations should be measured with the group-reporting
-option because excluding one retaining backend removes only its wrapper.
+regressions; every language slice still records its actual size rather than
+treating the available headroom as a target. Shared implementations should be
+measured with the group-reporting option because excluding one retaining
+backend removes only its wrapper.
 
 Promotion is a reviewed `SupportLevel` change in `zig-native-syntax`. Once its conformance gate
 passes, the configured registry makes the backend visible to the viewer without a viewer source
