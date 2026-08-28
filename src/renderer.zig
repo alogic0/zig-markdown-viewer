@@ -783,6 +783,30 @@ test "highlights promoted C3 structural roles" {
     try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-function\">printfn</span>") != null);
 }
 
+test "highlights promoted Elm structural roles" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\```elm
+        \\module Demo.Profile exposing (Profile, Status(..), render)
+        \\import Html as H
+        \\type alias Profile = { name : String, enabled : Bool }
+        \\type Status = Ready | Failed String
+        \\render : Profile -> String
+        \\render profile = H.text profile.name
+        \\```
+    );
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-elm\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-namespace\">Demo</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-namespace\">Profile</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-type\">Profile</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-property\">name</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-constructor\">Ready</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-function\">render</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-parameter\">profile</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-namespace\">H</span>") != null);
+}
+
 test "unknown fenced languages remain safely escaped" {
     const html = try renderAlloc(std.testing.allocator,
         \\```unknown-language

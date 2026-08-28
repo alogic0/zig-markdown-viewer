@@ -490,6 +490,28 @@ fn Item make_item(String name) { io::printfn(name); return { .value = name }; }
   assert.match(html, /class="syntax-function">printfn<\/span>/);
 });
 
+test('renders Elm structural roles through WebAssembly', () => {
+  const html = render(`~~~elm
+module Demo.Profile exposing (Profile, Status(..), render)
+import Html as H
+type alias Profile = { name : String, enabled : Bool }
+type Status = Ready | Failed String
+render : Profile -> String
+render profile = H.text profile.name
+~~~
+`);
+
+  assert.match(html, /class="language-elm"/);
+  assert.match(html, /class="syntax-namespace">Demo<\/span>/);
+  assert.match(html, /class="syntax-namespace">Profile<\/span>/);
+  assert.match(html, /class="syntax-type">Profile<\/span>/);
+  assert.match(html, /class="syntax-property">name<\/span>/);
+  assert.match(html, /class="syntax-constructor">Ready<\/span>/);
+  assert.match(html, /class="syntax-function">render<\/span>/);
+  assert.match(html, /class="syntax-parameter">profile<\/span>/);
+  assert.match(html, /class="syntax-namespace">H<\/span>/);
+});
+
 test('keeps Unicode Bash source intact through highlighting', () => {
   const html = render(`~~~bash
 ├── Builds Docker image
