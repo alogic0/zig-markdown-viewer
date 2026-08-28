@@ -512,6 +512,29 @@ render profile = H.text profile.name
   assert.match(html, /class="syntax-namespace">H<\/span>/);
 });
 
+test('renders PureScript structural roles through WebAssembly', () => {
+  const html = render(`~~~purescript
+module Demo.Profile where
+import Data.Maybe as M
+type Profile = { name :: String, enabled :: Boolean }
+data Status = Ready | Failed String
+newtype User = User { name :: String }
+render :: Profile -> String
+render profile = M.fromMaybe "unknown" (Just profile.name)
+~~~
+`);
+
+  assert.match(html, /class="language-purescript"/);
+  assert.match(html, /class="syntax-namespace">Demo<\/span>/);
+  assert.match(html, /class="syntax-type">Profile<\/span>/);
+  assert.match(html, /class="syntax-property">name<\/span>/);
+  assert.match(html, /class="syntax-constructor">Ready<\/span>/);
+  assert.match(html, /class="syntax-constructor">User<\/span>/);
+  assert.match(html, /class="syntax-function">render<\/span>/);
+  assert.match(html, /class="syntax-parameter">profile<\/span>/);
+  assert.match(html, /class="syntax-namespace">M<\/span>/);
+});
+
 test('keeps Unicode Bash source intact through highlighting', () => {
   const html = render(`~~~bash
 ├── Builds Docker image
