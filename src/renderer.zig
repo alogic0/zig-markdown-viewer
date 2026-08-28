@@ -1118,6 +1118,24 @@ test "highlights promoted Uxntal lexical roles" {
     try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-comment\">( outer ( nested ) comment )</span>") != null);
 }
 
+test "highlights verified comment-tag roles" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\```comment
+        \\TODO(alice): preserve source for #123
+        \\NOTE: see https://example.test/docs
+        \\FIXME: escape <unsafe>& bytes
+        \\```
+    );
+    defer std.testing.allocator.free(html);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-comment\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-special\">TODO</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-constant\">alice</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-number\">#123</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "syntax-markup-link") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "https://example.test/docs") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "&lt;unsafe&gt;&amp;") != null);
+}
+
 test "unknown fenced languages remain safely escaped" {
     const html = try renderAlloc(std.testing.allocator,
         \\```unknown-language

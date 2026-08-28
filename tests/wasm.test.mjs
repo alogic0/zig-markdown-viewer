@@ -801,6 +801,22 @@ test('renders Uxntal lexical roles through WebAssembly', () => {
   assert.match(html, /class="syntax-comment">\( outer \( nested \) comment \)<\/span>/);
 });
 
+test('renders verified comment-tag roles through WebAssembly', () => {
+  const html = render(`~~~comment
+TODO(alice): preserve source for #123
+NOTE: see https://example.test/docs
+FIXME: escape <unsafe>& bytes
+~~~
+`);
+  assert.match(html, /class="language-comment"/);
+  assert.match(html, /class="syntax-special">TODO<\/span>/);
+  assert.match(html, /class="syntax-constant">alice<\/span>/);
+  assert.match(html, /class="syntax-number">#123<\/span>/);
+  assert.match(html, /syntax-markup-link/);
+  assert.match(html, /https:\/\/example\.test\/docs/);
+  assert.match(html, /&lt;unsafe&gt;&amp;/);
+});
+
 test('keeps Unicode Bash source intact through highlighting', () => {
   const html = render(`~~~bash
 ├── Builds Docker image
