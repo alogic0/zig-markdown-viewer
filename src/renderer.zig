@@ -1092,6 +1092,32 @@ test "highlights promoted Vimscript structural roles" {
     try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-macro\">Show</span>") != null);
 }
 
+test "highlights promoted Uxntal lexical roles" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\```uxntal
+        \\|0100
+        \\%emit-byte ( value -- ) { #18 DEO }
+        \\@main
+        \\  &loop
+        \\  #2a #01 ADD2k
+        \\  ,&loop JCN
+        \\  ;Screen/width DEI2
+        \\  "hello
+        \\  BRK
+        \\( outer ( nested ) comment )
+        \\```
+    );
+    defer std.testing.allocator.free(html);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-uxntal\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-number\">|0100</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-macro\">%emit-byte</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-label\">@main</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-keyword\">ADD2k</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-label\">;Screen/width</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-string\">&quot;hello</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-comment\">( outer ( nested ) comment )</span>") != null);
+}
+
 test "unknown fenced languages remain safely escaped" {
     const html = try renderAlloc(std.testing.allocator,
         \\```unknown-language

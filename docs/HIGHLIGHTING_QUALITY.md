@@ -80,9 +80,9 @@ registry. Exclusion takes precedence when the same name appears in both lists.
 
 The reviewed release-small budget is 640,000 bytes. Release builds remove the
 optional WebAssembly function-name custom section after linking while debug
-builds retain it. After promoting structural Vimscript, the complete stripped
-renderer measures 613,150 bytes. Vimscript has a 3,412-byte marginal
-contribution when excluded from the complete build and leaves 26,850 bytes for
+builds retain it. After promoting dedicated Uxntal highlighting, the complete
+stripped renderer measures 614,787 bytes. Uxntal has a 1,637-byte marginal
+contribution when excluded from the complete build and leaves 25,213 bytes for
 reviewed language-quality work. The hard limit guards against large accidental
 regressions; every language
 slice still records its actual size rather than treating the available headroom

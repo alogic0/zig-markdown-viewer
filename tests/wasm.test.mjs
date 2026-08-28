@@ -777,6 +777,30 @@ command! -nargs=1 Show call s:Render(<args>)
   assert.match(html, /class="syntax-macro">Show<\/span>/);
 });
 
+test('renders Uxntal lexical roles through WebAssembly', () => {
+  const html = render(`~~~uxntal
+|0100
+%emit-byte ( value -- ) { #18 DEO }
+@main
+  &loop
+  #2a #01 ADD2k
+  ,&loop JCN
+  ;Screen/width DEI2
+  "hello
+  BRK
+( outer ( nested ) comment )
+~~~
+`);
+  assert.match(html, /class="language-uxntal"/);
+  assert.match(html, /class="syntax-number">\|0100<\/span>/);
+  assert.match(html, /class="syntax-macro">%emit-byte<\/span>/);
+  assert.match(html, /class="syntax-label">@main<\/span>/);
+  assert.match(html, /class="syntax-keyword">ADD2k<\/span>/);
+  assert.match(html, /class="syntax-label">;Screen\/width<\/span>/);
+  assert.match(html, /class="syntax-string">&quot;hello<\/span>/);
+  assert.match(html, /class="syntax-comment">\( outer \( nested \) comment \)<\/span>/);
+});
+
 test('keeps Unicode Bash source intact through highlighting', () => {
   const html = render(`~~~bash
 ├── Builds Docker image
