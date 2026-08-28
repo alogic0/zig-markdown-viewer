@@ -696,6 +696,28 @@ test "highlights promoted Gleam structural roles" {
     try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-function\">append</span>") != null);
 }
 
+test "highlights promoted D structural roles" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\```d
+        \\module demo.render;
+        \\struct Item {
+        \\  string name;
+        \\  int total(int delta) { return delta; }
+        \\}
+        \\Item make_item(string name) { return Item(name); }
+        \\```
+    );
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-d\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-namespace\">render</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-type\">Item</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-property\">name</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-function\">total</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-parameter\">delta</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-constructor\">Item</span>") != null);
+}
+
 test "unknown fenced languages remain safely escaped" {
     const html = try renderAlloc(std.testing.allocator,
         \\```unknown-language

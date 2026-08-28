@@ -411,6 +411,26 @@ pub fn render(person: Person) -> String {
   assert.doesNotMatch(html, /�/);
 });
 
+test('renders D structural roles through WebAssembly', () => {
+  const html = render(`~~~d
+module demo.render;
+struct Item {
+  string name;
+  int total(int delta) { return delta; }
+}
+Item make_item(string name) { return Item(name); }
+~~~
+`);
+
+  assert.match(html, /class="language-d"/);
+  assert.match(html, /class="syntax-namespace">render<\/span>/);
+  assert.match(html, /class="syntax-type">Item<\/span>/);
+  assert.match(html, /class="syntax-property">name<\/span>/);
+  assert.match(html, /class="syntax-function">total<\/span>/);
+  assert.match(html, /class="syntax-parameter">delta<\/span>/);
+  assert.match(html, /class="syntax-constructor">Item<\/span>/);
+});
+
 test('keeps Unicode Bash source intact through highlighting', () => {
   const html = render(`~~~bash
 ├── Builds Docker image
