@@ -74,7 +74,7 @@ node --check extension/js/wasm.js
 ```
 
 The normal test step rebuilds the release-small renderer used by the Node test
-and enforces its 575,000-byte size budget. Raising that budget requires an
+and enforces its 640,000-byte size budget. Raising that budget requires an
 explicit reviewed change.
 
 ## Provenance

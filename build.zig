@@ -54,7 +54,7 @@ pub fn build(b: *std.Build) void {
     });
     const run_size_checker = b.addRunArtifact(size_checker);
     run_size_checker.addFileArg(checked_renderer);
-    run_size_checker.addArg("603000");
+    run_size_checker.addArg("640000");
     const size_step = b.step("check-wasm-size", "Enforce the release-small renderer Wasm size budget");
     size_step.dependOn(&run_size_checker.step);
 

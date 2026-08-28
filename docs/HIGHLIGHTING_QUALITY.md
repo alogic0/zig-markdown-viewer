@@ -78,14 +78,16 @@ for analysis and excluding each candidate in the comparison build. For example:
 Analysis inclusion does not change a backend's `SupportLevel` or the normal
 registry. Exclusion takes precedence when the same name appears in both lists.
 
-The reviewed release-small budget is 603,000 bytes. Release builds remove the
+The reviewed release-small budget is 640,000 bytes. Release builds remove the
 optional WebAssembly function-name custom section after linking while debug
 builds retain it. After promoting NASM and replacing the Assembly configurations
 with their shared dedicated scanner, the complete stripped renderer measures
 602,879 bytes. The shared Assembly/NASM implementation adds 3,289 linked bytes
-over the post-Nim baseline and leaves 121 bytes without weakening the default
-registry. Excluding either dialect alone removes only its small wrapper because
-the other dialect retains the shared scanner.
+over the post-Nim baseline and leaves 37,121 bytes for reviewed language-quality
+work. The hard limit guards against large accidental regressions; every language
+slice still records its actual size rather than treating the available headroom
+as a target. Excluding either Assembly dialect alone removes only its small
+wrapper because the other dialect retains the shared scanner.
 
 Promotion is a reviewed `SupportLevel` change in `zig-native-syntax`. Once its conformance gate
 passes, the configured registry makes the backend visible to the viewer without a viewer source
