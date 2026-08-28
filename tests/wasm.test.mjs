@@ -707,6 +707,23 @@ export fn main() void = {
   assert.match(html, /class="syntax-function">printfln<\/span>/);
 });
 
+test('renders Nickel structural roles through WebAssembly', () => {
+  const html = render(`~~~nickel
+let make_item = fun name enabled => {
+  name | String = name,
+  nested.count = 42,
+  message = "hello %{name}",
+} in let item = make_item "demo" true in item.name
+~~~
+`);
+  assert.match(html, /class="language-nickel"/);
+  assert.match(html, /class="syntax-function">make_item<\/span>/);
+  assert.match(html, /class="syntax-parameter">name<\/span>/);
+  assert.match(html, /class="syntax-property">count<\/span>/);
+  assert.match(html, /syntax-embedded syntax-string">%\{name\}<\/span>/);
+  assert.match(html, /class="syntax-variable">item<\/span>/);
+});
+
 test('keeps Unicode Bash source intact through highlighting', () => {
   const html = render(`~~~bash
 ├── Builds Docker image

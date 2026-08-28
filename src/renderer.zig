@@ -1017,6 +1017,25 @@ test "highlights promoted Hare structural roles" {
     try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-function\">printfln</span>") != null);
 }
 
+test "highlights promoted Nickel structural roles" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\```nickel
+        \\let make_item = fun name enabled => {
+        \\  name | String = name,
+        \\  nested.count = 42,
+        \\  message = "hello %{name}",
+        \\} in let item = make_item "demo" true in item.name
+        \\```
+    );
+    defer std.testing.allocator.free(html);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-nickel\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-function\">make_item</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-parameter\">name</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-property\">count</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "syntax-embedded syntax-string\">%{name}</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-variable\">item</span>") != null);
+}
+
 test "unknown fenced languages remain safely escaped" {
     const html = try renderAlloc(std.testing.allocator,
         \\```unknown-language
