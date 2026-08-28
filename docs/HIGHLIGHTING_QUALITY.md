@@ -70,10 +70,10 @@ registry. Exclusion takes precedence when the same name appears in both lists.
 
 The reviewed release-small budget is 603,000 bytes. Release builds remove the
 optional WebAssembly function-name custom section after linking while debug
-builds retain it. After promoting structural SystemVerilog, the complete
-stripped renderer measures 594,099 bytes. SystemVerilog contributes 4,134
-marginal bytes, leaving 8,901 bytes without weakening the default registry or
-changing runtime code.
+builds retain it. After consolidating the Haskell, Elm, and PureScript
+structural paths, the complete stripped renderer measures 593,023 bytes. The
+shared scanner saves 1,076 bytes and leaves 9,977 bytes without weakening the
+default registry or changing highlighting behavior.
 
 Promotion is a reviewed `SupportLevel` change in `zig-native-syntax`. Once its conformance gate
 passes, the configured registry makes the backend visible to the viewer without a viewer source
