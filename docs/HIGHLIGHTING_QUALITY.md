@@ -70,8 +70,8 @@ registry. Exclusion takes precedence when the same name appears in both lists.
 
 The reviewed release-small budget is 603,000 bytes. Release builds remove the
 optional WebAssembly function-name custom section after linking while debug
-builds retain it. After promoting structural D, the complete stripped renderer
-measures 581,954 bytes. D contributes 1,436 marginal bytes, leaving 21,046
+builds retain it. After promoting structural V, the complete stripped renderer
+measures 583,648 bytes. V contributes 986 marginal bytes, leaving 19,352
 bytes without weakening the default registry or changing runtime code.
 
 Promotion is a reviewed `SupportLevel` change in `zig-native-syntax`. Once its conformance gate

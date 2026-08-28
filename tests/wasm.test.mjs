@@ -431,6 +431,26 @@ Item make_item(string name) { return Item(name); }
   assert.match(html, /class="syntax-constructor">Item<\/span>/);
 });
 
+test('renders V structural roles through WebAssembly', () => {
+  const html = render(`~~~v
+module main
+import time
+struct Item { value string }
+fn (item Item) total(delta int) int { return item.value.len + delta }
+fn make_item(name string) Item { return Item{ value: name } }
+~~~
+`);
+
+  assert.match(html, /class="language-v"/);
+  assert.match(html, /class="syntax-namespace">main<\/span>/);
+  assert.match(html, /class="syntax-namespace">time<\/span>/);
+  assert.match(html, /class="syntax-type">Item<\/span>/);
+  assert.match(html, /class="syntax-property">value<\/span>/);
+  assert.match(html, /class="syntax-function">total<\/span>/);
+  assert.match(html, /class="syntax-parameter">delta<\/span>/);
+  assert.match(html, /class="syntax-constructor">Item<\/span>/);
+});
+
 test('keeps Unicode Bash source intact through highlighting', () => {
   const html = render(`~~~bash
 ├── Builds Docker image
