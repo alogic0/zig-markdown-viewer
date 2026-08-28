@@ -867,6 +867,26 @@ endmacro()
   assert.match(html, /syntax-comment">#\[=\[ structural example \]=\]<\/span>/);
 });
 
+test('renders Fortran free and fixed form lexical syntax through WebAssembly', () => {
+  const html = render(`~~~fortran
+C fixed-form comment
+  100 CONTINUE
+     1 VALUE = Z'2A' + 1.25_real64
+name = 'don''t'
+if (.TRUE. .and. VALUE >= 0) VALUE = VALUE &
+  & + 1
+~~~
+`);
+  assert.match(html, /class="language-fortran"/);
+  assert.match(html, /syntax-comment">C fixed-form comment<\/span>/);
+  assert.match(html, /class="syntax-label">100<\/span>/);
+  assert.match(html, /class="syntax-number">Z&#39;2A&#39;<\/span>/);
+  assert.match(html, /class="syntax-number">1\.25_real64<\/span>/);
+  assert.match(html, /syntax-escape syntax-string">&#39;&#39;<\/span>/);
+  assert.match(html, /class="syntax-boolean">\.TRUE\.<\/span>/);
+  assert.match(html, /class="syntax-operator">\.and\.<\/span>/);
+});
+
 test('keeps Unicode Bash source intact through highlighting', () => {
   const html = render(`~~~bash
 ├── Builds Docker image

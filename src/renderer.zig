@@ -1190,6 +1190,28 @@ test "highlights structural CMake roles" {
     try std.testing.expect(std.mem.indexOf(u8, html, "syntax-comment\">#[=[ structural example ]=]</span>") != null);
 }
 
+test "highlights Fortran free and fixed form lexical syntax" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\```fortran
+        \\C fixed-form comment
+        \\  100 CONTINUE
+        \\     1 VALUE = Z'2A' + 1.25_real64
+        \\name = 'don''t'
+        \\if (.TRUE. .and. VALUE >= 0) VALUE = VALUE &
+        \\  & + 1
+        \\```
+    );
+    defer std.testing.allocator.free(html);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-fortran\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "syntax-comment\">C fixed-form comment</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-label\">100</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-number\">Z&#39;2A&#39;</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-number\">1.25_real64</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "syntax-escape syntax-string\">&#39;&#39;</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-boolean\">.TRUE.</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-operator\">.and.</span>") != null);
+}
+
 test "unknown fenced languages remain safely escaped" {
     const html = try renderAlloc(std.testing.allocator,
         \\```unknown-language
