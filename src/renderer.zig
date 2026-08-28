@@ -965,6 +965,29 @@ test "highlights verified Assembly and NASM lexical roles" {
     try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-label\">.done</span>") != null);
 }
 
+test "highlights promoted OpenSCAD structural roles" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\```openscad
+        \\module rounded_box(size = [1, 2, 3], radius = 1) {
+        \\  translate([0, 0, radius]) cube(size = size, center = true);
+        \\}
+        \\function doubled(value) = value * 2;
+        \\steps = [for (item = [0:2]) doubled(item)];
+        \\let (offset = 2) rounded_box(radius = offset);
+        \\```
+    );
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-openscad\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-function\">rounded_box</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-parameter\">size</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-function\">cube</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-property\">center</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-function\">doubled</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-variable\">item</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-variable\">offset</span>") != null);
+}
+
 test "unknown fenced languages remain safely escaped" {
     const html = try renderAlloc(std.testing.allocator,
         \\```unknown-language

@@ -659,6 +659,27 @@ start:
   assert.match(html, /class="syntax-label">\.done<\/span>/);
 });
 
+test('renders OpenSCAD structural roles through WebAssembly', () => {
+  const html = render(`~~~openscad
+module rounded_box(size = [1, 2, 3], radius = 1) {
+  translate([0, 0, radius]) cube(size = size, center = true);
+}
+function doubled(value) = value * 2;
+steps = [for (item = [0:2]) doubled(item)];
+let (offset = 2) rounded_box(radius = offset);
+~~~
+`);
+
+  assert.match(html, /class="language-openscad"/);
+  assert.match(html, /class="syntax-function">rounded_box<\/span>/);
+  assert.match(html, /class="syntax-parameter">size<\/span>/);
+  assert.match(html, /class="syntax-function">cube<\/span>/);
+  assert.match(html, /class="syntax-property">center<\/span>/);
+  assert.match(html, /class="syntax-function">doubled<\/span>/);
+  assert.match(html, /class="syntax-variable">item<\/span>/);
+  assert.match(html, /class="syntax-variable">offset<\/span>/);
+});
+
 test('keeps Unicode Bash source intact through highlighting', () => {
   const html = render(`~~~bash
 ├── Builds Docker image
