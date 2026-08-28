@@ -884,6 +884,29 @@ test "highlights promoted Common Lisp structural roles" {
     try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-variable\">message</span>") != null);
 }
 
+test "highlights promoted Scheme structural roles" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\```scheme
+        \\(define-library (demo core)
+        \\  (import (scheme base))
+        \\  (begin
+        \\    (define-record-type person (makeperson name) person? (name personname))
+        \\    (define (greet person) (let ((message "ready")) message))
+        \\    (define-syntax whenready (syntax-rules () ((_ body) body)))))
+        \\```
+    );
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-scheme\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-namespace\">demo</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-type\">person</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-property\">name</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-function\">greet</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-parameter\">person</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-variable\">message</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-macro\">whenready</span>") != null);
+}
+
 test "unknown fenced languages remain safely escaped" {
     const html = try renderAlloc(std.testing.allocator,
         \\```unknown-language

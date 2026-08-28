@@ -583,6 +583,27 @@ test('renders Common Lisp structural roles through WebAssembly', () => {
   assert.match(html, /class="syntax-variable">message<\/span>/);
 });
 
+test('renders Scheme structural roles through WebAssembly', () => {
+  const html = render(`~~~scheme
+(define-library (demo core)
+  (import (scheme base))
+  (begin
+    (define-record-type person (makeperson name) person? (name personname))
+    (define (greet person) (let ((message "ready")) message))
+    (define-syntax whenready (syntax-rules () ((_ body) body)))))
+~~~
+`);
+
+  assert.match(html, /class="language-scheme"/);
+  assert.match(html, /class="syntax-namespace">demo<\/span>/);
+  assert.match(html, /class="syntax-type">person<\/span>/);
+  assert.match(html, /class="syntax-property">name<\/span>/);
+  assert.match(html, /class="syntax-function">greet<\/span>/);
+  assert.match(html, /class="syntax-parameter">person<\/span>/);
+  assert.match(html, /class="syntax-variable">message<\/span>/);
+  assert.match(html, /class="syntax-macro">whenready<\/span>/);
+});
+
 test('keeps Unicode Bash source intact through highlighting', () => {
   const html = render(`~~~bash
 ├── Builds Docker image

@@ -70,10 +70,10 @@ registry. Exclusion takes precedence when the same name appears in both lists.
 
 The reviewed release-small budget is 603,000 bytes. Release builds remove the
 optional WebAssembly function-name custom section after linking while debug
-builds retain it. After promoting structural Common Lisp, the complete stripped
-renderer measures 596,945 bytes. Common Lisp contributes 3,177 marginal bytes,
-including the shared Lisp-family parser, and leaves 6,055 bytes without
-weakening the default registry.
+builds retain it. After promoting structural Scheme, the complete stripped
+renderer measures 597,668 bytes. Scheme contributes 509 marginal bytes by
+reusing the Lisp-family parser and leaves 5,332 bytes without weakening the
+default registry.
 
 Promotion is a reviewed `SupportLevel` change in `zig-native-syntax`. Once its conformance gate
 passes, the configured registry makes the backend visible to the viewer without a viewer source
