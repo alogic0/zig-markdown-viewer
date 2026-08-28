@@ -862,6 +862,28 @@ test "highlights promoted SystemVerilog structural roles" {
     try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-function\">$display</span>") != null);
 }
 
+test "highlights promoted Common Lisp structural roles" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\```commonlisp
+        \\(defpackage demo (:use :cl))
+        \\(defclass person () ((name :initarg :name)))
+        \\(defun greet (person &optional prefix) (format nil "~a" person))
+        \\(defmacro withperson ((name value) &body body) `(let ((,name ,value)) ,@body))
+        \\(let ((message "ready")) (greet message))
+        \\```
+    );
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-commonlisp\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-namespace\">demo</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-type\">person</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-property\">name</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-function\">greet</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-parameter\">person</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-macro\">withperson</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-variable\">message</span>") != null);
+}
+
 test "unknown fenced languages remain safely escaped" {
     const html = try renderAlloc(std.testing.allocator,
         \\```unknown-language

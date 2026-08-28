@@ -563,6 +563,26 @@ endmodule
   assert.match(html, /class="syntax-function">\$display<\/span>/);
 });
 
+test('renders Common Lisp structural roles through WebAssembly', () => {
+  const html = render(`~~~commonlisp
+(defpackage demo (:use :cl))
+(defclass person () ((name :initarg :name)))
+(defun greet (person &optional prefix) (format nil "~a" person))
+(defmacro withperson ((name value) &body body) \`(let ((,name ,value)) ,@body))
+(let ((message "ready")) (greet message))
+~~~
+`);
+
+  assert.match(html, /class="language-commonlisp"/);
+  assert.match(html, /class="syntax-namespace">demo<\/span>/);
+  assert.match(html, /class="syntax-type">person<\/span>/);
+  assert.match(html, /class="syntax-property">name<\/span>/);
+  assert.match(html, /class="syntax-function">greet<\/span>/);
+  assert.match(html, /class="syntax-parameter">person<\/span>/);
+  assert.match(html, /class="syntax-macro">withperson<\/span>/);
+  assert.match(html, /class="syntax-variable">message<\/span>/);
+});
+
 test('keeps Unicode Bash source intact through highlighting', () => {
   const html = render(`~~~bash
 ├── Builds Docker image
