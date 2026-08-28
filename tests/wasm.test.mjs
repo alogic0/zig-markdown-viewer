@@ -471,6 +471,25 @@ answer :: 42
   assert.match(html, /class="syntax-constant">answer<\/span>/);
 });
 
+test('renders C3 structural roles through WebAssembly', () => {
+  const html = render(`~~~c3
+module demo::render;
+import std::io;
+struct Item { String value; int count; }
+fn int total(Item item, int delta) { return item.count + delta; }
+fn Item make_item(String name) { io::printfn(name); return { .value = name }; }
+~~~
+`);
+
+  assert.match(html, /class="language-c3"/);
+  assert.match(html, /class="syntax-namespace">render<\/span>/);
+  assert.match(html, /class="syntax-type">Item<\/span>/);
+  assert.match(html, /class="syntax-property">value<\/span>/);
+  assert.match(html, /class="syntax-function">total<\/span>/);
+  assert.match(html, /class="syntax-parameter">delta<\/span>/);
+  assert.match(html, /class="syntax-function">printfn<\/span>/);
+});
+
 test('keeps Unicode Bash source intact through highlighting', () => {
   const html = render(`~~~bash
 ├── Builds Docker image
