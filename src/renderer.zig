@@ -8,7 +8,18 @@ const allocator = if (builtin.target.cpu.arch.isWasm())
     std.heap.wasm_allocator
 else
     std.heap.page_allocator;
-const Renderer = markdown.Renderer(*const HeadingIndex);
+const Renderer = markdown.Renderer(*const RenderContext);
+
+pub const RenderOptions = struct {
+    escape_raw_html: bool = false,
+    safe_urls: bool = false,
+};
+
+const RenderContext = struct {
+    allocator: std.mem.Allocator,
+    headings: *const HeadingIndex,
+    options: RenderOptions,
+};
 
 var input: []u8 = &.{};
 var output: []u8 = &.{};
@@ -73,9 +84,17 @@ export fn releaseOutput() void {
     output = &.{};
 }
 
-const RenderError = error{ OutOfMemory, ParseFailed, RenderFailed };
+pub const RenderError = error{ OutOfMemory, ParseFailed, RenderFailed };
 
-fn renderAlloc(gpa: std.mem.Allocator, source: []const u8) RenderError![]u8 {
+pub fn renderAlloc(gpa: std.mem.Allocator, source: []const u8) RenderError![]u8 {
+    return renderAllocOptions(gpa, source, .{});
+}
+
+pub fn renderAllocOptions(
+    gpa: std.mem.Allocator,
+    source: []const u8,
+    options: RenderOptions,
+) RenderError![]u8 {
     var parser = markdown.Parser.init(gpa) catch return error.OutOfMemory;
     defer parser.deinit();
     parser.feed(source) catch return error.ParseFailed;
@@ -85,10 +104,15 @@ fn renderAlloc(gpa: std.mem.Allocator, source: []const u8) RenderError![]u8 {
 
     var headings = HeadingIndex.init(gpa, document) catch return error.OutOfMemory;
     defer headings.deinit();
+    const context: RenderContext = .{
+        .allocator = gpa,
+        .headings = &headings,
+        .options = options,
+    };
 
     var writer: std.Io.Writer.Allocating = .init(gpa);
     errdefer writer.deinit();
-    const renderer: Renderer = .{ .context = &headings, .renderFn = renderNode };
+    const renderer: Renderer = .{ .context = &context, .renderFn = renderNode };
     renderer.render(document, &writer.writer) catch return error.RenderFailed;
     return writer.toOwnedSlice() catch return error.OutOfMemory;
 }
@@ -276,7 +300,7 @@ fn renderNode(
     const view = document.nodeAt(@backingInt(node)).?;
     switch (view.tag) {
         .heading => {
-            const heading = renderer.context.get(node).?;
+            const heading = renderer.context.headings.get(node).?;
             const level = view.data.heading.level;
             try writer.print(
                 "<h{d} id=\"{f}\"><a class=\"zig-md-heading-anchor\" href=\"#",
@@ -335,8 +359,80 @@ fn renderNode(
             }
             try writer.writeAll("</code></pre>\n");
         },
+        .html_block, .html_inline => {
+            if (!renderer.context.options.escape_raw_html) {
+                try renderer.renderDefault(document, node, writer);
+                return;
+            }
+            try writer.print("{f}", .{markdown.fmtHtml(document.string(view.data.text.content))});
+            if (view.tag == .html_block) try writer.writeByte('\n');
+        },
+        .link => {
+            if (!renderer.context.options.safe_urls or
+                isSafeUrl(document.string(view.data.link.target), true))
+            {
+                try renderer.renderDefault(document, node, writer);
+                return;
+            }
+            for (document.children(node)) |child| {
+                try renderer.renderFn(renderer, document, child, writer);
+            }
+        },
+        .image => {
+            if (!renderer.context.options.safe_urls or
+                isSafeUrl(document.string(view.data.link.target), false))
+            {
+                try renderer.renderDefault(document, node, writer);
+                return;
+            }
+            for (document.children(node)) |child| {
+                try renderer.renderFn(renderer, document, child, writer);
+            }
+        },
         else => try renderer.renderDefault(document, node, writer),
     }
+}
+
+fn isSafeUrl(raw: []const u8, is_link: bool) bool {
+    const url = std.mem.trim(u8, raw, " \t\r\n");
+    if (url.len == 0 or url[0] == '#' or std.mem.startsWith(u8, url, "//")) return true;
+
+    const boundary = std.mem.indexOfAny(u8, url, "/?#") orelse url.len;
+    const colon = std.mem.indexOfScalar(u8, url, ':') orelse {
+        const prefix = url[0..boundary];
+        if (std.mem.indexOf(u8, prefix, "&#") != null or
+            indexOfIgnoreCase(prefix, "&colon;") != null) return false;
+        return true;
+    };
+    if (boundary < colon) return true;
+    const scheme = url[0..colon];
+
+    if (std.ascii.eqlIgnoreCase(scheme, "http") or
+        std.ascii.eqlIgnoreCase(scheme, "https") or
+        std.ascii.eqlIgnoreCase(scheme, "file")) return true;
+    if (is_link and (std.ascii.eqlIgnoreCase(scheme, "mailto") or
+        std.ascii.eqlIgnoreCase(scheme, "tel"))) return true;
+    if (!is_link and std.ascii.eqlIgnoreCase(scheme, "data")) {
+        return startsWithIgnoreCase(url[colon + 1 ..], "image/png;") or
+            startsWithIgnoreCase(url[colon + 1 ..], "image/gif;") or
+            startsWithIgnoreCase(url[colon + 1 ..], "image/jpeg;") or
+            startsWithIgnoreCase(url[colon + 1 ..], "image/jpg;") or
+            startsWithIgnoreCase(url[colon + 1 ..], "image/webp;");
+    }
+    return false;
+}
+
+fn startsWithIgnoreCase(value: []const u8, prefix: []const u8) bool {
+    return value.len >= prefix.len and std.ascii.eqlIgnoreCase(value[0..prefix.len], prefix);
+}
+
+fn indexOfIgnoreCase(value: []const u8, needle: []const u8) ?usize {
+    if (needle.len == 0) return 0;
+    if (value.len < needle.len) return null;
+    for (0..value.len - needle.len + 1) |start| {
+        if (std.ascii.eqlIgnoreCase(value[start .. start + needle.len], needle)) return start;
+    }
+    return null;
 }
 
 fn writeUriFragment(writer: *std.Io.Writer, fragment: []const u8) std.Io.Writer.Error!void {
@@ -435,6 +531,29 @@ test "escapes code block language and source" {
     try std.testing.expect(std.mem.indexOf(u8, html, "&lt;a&gt;") != null);
 }
 
+test "native standalone mode escapes raw HTML and unsafe URLs" {
+    const html = try renderAllocOptions(std.testing.allocator,
+        \\<script>alert('raw')</script>
+        \\
+        \\[unsafe](javascript:alert(1))
+        \\[encoded unsafe](javascript&colon;alert(1))
+        \\![unsafe image](data:text/html,boom)
+        \\
+        \\[safe](https://ziglang.org/)
+    , .{
+        .escape_raw_html = true,
+        .safe_urls = true,
+    });
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expect(std.mem.indexOf(u8, html, "&lt;script&gt;") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "<script>") == null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "javascript:") == null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "javascript&colon;") == null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "data:text/html") == null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "href=\"https://ziglang.org/\"") != null);
+}
+
 test "highlights verified core, optional, and aliased fenced languages" {
     const html = try renderAlloc(std.testing.allocator,
         \\```js
@@ -458,6 +577,36 @@ test "highlights verified core, optional, and aliased fenced languages" {
     try std.testing.expect(std.mem.indexOf(u8, html, "syntax-property") != null);
 }
 
+test "highlights promoted GDScript Nushell AWK and Typst fences" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\```gdscript
+        \\class_name Player
+        \\func move(direction: Vector2):
+        \\    return direction.normalized()
+        \\```
+        \\```nu
+        \\def main [input: path] { open $input | lines }
+        \\```
+        \\```awk
+        \\$1 ~ /^[0-9]+$/ { print normalize($1 / 2) }
+        \\```
+        \\```typst
+        \\#let badge(body) = box()[#body]
+        \\= Report <report>
+        \\```
+    );
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-gdscript\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-type\">Player</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-nu\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-parameter\">input</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-awk\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-string\">/^[0-9]+$/</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-typst\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-label\">&lt;report&gt;</span>") != null);
+}
+
 test "unknown fenced languages remain safely escaped" {
     const html = try renderAlloc(std.testing.allocator,
         \\```unknown-language
@@ -472,16 +621,12 @@ test "unknown fenced languages remain safely escaped" {
 
 test "experimental and unsupported dialect fences remain plain" {
     const html = try renderAlloc(std.testing.allocator,
-        \\```python
-        \\def answer(): pass
-        \\```
         \\```jsx
         \\const node = <main />;
         \\```
     );
     defer std.testing.allocator.free(html);
 
-    try std.testing.expect(std.mem.indexOf(u8, html, "language-python") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "language-jsx") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "&lt;main /&gt;") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "syntax-") == null);

@@ -19,11 +19,11 @@ HTML sanitizer -> relative URL resolution -> document UI
 
 - `zig-markdown-parser` owns Markdown syntax, source spans, and deterministic
   document rendering.
-- `zig-native-syntax` supplies core and optional backends plus independent quality
-  metadata. The viewer owns an explicit allowlist of verified backends rather than
-  registering every available scanner. Its safe HTML renderer emits only escaped
-  source and stable `syntax-*` span classes; experimental, unsupported, and unknown
-  languages remain escaped plain text.
+- `zig-native-syntax` supplies core and optional backends, quality metadata, aliases,
+  and a configured registry of verified enabled backends. The viewer consumes that
+  registry without maintaining a second allowlist. Its safe HTML renderer emits only
+  escaped source and stable `syntax-*` span classes; experimental, unsupported, and
+  unknown languages remain escaped plain text.
 - Zine is the parser's upstream integration and behavior reference. Zine page
   metadata, directives, templates, and asset pipelines do not belong in a
   document-viewer extension.

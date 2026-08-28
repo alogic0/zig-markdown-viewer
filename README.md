@@ -20,6 +20,24 @@ URLs** on the extension's details page to render local files.
 No npm install, remote script, or CDN is required. Zig package dependencies used
 by optional highlighting backends are pinned by `zig-native-syntax`.
 
+## Native standalone HTML tool
+
+Render Markdown directly with the native Zig parser and syntax backends:
+
+```sh
+./build.sh render-html -- document.md -o document.html
+```
+
+The installed executable is also available as `zig-out/bin/zig-md-render` after
+a normal build. If `-o` is omitted, the tool replaces a Markdown extension with
+`.html`. The output embeds the viewer CSS and JavaScript, table of contents,
+theme switch, and code-copy controls in one file. Raw HTML is escaped and unsafe
+link and image URL schemes are removed.
+
+Use `./build.sh render-html --help` for theme, wide-screen, wrapping, and
+table-of-contents options. This native tool imports the same Zig rendering core
+as the extension; it does not instantiate the WebAssembly renderer.
+
 ## Included behavior
 
 - Common Markdown plus tables, task lists, footnotes, strikethrough,
@@ -45,6 +63,7 @@ admission criteria, and parser/tokenizer policy.
 
 ```sh
 ./build.sh test
+./build.sh check-wasm-size
 node --test tests/wasm.test.mjs
 node --test tests/standalone.test.cjs
 node --check extension/js/background.js
@@ -53,6 +72,10 @@ node --check extension/js/popup.js
 node --check extension/js/standalone.js
 node --check extension/js/wasm.js
 ```
+
+The normal test step rebuilds the release-small renderer used by the Node test
+and enforces its 575,000-byte size budget. Raising that budget requires an
+explicit reviewed change.
 
 ## Provenance
 

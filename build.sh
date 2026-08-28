@@ -8,5 +8,16 @@ if [ ! -x "${viewer_zig_exe}" ]; then
     exit 1
 fi
 
-exec "${viewer_zig_exe}" build "$@"
+# Zig handles --help before selecting a build step. Forward help following the
+# render-html step explicitly so it reaches the renderer instead.
+if [ "$#" -ge 2 ] && [ "$1" = "render-html" ]; then
+    case "$2" in
+        -h|--help)
+            renderer_help_flag="$2"
+            shift 2
+            set -- render-html -- "${renderer_help_flag}" "$@"
+            ;;
+    esac
+fi
 
+exec "${viewer_zig_exe}" build "$@"

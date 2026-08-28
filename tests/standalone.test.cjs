@@ -161,6 +161,62 @@ test('keeps code copy controls visible without hover', () => {
   );
 });
 
+test('matches the Zig 0.17 standalone language reference code style', () => {
+  const light = contentCss.match(/^:root \{([\s\S]*?)^\}/m)[1];
+  const dark = contentCss.match(
+    /^:root\[data-zig-markdown-theme='dark'\] \{([\s\S]*?)^\}/m
+  )[1];
+
+  for (const declaration of [
+    '--zig-md-bg: #ffffff;',
+    '--zig-md-code: #f8f8f8;',
+    '--zig-md-code-text: #000000;',
+    '--zig-md-syntax-comment: #545454;',
+    '--zig-md-syntax-keyword: #333333;',
+    '--zig-md-syntax-string: #dd1144;',
+    '--zig-md-syntax-builtin: #005c7a;',
+    '--zig-md-syntax-null: #005c5c;',
+    '--zig-md-syntax-number: #005c5c;',
+    '--zig-md-syntax-function: #990000;',
+    '--zig-md-syntax-type: #445588;',
+  ]) {
+    assert.ok(light.includes(declaration), `missing light style: ${declaration}`);
+  }
+
+  for (const declaration of [
+    '--zig-md-bg: #121212;',
+    '--zig-md-code: #222222;',
+    '--zig-md-code-text: #cccccc;',
+    '--zig-md-syntax-comment: #aaaa77;',
+    '--zig-md-syntax-keyword: #eeeeee;',
+    '--zig-md-syntax-string: #22ee55;',
+    '--zig-md-syntax-builtin: #ff894c;',
+    '--zig-md-syntax-null: #ff8080;',
+    '--zig-md-syntax-number: #ff8080;',
+    '--zig-md-syntax-function: #b1a0f8;',
+    '--zig-md-syntax-type: #6688ff;',
+  ]) {
+    assert.ok(dark.includes(declaration), `missing dark style: ${declaration}`);
+  }
+
+  assert.match(
+    contentCss,
+    /:is\(\.syntax-comment, \.syntax-documentation\) \{[^}]*font-style: italic;/s
+  );
+  assert.match(
+    contentCss,
+    /:is\(\.syntax-keyword, \.syntax-macro\) \{[^}]*font-weight: bold;/s
+  );
+  assert.match(
+    contentCss,
+    /:is\(\.syntax-function, \.syntax-constructor\) \{[^}]*font-weight: bold;/s
+  );
+  assert.match(
+    contentCss,
+    /:is\(\.syntax-type,[^}]*\.syntax-property\) \{[^}]*font-weight: bold;/s
+  );
+});
+
 test('falls back to safe display settings', () => {
   const html = standalone.buildHtml({
     title: '',

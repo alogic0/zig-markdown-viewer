@@ -73,10 +73,107 @@ const answer = 42;
 ~~~ziggy
 answer = 42
 ~~~
+
+~~~toml
+title = "demo"
+~~~
+
+~~~yml
+name: "demo"
+enabled: true
+~~~
+
+~~~py
+def greet(name: str):
+    return name.upper()
+~~~
+
+~~~sql
+SELECT count("user_id") WHERE id = :id;
+~~~
+
+~~~terraform
+enabled = true
+name = format("app")
+~~~
+
+~~~makefile
+app:
+	echo hi
+~~~
+
+~~~cmake
+if(ON)
+  message("ready")
+endif()
+~~~
+
+~~~kdl
+service image="demo" enabled=true
+~~~
+
+~~~sshconfig
+Host demo
+  Port 2222
+~~~
+
+~~~git-commit
+feat: render safely
+~~~
+
+~~~gitrebase
+pick abc123 render safely
+exec echo done
+~~~
+
+~~~gettext
+msgid "file"
+msgstr[0] "Datei"
+~~~
+
+~~~ninja
+rule cc
+  command = cc $in
+build app: cc main.c
+~~~
+
+~~~docker
+RUN echo "$HOME"
+~~~
 `);
   assert.match(html, /class="syntax-keyword">const<\/span>/);
   assert.match(html, /syntax-tag/);
   assert.match(html, /syntax-property/);
+  assert.match(html, /class="language-toml"/);
+  assert.match(html, /class="syntax-property">title<\/span>/);
+  assert.match(html, /class="language-yml"/);
+  assert.match(html, /class="syntax-property">enabled<\/span>/);
+  assert.match(html, /class="syntax-boolean">true<\/span>/);
+  assert.match(html, /class="language-py"/);
+  assert.match(html, /class="syntax-parameter">name<\/span>/);
+  assert.match(html, /class="syntax-function syntax-property">upper<\/span>/);
+  assert.match(html, /class="language-sql"/);
+  assert.match(html, /class="syntax-parameter">:id<\/span>/);
+  assert.match(html, /class="language-terraform"/);
+  assert.match(html, /class="syntax-function">format<\/span>/);
+  assert.match(html, /class="language-makefile"/);
+  assert.match(html, /syntax-builtin syntax-embedded syntax-function">echo<\/span>/);
+  assert.match(html, /class="language-cmake"/);
+  assert.match(html, /class="syntax-function">message<\/span>/);
+  assert.match(html, /class="language-kdl"/);
+  assert.match(html, /class="syntax-tag">service<\/span>/);
+  assert.match(html, /class="language-sshconfig"/);
+  assert.match(html, /class="syntax-property">Port<\/span>/);
+  assert.match(html, /class="language-git-commit"/);
+  assert.match(html, /syntax-keyword syntax-markup-heading">feat<\/span>/);
+  assert.match(html, /class="language-gitrebase"/);
+  assert.match(html, /class="syntax-constant">abc123<\/span>/);
+  assert.match(html, /class="language-gettext"/);
+  assert.match(html, /class="syntax-keyword">msgstr<\/span>/);
+  assert.match(html, /class="language-ninja"/);
+  assert.match(html, /class="syntax-type">cc<\/span>/);
+  assert.match(html, /class="language-docker"/);
+  assert.match(html, /syntax-builtin syntax-embedded syntax-function">echo<\/span>/);
 });
 
 test('preserves exact structural highlighting through WebAssembly', () => {
@@ -99,6 +196,131 @@ const answer = thing.value();
   );
 });
 
+test('renders newly verified language families through WebAssembly', () => {
+  const html = render(`~~~c++
+class Widget { void render(int value) {} };
+~~~
+
+~~~mlir
+func.func @add(%lhs: i32, %rhs: i32) -> i32
+~~~
+
+~~~tablegen
+def ADD : Instruction { let Pattern = !if(true, $lhs, $rhs); }
+~~~
+
+~~~fortran
+MODULE Demo
+INTEGER :: Count
+END MODULE Demo
+~~~
+
+~~~vue
+<script>function greet(name) { return name; }</script><p>{{ greet(user.name) }}</p>
+~~~
+
+~~~astro
+---
+const title = makeTitle(user.name);
+---
+<h1>{title}</h1>
+~~~
+`);
+
+  assert.match(html, /class="language-c\+\+"/);
+  assert.match(html, /class="syntax-type">Widget<\/span>/);
+  assert.match(html, /class="syntax-parameter">value<\/span>/);
+  assert.match(html, /class="language-mlir"/);
+  assert.match(html, /class="syntax-function">@add<\/span>/);
+  assert.match(html, /class="syntax-variable">%lhs<\/span>/);
+  assert.match(html, /class="language-tablegen"/);
+  assert.match(html, /class="syntax-constant">ADD<\/span>/);
+  assert.match(html, /class="syntax-builtin">!if<\/span>/);
+  assert.match(html, /class="language-fortran"/);
+  assert.match(html, /class="syntax-keyword">MODULE<\/span>/);
+  assert.match(html, /class="language-vue"/);
+  assert.match(html, /syntax-embedded syntax-function">greet<\/span>/);
+  assert.match(html, /class="language-astro"/);
+  assert.match(html, /syntax-embedded syntax-function">makeTitle<\/span>/);
+});
+
+test('renders PHP Objective-C Nix and Fish structural roles through WebAssembly', () => {
+  const html = render(`~~~php
+<main><?php class Greeter { function greet(string $name) { return new Result(); } } ?></main>
+~~~
+
+~~~objective-c
+@interface Greeter : NSObject
+@property(nonatomic, copy) NSString *prefix;
+- (NSString *)greet:(NSString *)name;
+@end
+~~~
+
+~~~nixos
+let render = { name }: { service.title = "Hello \${name}"; }; in render
+~~~
+
+~~~fish-shell
+function greet --argument-names name
+    printf '%s' $name | string collect
+end
+~~~
+`);
+
+  assert.match(html, /class="language-php"/);
+  assert.match(html, /class="syntax-embedded syntax-tag">main<\/span>/);
+  assert.match(html, /syntax-embedded syntax-type syntax-variable">Greeter<\/span>/);
+  assert.match(html, /syntax-embedded syntax-parameter syntax-variable">\$name<\/span>/);
+  assert.match(html, /syntax-constructor syntax-embedded syntax-function">Result<\/span>/);
+  assert.match(html, /class="language-objective-c"/);
+  assert.match(html, /class="syntax-keyword">@interface<\/span>/);
+  assert.match(html, /class="syntax-property syntax-variable">prefix<\/span>/);
+  assert.match(html, /class="syntax-parameter syntax-variable">name<\/span>/);
+  assert.match(html, /class="language-nixos"/);
+  assert.match(html, /class="syntax-variable">render<\/span>/);
+  assert.match(html, /class="syntax-property">service<\/span>/);
+  assert.match(html, /syntax-special syntax-string">\$\{<\/span>/);
+  assert.match(html, /class="language-fish-shell"/);
+  assert.match(html, /class="syntax-function">greet<\/span>/);
+  assert.match(html, /class="syntax-parameter">name<\/span>/);
+  assert.match(html, /syntax-builtin syntax-function">printf<\/span>/);
+});
+
+test('renders GDScript Nushell AWK and Typst structural roles through WebAssembly', () => {
+  const html = render(`~~~gdscript
+class_name Player
+func move(direction: Vector2):
+    return direction.normalized()
+~~~
+
+~~~nu
+def main [input: path] { open $input | lines }
+~~~
+
+~~~awk
+$1 ~ /^[0-9]+$/ { print normalize($1 / 2) }
+~~~
+
+~~~typst
+#let badge(body) = box()[#body]
+= Report <report>
+~~~
+`);
+
+  assert.match(html, /class="language-gdscript"/);
+  assert.match(html, /class="syntax-type">Player<\/span>/);
+  assert.match(html, /class="syntax-parameter">direction<\/span>/);
+  assert.match(html, /class="language-nu"/);
+  assert.match(html, /class="syntax-function">main<\/span>/);
+  assert.match(html, /class="syntax-parameter">input<\/span>/);
+  assert.match(html, /class="language-awk"/);
+  assert.match(html, /class="syntax-string">\/\^\[0-9\]\+\$\/<\/span>/);
+  assert.match(html, /class="syntax-function">normalize<\/span>/);
+  assert.match(html, /class="language-typst"/);
+  assert.match(html, /class="syntax-embedded syntax-function">badge<\/span>/);
+  assert.match(html, /class="syntax-label">&lt;report&gt;<\/span>/);
+});
+
 test('keeps Unicode Bash source intact through highlighting', () => {
   const html = render(`~~~bash
 ├── Builds Docker image
@@ -109,15 +331,10 @@ test('keeps Unicode Bash source intact through highlighting', () => {
 });
 
 test('leaves experimental and unsupported dialect fences plain', () => {
-  const html = render(`~~~python
-def answer(): pass
-~~~
-
-~~~jsx
+  const html = render(`~~~jsx
 const node = <main />;
 ~~~
 `);
-  assert.match(html, /class="language-python">def answer\(\): pass/);
   assert.match(html, /class="language-jsx">const node = &lt;main \/&gt;;/);
   assert.doesNotMatch(html, /syntax-/);
 });
