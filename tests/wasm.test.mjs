@@ -321,6 +321,44 @@ $1 ~ /^[0-9]+$/ { print normalize($1 / 2) }
   assert.match(html, /class="syntax-label">&lt;report&gt;<\/span>/);
 });
 
+test('renders Elixir Julia Haskell and Perl structural roles through WebAssembly', () => {
+  const html = render(`~~~elixir
+defmodule Demo.Worker do
+  def run(input), do: Regex.match?(~r/foo/, input)
+end
+~~~
+
+~~~julia
+module Geometry
+function area(circle::Circle)
+    @assert circle.radius > 0
+end
+end
+~~~
+
+~~~haskell
+module Demo.Shapes where
+data Shape = Circle Double
+area shape = 1
+~~~
+
+~~~perl
+package Demo::Worker;
+sub run ($input) { my $pattern = qr/foo/; say $input; }
+~~~
+`);
+
+  assert.match(html, /class="language-elixir"/);
+  assert.match(html, /class="syntax-namespace">Demo<\/span>/);
+  assert.match(html, /class="language-julia"/);
+  assert.match(html, /syntax-attribute syntax-macro">@assert<\/span>/);
+  assert.match(html, /class="language-haskell"/);
+  assert.match(html, /class="syntax-constructor">Circle<\/span>/);
+  assert.match(html, /class="language-perl"/);
+  assert.match(html, /syntax-parameter syntax-variable">\$input<\/span>/);
+  assert.match(html, /syntax-special syntax-string">qr<\/span>/);
+});
+
 test('keeps Unicode Bash source intact through highlighting', () => {
   const html = render(`~~~bash
 ├── Builds Docker image

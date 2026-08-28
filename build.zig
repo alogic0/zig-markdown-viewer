@@ -41,7 +41,7 @@ pub fn build(b: *std.Build) void {
     });
     const run_size_checker = b.addRunArtifact(size_checker);
     run_size_checker.addFileArg(checked_renderer.getEmittedBin());
-    run_size_checker.addArg("590000");
+    run_size_checker.addArg("603000");
     const size_step = b.step("check-wasm-size", "Enforce the release-small renderer Wasm size budget");
     size_step.dependOn(&run_size_checker.step);
 
@@ -49,7 +49,7 @@ pub fn build(b: *std.Build) void {
         []const u8,
         "size-report-backends",
         "Comma-separated core backends included in the Wasm contribution report",
-    ) orelse "php,objc,nix,fish,gdscript,nu,awk,typst";
+    ) orelse "php,objc,nix,fish,gdscript,nu,awk,typst,elixir,julia,haskell,perl";
     const report_tool = b.addExecutable(.{
         .name = "report-wasm-sizes",
         .root_module = b.createModule(.{

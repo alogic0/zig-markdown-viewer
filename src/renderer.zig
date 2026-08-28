@@ -607,6 +607,43 @@ test "highlights promoted GDScript Nushell AWK and Typst fences" {
     try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-label\">&lt;report&gt;</span>") != null);
 }
 
+test "highlights promoted Elixir Julia Haskell and Perl fences" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\```elixir
+        \\defmodule Demo.Worker do
+        \\  def run(input), do: Regex.match?(~r/foo/, input)
+        \\end
+        \\```
+        \\```julia
+        \\module Geometry
+        \\function area(circle::Circle)
+        \\    @assert circle.radius > 0
+        \\end
+        \\end
+        \\```
+        \\```haskell
+        \\module Demo.Shapes where
+        \\data Shape = Circle Double
+        \\area shape = 1
+        \\```
+        \\```perl
+        \\package Demo::Worker;
+        \\sub run ($input) { my $pattern = qr/foo/; say $input; }
+        \\```
+    );
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-elixir\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-namespace\">Demo</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-julia\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "syntax-attribute syntax-macro\">@assert</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-haskell\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-constructor\">Circle</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-perl\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "syntax-parameter syntax-variable\">$input</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "syntax-special syntax-string\">qr</span>") != null);
+}
+
 test "unknown fenced languages remain safely escaped" {
     const html = try renderAlloc(std.testing.allocator,
         \\```unknown-language
