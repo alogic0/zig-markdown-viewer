@@ -577,6 +577,36 @@ test "highlights verified core, optional, and aliased fenced languages" {
     try std.testing.expect(std.mem.indexOf(u8, html, "syntax-property") != null);
 }
 
+test "highlights promoted GDScript Nushell AWK and Typst fences" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\```gdscript
+        \\class_name Player
+        \\func move(direction: Vector2):
+        \\    return direction.normalized()
+        \\```
+        \\```nu
+        \\def main [input: path] { open $input | lines }
+        \\```
+        \\```awk
+        \\$1 ~ /^[0-9]+$/ { print normalize($1 / 2) }
+        \\```
+        \\```typst
+        \\#let badge(body) = box()[#body]
+        \\= Report <report>
+        \\```
+    );
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-gdscript\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-type\">Player</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-nu\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-parameter\">input</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-awk\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-string\">/^[0-9]+$/</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-typst\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-label\">&lt;report&gt;</span>") != null);
+}
+
 test "unknown fenced languages remain safely escaped" {
     const html = try renderAlloc(std.testing.allocator,
         \\```unknown-language

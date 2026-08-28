@@ -286,6 +286,41 @@ end
   assert.match(html, /syntax-builtin syntax-function">printf<\/span>/);
 });
 
+test('renders GDScript Nushell AWK and Typst structural roles through WebAssembly', () => {
+  const html = render(`~~~gdscript
+class_name Player
+func move(direction: Vector2):
+    return direction.normalized()
+~~~
+
+~~~nu
+def main [input: path] { open $input | lines }
+~~~
+
+~~~awk
+$1 ~ /^[0-9]+$/ { print normalize($1 / 2) }
+~~~
+
+~~~typst
+#let badge(body) = box()[#body]
+= Report <report>
+~~~
+`);
+
+  assert.match(html, /class="language-gdscript"/);
+  assert.match(html, /class="syntax-type">Player<\/span>/);
+  assert.match(html, /class="syntax-parameter">direction<\/span>/);
+  assert.match(html, /class="language-nu"/);
+  assert.match(html, /class="syntax-function">main<\/span>/);
+  assert.match(html, /class="syntax-parameter">input<\/span>/);
+  assert.match(html, /class="language-awk"/);
+  assert.match(html, /class="syntax-string">\/\^\[0-9\]\+\$\/<\/span>/);
+  assert.match(html, /class="syntax-function">normalize<\/span>/);
+  assert.match(html, /class="language-typst"/);
+  assert.match(html, /class="syntax-embedded syntax-function">badge<\/span>/);
+  assert.match(html, /class="syntax-label">&lt;report&gt;<\/span>/);
+});
+
 test('keeps Unicode Bash source intact through highlighting', () => {
   const html = render(`~~~bash
 ├── Builds Docker image
