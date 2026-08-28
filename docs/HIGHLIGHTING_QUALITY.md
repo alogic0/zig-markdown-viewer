@@ -80,9 +80,9 @@ registry. Exclusion takes precedence when the same name appears in both lists.
 
 The reviewed release-small budget is 640,000 bytes. Release builds remove the
 optional WebAssembly function-name custom section after linking while debug
-builds retain it. After promoting Comment Tags, the complete stripped renderer
-measures 615,884 bytes. Comment Tags has a 1,097-byte marginal contribution
-when excluded from the complete build and leaves 24,116 bytes for
+builds retain it. After promoting dedicated DTD highlighting, the complete
+stripped renderer measures 619,881 bytes. DTD has a 3,568-byte marginal
+contribution when excluded from the complete build and leaves 20,119 bytes for
 reviewed language-quality work. The hard limit guards against large accidental
 regressions; every language
 slice still records its actual size rather than treating the available headroom

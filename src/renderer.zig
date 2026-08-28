@@ -1136,6 +1136,33 @@ test "highlights verified comment-tag roles" {
     try std.testing.expect(std.mem.indexOf(u8, html, "&lt;unsafe&gt;&amp;") != null);
 }
 
+test "highlights verified DTD declaration roles" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\```dtd
+        \\<!ELEMENT note (to,from,heading,body)>
+        \\<!ATTLIST note id ID #REQUIRED status (draft|final) "draft">
+        \\<!ENTITY % shared "INCLUDE">
+        \\%shared;
+        \\<!ENTITY writer "Oleg &amp; Co.">
+        \\<!NOTATION gif SYSTEM "image/gif">
+        \\<![IGNORE[ <!ELEMENT ignored ANY> ]]>
+        \\<!-- comment -->
+        \\<?audit source?>
+        \\```
+    );
+    defer std.testing.allocator.free(html);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-dtd\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-keyword\">ELEMENT</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-tag\">note</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-attribute\">id</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-type\">ID</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-constant\">draft</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "syntax-escape") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-comment\">&lt;![</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "syntax-comment syntax-keyword\">IGNORE</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-special\">&lt;?audit source?&gt;</span>") != null);
+}
+
 test "unknown fenced languages remain safely escaped" {
     const html = try renderAlloc(std.testing.allocator,
         \\```unknown-language

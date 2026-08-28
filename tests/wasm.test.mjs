@@ -817,6 +817,31 @@ FIXME: escape <unsafe>& bytes
   assert.match(html, /&lt;unsafe&gt;&amp;/);
 });
 
+test('renders verified DTD declaration roles through WebAssembly', () => {
+  const html = render(`~~~dtd
+<!ELEMENT note (to,from,heading,body)>
+<!ATTLIST note id ID #REQUIRED status (draft|final) "draft">
+<!ENTITY % shared "INCLUDE">
+%shared;
+<!ENTITY writer "Oleg &amp; Co.">
+<!NOTATION gif SYSTEM "image/gif">
+<![IGNORE[ <!ELEMENT ignored ANY> ]]>
+<!-- comment -->
+<?audit source?>
+~~~
+`);
+  assert.match(html, /class="language-dtd"/);
+  assert.match(html, /class="syntax-keyword">ELEMENT<\/span>/);
+  assert.match(html, /class="syntax-tag">note<\/span>/);
+  assert.match(html, /class="syntax-attribute">id<\/span>/);
+  assert.match(html, /class="syntax-type">ID<\/span>/);
+  assert.match(html, /class="syntax-constant">draft<\/span>/);
+  assert.match(html, /syntax-escape/);
+  assert.match(html, /class="syntax-comment">&lt;!\[<\/span>/);
+  assert.match(html, /syntax-comment syntax-keyword">IGNORE<\/span>/);
+  assert.match(html, /class="syntax-special">&lt;\?audit source\?&gt;<\/span>/);
+});
+
 test('keeps Unicode Bash source intact through highlighting', () => {
   const html = render(`~~~bash
 ├── Builds Docker image
