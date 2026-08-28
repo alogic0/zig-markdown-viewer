@@ -70,10 +70,12 @@ registry. Exclusion takes precedence when the same name appears in both lists.
 
 The reviewed release-small budget is 603,000 bytes. Release builds remove the
 optional WebAssembly function-name custom section after linking while debug
-builds retain it. After promoting structural Nim, the complete stripped
-renderer measures 599,590 bytes. Nim contributes 1,410 marginal bytes by
-reusing the declaration parser and leaves 3,410 bytes without weakening the
-default registry.
+builds retain it. After promoting NASM and replacing the Assembly configurations
+with their shared dedicated scanner, the complete stripped renderer measures
+602,879 bytes. The shared Assembly/NASM implementation adds 3,289 linked bytes
+over the post-Nim baseline and leaves 121 bytes without weakening the default
+registry. Excluding either dialect alone removes only its small wrapper because
+the other dialect retains the shared scanner.
 
 Promotion is a reviewed `SupportLevel` change in `zig-native-syntax`. Once its conformance gate
 passes, the configured registry makes the backend visible to the viewer without a viewer source

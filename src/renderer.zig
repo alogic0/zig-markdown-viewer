@@ -931,6 +931,40 @@ test "highlights promoted Nim structural roles" {
     try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-constructor\">Person</span>") != null);
 }
 
+test "highlights verified Assembly and NASM lexical roles" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\```asm
+        \\.macro save reg
+        \\  push \\reg
+        \\.endm
+        \\.globl start
+        \\start:
+        \\  mov $42, %rax
+        \\  call render
+        \\```
+        \\```nasm
+        \\%define COUNT 42
+        \\section .text
+        \\global start
+        \\start:
+        \\  mov rax, COUNT
+        \\  jmp .done
+        \\.done:
+        \\  ret
+        \\```
+    );
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-asm\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-macro\">.macro</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-type\">%rax</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-label\">render</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-nasm\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-macro\">%define</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-macro\">COUNT</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-label\">.done</span>") != null);
+}
+
 test "unknown fenced languages remain safely escaped" {
     const html = try renderAlloc(std.testing.allocator,
         \\```unknown-language

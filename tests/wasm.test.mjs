@@ -626,6 +626,39 @@ proc makePerson(name: string): Person = Person(name: name)
   assert.match(html, /class="syntax-constructor">Person<\/span>/);
 });
 
+test('renders verified Assembly and NASM roles through WebAssembly', () => {
+  const html = render(`~~~asm
+.macro save reg
+  push \\reg
+.endm
+.globl start
+start:
+  mov $42, %rax
+  call render
+~~~
+
+~~~nasm
+%define COUNT 42
+section .text
+global start
+start:
+  mov rax, COUNT
+  jmp .done
+.done:
+  ret
+~~~
+`);
+
+  assert.match(html, /class="language-asm"/);
+  assert.match(html, /class="syntax-macro">\.macro<\/span>/);
+  assert.match(html, /class="syntax-type">%rax<\/span>/);
+  assert.match(html, /class="syntax-label">render<\/span>/);
+  assert.match(html, /class="language-nasm"/);
+  assert.match(html, /class="syntax-macro">%define<\/span>/);
+  assert.match(html, /class="syntax-macro">COUNT<\/span>/);
+  assert.match(html, /class="syntax-label">\.done<\/span>/);
+});
+
 test('keeps Unicode Bash source intact through highlighting', () => {
   const html = render(`~~~bash
 ├── Builds Docker image
