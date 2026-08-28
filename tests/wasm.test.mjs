@@ -680,6 +680,33 @@ let (offset = 2) rounded_box(radius = offset);
   assert.match(html, /class="syntax-variable">offset<\/span>/);
 });
 
+test('renders Hare structural roles through WebAssembly', () => {
+  const html = render(`~~~hare
+use fmt;
+type coords = struct { x: int, y: int };
+def DEFAULT_LIMIT: size = 5;
+fn translate(point: coords, dx: int) coords = {
+  return coords { x = point.x + dx, y = point.y };
+};
+export fn main() void = {
+  const origin = coords { x = 1, y = 2 };
+  fmt::printfln("{}", translate(origin, DEFAULT_LIMIT))!;
+};
+~~~
+`);
+
+  assert.match(html, /class="language-hare"/);
+  assert.match(html, /class="syntax-namespace">fmt<\/span>/);
+  assert.match(html, /class="syntax-type">coords<\/span>/);
+  assert.match(html, /class="syntax-property">x<\/span>/);
+  assert.match(html, /class="syntax-constant">DEFAULT_LIMIT<\/span>/);
+  assert.match(html, /class="syntax-function">translate<\/span>/);
+  assert.match(html, /class="syntax-parameter">point<\/span>/);
+  assert.match(html, /class="syntax-constructor">coords<\/span>/);
+  assert.match(html, /class="syntax-variable">origin<\/span>/);
+  assert.match(html, /class="syntax-function">printfln<\/span>/);
+});
+
 test('keeps Unicode Bash source intact through highlighting', () => {
   const html = render(`~~~bash
 ├── Builds Docker image

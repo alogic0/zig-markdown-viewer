@@ -80,9 +80,9 @@ registry. Exclusion takes precedence when the same name appears in both lists.
 
 The reviewed release-small budget is 640,000 bytes. Release builds remove the
 optional WebAssembly function-name custom section after linking while debug
-builds retain it. After promoting structural OpenSCAD, the complete stripped
-renderer measures 603,916 bytes. That slice adds 1,037 bytes over the
-Assembly/NASM baseline and leaves 36,084 bytes for reviewed language-quality
+builds retain it. After promoting structural Hare, the complete stripped
+renderer measures 605,024 bytes. That slice adds 1,108 bytes over the
+post-OpenSCAD baseline and leaves 34,976 bytes for reviewed language-quality
 work. The hard limit guards against large accidental regressions; every language
 slice still records its actual size rather than treating the available headroom
 as a target. Shared implementations should be measured with the group-reporting

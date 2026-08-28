@@ -988,6 +988,35 @@ test "highlights promoted OpenSCAD structural roles" {
     try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-variable\">offset</span>") != null);
 }
 
+test "highlights promoted Hare structural roles" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\```hare
+        \\use fmt;
+        \\type coords = struct { x: int, y: int };
+        \\def DEFAULT_LIMIT: size = 5;
+        \\fn translate(point: coords, dx: int) coords = {
+        \\  return coords { x = point.x + dx, y = point.y };
+        \\};
+        \\export fn main() void = {
+        \\  const origin = coords { x = 1, y = 2 };
+        \\  fmt::printfln("{}", translate(origin, DEFAULT_LIMIT))!;
+        \\};
+        \\```
+    );
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-hare\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-namespace\">fmt</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-type\">coords</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-property\">x</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-constant\">DEFAULT_LIMIT</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-function\">translate</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-parameter\">point</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-constructor\">coords</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-variable\">origin</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-function\">printfln</span>") != null);
+}
+
 test "unknown fenced languages remain safely escaped" {
     const html = try renderAlloc(std.testing.allocator,
         \\```unknown-language
