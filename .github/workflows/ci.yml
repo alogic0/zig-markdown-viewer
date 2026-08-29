@@ -85,11 +85,48 @@ jobs:
           ./build.sh package-extension
           sha256sum --check /tmp/zig-markdown-viewer.sha256
           unzip -t zig-out/dist/zig-markdown-viewer-0.1.0.zip
+          sha256sum zig-out/dist/zig-markdown-viewer-0.1.0.zip > zig-out/dist/zig-markdown-viewer-0.1.0.zip.sha256
           rm /tmp/zig-markdown-viewer.sha256
 
       - name: Upload release package
         uses: actions/upload-artifact@v4
         with:
           name: zig-markdown-viewer-0.1.0
-          path: zig-out/dist/zig-markdown-viewer-0.1.0.zip
+          path: |
+            zig-out/dist/zig-markdown-viewer-0.1.0.zip
+            zig-out/dist/zig-markdown-viewer-0.1.0.zip.sha256
           if-no-files-found: error
+
+  release:
+    name: Publish GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download verified release package
+        uses: actions/download-artifact@v4
+        with:
+          name: zig-markdown-viewer-0.1.0
+          path: dist
+
+      - name: Extract release notes
+        shell: bash
+        run: |
+          awk '/^## \[0.1.0\]/{copy=1} copy && /^\[Unreleased\]:/{exit} copy' CHANGELOG.md > /tmp/zig-markdown-viewer-release-notes.md
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            dist/zig-markdown-viewer-0.1.0.zip \
+            dist/zig-markdown-viewer-0.1.0.zip.sha256 \
+            --verify-tag \
+            --title "Zig Markdown Viewer ${GITHUB_REF_NAME}" \
+            --notes-file /tmp/zig-markdown-viewer-release-notes.md
+          rm /tmp/zig-markdown-viewer-release-notes.md

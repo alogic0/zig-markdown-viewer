@@ -46,8 +46,8 @@ navigation, code copying, printing, and standalone HTML export.
    to pass.
 2. Create an annotated `vMAJOR.MINOR.PATCH` tag at the verified commit and push
    the tag.
-3. Create a GitHub Release from the matching changelog section.
-4. Attach the versioned ZIP and its SHA-256 checksum to the GitHub Release.
+3. Confirm the tag workflow creates a GitHub Release from the matching
+   changelog section and attaches the verified ZIP and SHA-256 checksum.
 5. Upload the same ZIP to the Chrome Web Store dashboard, complete the listing
    and privacy fields from `docs/CHROME_WEB_STORE.md`, and submit for review.
 6. After publication, install the store build in a clean Chrome profile and
