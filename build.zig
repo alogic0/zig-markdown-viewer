@@ -86,6 +86,9 @@ pub fn build(b: *std.Build) void {
         }),
     });
     const run_extension_packager = b.addRunArtifact(extension_packager);
+    // The packager discovers extension assets recursively, so it must run even
+    // when the build graph cannot enumerate a directory's changed children.
+    run_extension_packager.has_side_effects = true;
     run_extension_packager.addArg(release_version);
     run_extension_packager.addDirectoryArg(b.path("extension"));
     run_extension_packager.addFileArg(checked_renderer);
