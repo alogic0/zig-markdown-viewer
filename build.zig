@@ -32,6 +32,10 @@ pub fn build(b: *std.Build) void {
         renderer
     else
         addWasmRenderer(b, strip_wasm_names, "renderer", wasm_target, .small, syntax_inclusions, syntax_exclusions);
+    const baseline_renderer = if (syntax_inclusions.len == 0 and syntax_exclusions.len == 0)
+        checked_renderer
+    else
+        addWasmRenderer(b, strip_wasm_names, "renderer", wasm_target, .small, "", "");
 
     b.installDirectory(.{
         .source_dir = b.path("extension"),
@@ -53,10 +57,23 @@ pub fn build(b: *std.Build) void {
         }),
     });
     const run_size_checker = b.addRunArtifact(size_checker);
-    run_size_checker.addFileArg(checked_renderer);
-    run_size_checker.addArg("640000");
-    const size_step = b.step("check-wasm-size", "Enforce the release-small renderer Wasm size budget");
+    run_size_checker.addFileArg(baseline_renderer);
+    run_size_checker.addFileArg(b.path("tools/renderer_wasm_size.txt"));
+    const size_step = b.step("check-wasm-size", "Compare the release-small renderer Wasm size with its checked-in baseline");
     size_step.dependOn(&run_size_checker.step);
+
+    const write_size_baseline = b.addRunArtifact(size_checker);
+    write_size_baseline.addArg("--write");
+    write_size_baseline.addFileArg(baseline_renderer);
+    const generated_size_baseline = write_size_baseline.captureStdOut(.{});
+    const update_size_baseline = b.addUpdateSourceFiles();
+    update_size_baseline.addCopyFileToSource(generated_size_baseline, "tools/renderer_wasm_size.txt");
+    update_size_baseline.step.dependOn(&write_size_baseline.step);
+    const update_size_step = b.step(
+        "update-wasm-size-baseline",
+        "Update the checked-in renderer Wasm size after reviewing an intentional change",
+    );
+    update_size_step.dependOn(&update_size_baseline.step);
 
     const size_report_backends = b.option(
         []const u8,
@@ -173,6 +190,14 @@ pub fn build(b: *std.Build) void {
         }),
     });
     test_step.dependOn(&b.addRunArtifact(strip_wasm_names_tests).step);
+    const size_checker_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("tools/check_wasm_size.zig"),
+            .target = b.graph.host,
+            .optimize = .debug,
+        }),
+    });
+    test_step.dependOn(&b.addRunArtifact(size_checker_tests).step);
 
     const render_html_tests_root = b.createModule(.{
         .root_source_file = b.path("tools/render_html.zig"),

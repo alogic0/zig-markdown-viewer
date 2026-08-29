@@ -74,8 +74,12 @@ node --check extension/js/wasm.js
 ```
 
 The normal test step rebuilds the release-small renderer used by the Node test
-and enforces its 640,000-byte size budget. Raising that budget requires an
-explicit reviewed change.
+and compares its exact byte size with
+[`tools/renderer_wasm_size.txt`](tools/renderer_wasm_size.txt). The check prints
+a signed difference and rejects unreviewed growth or shrinkage. Binary-size
+checks prevent accidental growth; they do not prohibit justified growth.
+Intentional changes are accepted after reviewing `./build.sh wasm-size-report`
+and running `./build.sh update-wasm-size-baseline` to record the new size.
 
 ## Provenance
 

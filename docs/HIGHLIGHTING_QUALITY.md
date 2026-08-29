@@ -49,7 +49,8 @@ A backend can enter the viewer registry only after all applicable requirements a
 6. Every accepted alias represents syntax the backend actually understands.
 7. Native and WebAssembly paths produce the same source-preserving result.
 8. Backend failure falls back to escaped plain text.
-9. The complete release-small renderer remains within the reviewed Wasm size budget.
+9. Its complete release-small renderer size change is measured and the checked-in baseline is
+   updated as part of the reviewed slice.
 
 Run `./build.sh wasm-size-report` to report the release-small renderer size and
 the marginal linked bytes for the selected core backends. Override the default
@@ -80,17 +81,21 @@ canonical name only for analysis and excluding it in the comparison build:
 Analysis inclusion does not change a backend's `SupportLevel` or the normal
 registry. Exclusion takes precedence when the same name appears in both lists.
 
-The reviewed release-small budget is 640,000 bytes. Release builds remove the
-optional WebAssembly function-name custom section after linking while debug
-builds retain it. After consolidating structural Fortran highlighting into one
-source pass, the complete stripped renderer measures 632,145 bytes, 796 bytes
-less than the temporary two-pass implementation. Fortran has an 8,314-byte
-marginal contribution when excluded from the complete build and leaves 7,855
-bytes for reviewed language-quality work. The hard limit guards against large accidental
-regressions; every language slice still records its actual size rather than
-treating the available headroom as a target. Shared implementations should be
-measured with the group-reporting option because excluding one retaining
-backend removes only its wrapper.
+Release builds remove the optional WebAssembly function-name custom section
+after linking while debug builds retain it. The exact release-small size is
+stored in `tools/renderer_wasm_size.txt`. `./build.sh check-wasm-size` reports a
+signed difference from that baseline and rejects any unexplained change in
+either direction. After measuring and reviewing an intentional change, run
+`./build.sh update-wasm-size-baseline` and include the updated baseline in the
+same slice.
+
+Binary-size checks prevent accidental growth; they do not prohibit justified
+growth. Intentional increases are accepted when accompanied by measurements and
+an updated baseline. Every language slice records its actual size so that its
+quality and cost can be judged together, without treating an arbitrary byte
+ceiling as the design target. Shared implementations should be measured with
+the group-reporting option because excluding one retaining backend removes only
+its wrapper.
 
 Promotion is a reviewed `SupportLevel` change in `zig-native-syntax`. Once its conformance gate
 passes, the configured registry makes the backend visible to the viewer without a viewer source
