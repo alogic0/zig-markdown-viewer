@@ -27,6 +27,8 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 - Unsafe link and image schemes are removed.
 - The extension contains no remotely executed code, telemetry, advertising, or
   runtime dependency on a developer-operated service.
+- Release Wasm removes compiler name and DWARF metadata, preventing local
+  checkout paths from entering published artifacts.
 
 [Unreleased]: https://github.com/alogic0/zig-markdown-viewer/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/alogic0/zig-markdown-viewer/releases/tag/v0.1.0

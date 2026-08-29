@@ -11,7 +11,7 @@ pub fn build(b: *std.Build) void {
         .os_tag = .freestanding,
     });
     const strip_wasm_names = b.addExecutable(.{
-        .name = "strip-wasm-names",
+        .name = "strip-wasm-metadata",
         .root_module = b.createModule(.{
             .root_source_file = b.path("tools/strip_wasm_names.zig"),
             .target = b.graph.host,
