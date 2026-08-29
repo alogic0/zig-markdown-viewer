@@ -1,10 +1,26 @@
 #!/bin/sh
 set -eu
 
-viewer_zig_exe="${ZIG_EXE:-${HOME}/.zig/0.17.0-dev.1756+613c03321/files/zig}"
+viewer_zig_version="0.17.0-dev.1756+613c03321"
+viewer_zig_exe="${ZIG_EXE:-${HOME}/.zig/${viewer_zig_version}/files/zig}"
 
 if [ ! -x "${viewer_zig_exe}" ]; then
-    echo "required Zig compiler not found: ${viewer_zig_exe}" >&2
+    if [ -n "${ZIG_EXE:-}" ]; then
+        echo "configured Zig compiler not found: ${viewer_zig_exe}" >&2
+        exit 1
+    fi
+    viewer_path_zig="$(command -v zig || true)"
+    if [ -n "${viewer_path_zig}" ] && [ -x "${viewer_path_zig}" ]; then
+        viewer_zig_exe="${viewer_path_zig}"
+    else
+        echo "required Zig compiler not found: ${viewer_zig_exe}" >&2
+        exit 1
+    fi
+fi
+
+viewer_actual_zig_version="$("${viewer_zig_exe}" version)"
+if [ "${viewer_actual_zig_version}" != "${viewer_zig_version}" ]; then
+    echo "required Zig version ${viewer_zig_version}, found ${viewer_actual_zig_version} at ${viewer_zig_exe}" >&2
     exit 1
 fi
 
