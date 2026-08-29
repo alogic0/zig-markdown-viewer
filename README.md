@@ -18,6 +18,16 @@ Then open `chrome://extensions`, enable Developer mode, choose **Load
 unpacked**, and select `zig-out/extension`. Enable **Allow access to file
 URLs** on the extension's details page to render local files.
 
+Build the deterministic Chrome Web Store/GitHub release archive with:
+
+```sh
+./build.sh package-extension
+```
+
+The validated package is written to
+`zig-out/dist/zig-markdown-viewer-0.1.0.zip` with `manifest.json` at the ZIP
+root.
+
 No npm install, remote script, or CDN is required. Zig package dependencies used
 by optional highlighting backends are pinned by `zig-native-syntax`.
 

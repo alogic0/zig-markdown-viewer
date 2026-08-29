@@ -1,5 +1,7 @@
 const std = @import("std");
 
+const release_version = "0.1.0";
+
 pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{
         .preferred_optimize_mode = .ReleaseSmall,
@@ -74,6 +76,32 @@ pub fn build(b: *std.Build) void {
         "Update the checked-in renderer Wasm size after reviewing an intentional change",
     );
     update_size_step.dependOn(&update_size_baseline.step);
+
+    const extension_packager = b.addExecutable(.{
+        .name = "package-extension",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("tools/package_extension.zig"),
+            .target = b.graph.host,
+            .optimize = .safe,
+        }),
+    });
+    const run_extension_packager = b.addRunArtifact(extension_packager);
+    run_extension_packager.addArg(release_version);
+    run_extension_packager.addDirectoryArg(b.path("extension"));
+    run_extension_packager.addFileArg(checked_renderer);
+    const extension_archive = run_extension_packager.addOutputFileArg(b.fmt(
+        "zig-markdown-viewer-{s}.zip",
+        .{release_version},
+    ));
+    const install_extension_archive = b.addInstallFile(
+        extension_archive,
+        b.fmt("dist/zig-markdown-viewer-{s}.zip", .{release_version}),
+    );
+    const package_extension_step = b.step(
+        "package-extension",
+        "Build a deterministic, validated Chrome extension ZIP",
+    );
+    package_extension_step.dependOn(&install_extension_archive.step);
 
     const size_report_backends = b.option(
         []const u8,
@@ -198,6 +226,15 @@ pub fn build(b: *std.Build) void {
         }),
     });
     test_step.dependOn(&b.addRunArtifact(size_checker_tests).step);
+
+    const extension_packager_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("tools/package_extension.zig"),
+            .target = b.graph.host,
+            .optimize = .debug,
+        }),
+    });
+    test_step.dependOn(&b.addRunArtifact(extension_packager_tests).step);
 
     const render_html_tests_root = b.createModule(.{
         .root_source_file = b.path("tools/render_html.zig"),
