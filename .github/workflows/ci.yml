@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Disable automatic line-ending conversion
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - name: Set up pinned Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.17.0-dev.1756+613c03321
+          cache-key: ${{ hashFiles('build.zig', 'build.zig.zon') }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check Zig formatting
+        run: zig fmt --check build.zig src tools
+
+      - name: Run Zig tests and Wasm size gate
+        shell: bash
+        run: ./build.sh test
+
+      - name: Run Wasm integration tests
+        run: node --test tests/wasm.test.mjs
+
+      - name: Run standalone export tests
+        run: node --test tests/standalone.test.cjs
+
+      - name: Check extension JavaScript
+        shell: bash
+        run: |
+          node --check extension/js/background.js
+          node --check extension/js/content.js
+          node --check extension/js/popup.js
+          node --check extension/js/standalone.js
+          node --check extension/js/wasm.js
+
+  package:
+    name: Build release package
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up pinned Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.17.0-dev.1756+613c03321
+          cache-key: ${{ hashFiles('build.zig', 'build.zig.zon') }}
+
+      - name: Build and verify reproducible package
+        shell: bash
+        run: |
+          ./build.sh package-extension
+          sha256sum zig-out/dist/zig-markdown-viewer-0.1.0.zip > /tmp/zig-markdown-viewer.sha256
+          ./build.sh package-extension
+          sha256sum --check /tmp/zig-markdown-viewer.sha256
+          unzip -t zig-out/dist/zig-markdown-viewer-0.1.0.zip
+          rm /tmp/zig-markdown-viewer.sha256
+
+      - name: Upload release package
+        uses: actions/upload-artifact@v4
+        with:
+          name: zig-markdown-viewer-0.1.0
+          path: zig-out/dist/zig-markdown-viewer-0.1.0.zip
+          if-no-files-found: error
