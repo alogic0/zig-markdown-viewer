@@ -25,11 +25,11 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-
       - name: Disable automatic line-ending conversion
         shell: bash
         run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v4
 
       - name: Set up pinned Zig
         uses: mlugg/setup-zig@v2
