@@ -70,6 +70,11 @@ Mermaid and KaTeX rendering from Markview are not bundled.
 See [Highlighting quality](docs/HIGHLIGHTING_QUALITY.md) for the supported-language registry,
 admission criteria, and parser/tokenizer policy.
 
+The [privacy policy](PRIVACY.md) describes local document processing, stored
+settings, recent-document metadata, and permission use. Release maintainers
+should follow the [release checklist](docs/RELEASING.md) and use the canonical
+[Chrome Web Store submission text](docs/CHROME_WEB_STORE.md).
+
 ## Verification
 
 ```sh
@@ -97,3 +102,6 @@ and running `./build.sh update-wasm-size-baseline` to record the new size.
 The extension is an independent implementation inspired by the local Markview
 extension's user experience. `zig-markdown-parser`, Zine, SuperHTML, and
 Markview retain their own licenses and copyrights.
+
+Changes are recorded in [CHANGELOG.md](CHANGELOG.md). The project is licensed
+under the [MIT License](LICENSE).
