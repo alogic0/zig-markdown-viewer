@@ -5,7 +5,10 @@
     .minimum_zig_version = "0.17.0-dev.1756+613c03321",
     .dependencies = .{
         .markdown_parser = .{ .path = "../zig-markdown-parser" },
-        .native_syntax = .{ .path = "../zig-native-syntax" },
+        .native_syntax = .{
+            .url = "git+https://github.com/alogic0/zig-native-syntax.git#20b1d9c6ac6ad4799bdfe5393889d87449004bf3",
+            .hash = "zig_native_syntax-0.1.0-rNAusSs0FwBfXi6bawxeEmEAQb-NDDaeH1k3jbs5YYlV",
+        },
     },
     .paths = .{
         "LICENSE",

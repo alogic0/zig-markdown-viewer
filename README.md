@@ -3,9 +3,10 @@
 A local-first Chrome/Chromium extension that renders `.md`, `.markdown`,
 `.mkd`, and `.mdx` documents with a small Zig WebAssembly core.
 
-The renderer uses the sibling `zig-markdown-parser` and `zig-native-syntax`
-packages. Markdown parsing and all source highlighting run in the same WebAssembly
-module without a JavaScript highlighting library or runtime network dependency.
+The renderer uses the sibling `zig-markdown-parser` and a revision-pinned
+`zig-native-syntax` package. Markdown parsing and all source highlighting run
+in the same WebAssembly module without a JavaScript highlighting library or
+runtime network dependency.
 
 ## Build and load
 
