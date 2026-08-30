@@ -78,8 +78,9 @@ as the extension; it does not instantiate the WebAssembly renderer.
 - inline `$...$` math and display math in `math`, `tex`, or `latex` fences,
   rendered locally as an inert MathML Core subset with literal-source fallback;
   the AMS profile supports matrices, cases, and aligned equations
-- bounded custom math macros configured in the extension popup, validated by
-  the Wasm typesetter, and applied locally without enabling source definitions
+- bounded custom math macros declared in `math-macros` fences or configured in
+  the extension popup, validated once per document without enabling mutable
+  definitions inside math expressions
 - a curated set of quality-verified `zig-native-syntax` backends, with escaped
   plain-text fallback for experimental, unsupported, or unknown fence languages
 - local and remote Markdown URLs
@@ -93,6 +94,24 @@ as the extension; it does not instantiate the WebAssembly renderer.
 - a Manifest V3 service worker and settings popup
 
 Mermaid diagrams are not currently supported.
+
+Declare portable, document-wide math macros in a fenced block. Backtick and
+tilde fences are equivalent, and valid declaration blocks are omitted from the
+rendered document:
+
+~~~markdown
+```math-macros
+\newcommand{\R}{R}
+\newcommand{\f}[2]{#1f(#2)}
+```
+
+$\f{x}{y} \in \R$
+~~~
+
+Only the restricted `\newcommand{\name}[N]{replacement}` form is accepted.
+Arbitrary `\def`, `\gdef`, and mutation commands remain unsupported. If any
+declaration is malformed or invalid, the document-local table is rejected
+atomically and its fences remain visible as code.
 
 See [Highlighting quality](docs/HIGHLIGHTING_QUALITY.md) for the supported-language registry,
 admission criteria, and parser/tokenizer policy.

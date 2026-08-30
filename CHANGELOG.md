@@ -7,6 +7,8 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 
 ### Added
 
+- Portable document-local math macros through restricted, atomic
+  `math-macros` declaration fences.
 - Math matrices, fenced matrix variants, cases, and aligned equations through
   the bounded `zig-math-typesetter` AMS profile.
 - Caller-provided, bounded math macros can be configured per native renderer

@@ -1,9 +1,11 @@
 # KaTeX macro formula
 
-This formula exercises a caller-configured two-argument macro. Register `\f` as
-`#1f(#2)` in the extension's custom math macro settings or through the native
-renderer options to display it as MathML. Without that configuration, the
-viewer preserves the complete source as a display fallback.
+This formula exercises a document-local two-argument macro. The declaration is
+collected before any math is rendered and is hidden from the rendered document.
+
+```math-macros
+\newcommand{\f}[2]{#1f(#2)}
+```
 
 ~~~math
 % \f is defined as #1f(#2) using the macro

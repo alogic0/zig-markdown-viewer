@@ -26,7 +26,9 @@ HTML sanitizer -> relative URL resolution -> document UI
   Diagnostics produce escaped literal source instead of partial MathML. Native
   renderer integrations may pass caller-owned definitions through
   `RenderOptions.math_macros`; the renderer validates and compiles that table
-  once per document. The browser WebAssembly entry point accepts the same
+  once per document. The viewer also collects restricted `math-macros` fenced
+  declarations before rendering and treats a valid document-local table as
+  authoritative for that document. The browser WebAssembly entry point accepts the same
   definitions through a bounded binary configuration buffer and atomically
   replaces its reusable macro session only after successful validation. It does
   not accept source-defined macros.
@@ -59,6 +61,13 @@ its own Wasm instance to compile the complete candidate table. Only a table
 accepted by the typesetter is written to `chrome.storage.local`. Each open
 document observes that storage update, atomically reconfigures its own Wasm
 instance, and re-renders the current source.
+
+Document-local declarations use only
+`\newcommand{\name}[N]{replacement}` syntax. They are parsed separately from
+math expressions, then passed through the typesetter's existing name,
+replacement, collision, and resource-limit validation. All declaration fences
+are hidden only when the complete table is valid; otherwise the table is
+disabled and the fences render as ordinary code.
 
 Raw HTML is preserved by the syntax renderer for source fidelity, then filtered
 in the content script before any nodes enter the live page. Scripts, embedded

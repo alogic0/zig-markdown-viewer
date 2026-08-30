@@ -3,6 +3,7 @@ const builtin = @import("builtin");
 const markdown = @import("markdown");
 const math = @import("math_typesetter");
 const highlight = @import("highlight.zig");
+const math_macro_declarations = @import("math_macro_declarations.zig");
 const unicode_slug = @import("unicode_slug.zig");
 
 const allocator = if (builtin.target.cpu.arch.isWasm())
@@ -11,6 +12,7 @@ else
     std.heap.page_allocator;
 const Renderer = markdown.Renderer(*const RenderContext);
 const max_macro_config_bytes = 1024 * 1024;
+const max_macro_declaration_bytes = 1024 * 1024;
 
 pub const MathMacroDefinition = math.MacroDefinition;
 
@@ -27,6 +29,7 @@ const RenderContext = struct {
     headings: *const HeadingIndex,
     options: RenderOptions,
     math_session: ?*const math.MacroSession,
+    hide_math_macro_declarations: bool,
 };
 
 var input: []u8 = &.{};
@@ -266,6 +269,54 @@ fn renderAllocWithMathSession(
     var document = parser.endInput() catch return error.ParseFailed;
     defer document.deinit(gpa);
 
+    var declaration_collection_failed = false;
+    const declaration_source: ?[]u8 = collectMathMacroDeclarationsAlloc(
+        gpa,
+        document,
+    ) catch |err| switch (err) {
+        error.OutOfMemory => return error.OutOfMemory,
+        error.TooLarge => failed: {
+            declaration_collection_failed = true;
+            break :failed null;
+        },
+    };
+    defer if (declaration_source) |bytes| gpa.free(bytes);
+
+    var parsed_declarations: ?math_macro_declarations.Parsed = if (declaration_source) |bytes|
+        math_macro_declarations.parseAlloc(
+            gpa,
+            bytes,
+            (math.Limits{}).max_macro_definitions,
+        ) catch |err| switch (err) {
+            error.OutOfMemory => return error.OutOfMemory,
+            error.InvalidDeclaration, error.TooManyDefinitions => null,
+        }
+    else
+        null;
+    defer if (parsed_declarations) |*declarations| declarations.deinit();
+
+    var local_math_session: ?math.MacroSession = if (parsed_declarations) |declarations|
+        if (declarations.definitions.len == 0)
+            null
+        else
+            math.MacroSession.init(gpa, declarations.definitions, .{}) catch |err| switch (err) {
+                error.OutOfMemory => return error.OutOfMemory,
+                else => null,
+            }
+    else
+        null;
+    defer if (local_math_session) |*session| session.deinit();
+
+    const declarations_valid = declaration_source != null and parsed_declarations != null and
+        (parsed_declarations.?.definitions.len == 0 or local_math_session != null);
+    const effective_math_session = if (declaration_source == null and
+        !declaration_collection_failed)
+        math_session
+    else if (declarations_valid)
+        if (local_math_session) |*session| session else null
+    else
+        null;
+
     var headings = HeadingIndex.init(gpa, document) catch return error.OutOfMemory;
     defer headings.deinit();
 
@@ -273,13 +324,51 @@ fn renderAllocWithMathSession(
         .allocator = gpa,
         .headings = &headings,
         .options = options,
-        .math_session = math_session,
+        .math_session = effective_math_session,
+        .hide_math_macro_declarations = declarations_valid,
     };
 
     var writer: std.Io.Writer.Allocating = .init(gpa);
     errdefer writer.deinit();
     const renderer: Renderer = .{ .context = &context, .renderFn = renderNode };
     renderer.render(document, &writer.writer) catch return error.RenderFailed;
+    return writer.toOwnedSlice() catch return error.OutOfMemory;
+}
+
+const CollectMacroDeclarationsError = error{ OutOfMemory, TooLarge };
+
+fn collectMathMacroDeclarationsAlloc(
+    gpa: std.mem.Allocator,
+    document: markdown.Document,
+) CollectMacroDeclarationsError!?[]u8 {
+    var writer: std.Io.Writer.Allocating = .init(gpa);
+    errdefer writer.deinit();
+    var found = false;
+
+    for (0..document.nodeCount()) |ordinal| {
+        const view = document.nodeAt(ordinal).?;
+        if (view.tag != .code_block) continue;
+        if (!std.mem.eql(
+            u8,
+            document.string(view.data.code_block.tag),
+            "math-macros",
+        )) continue;
+
+        const content = document.string(view.data.code_block.content);
+        const separator_bytes: usize = if (found) 1 else 0;
+        if (content.len > max_macro_declaration_bytes -| writer.written().len or
+            separator_bytes > max_macro_declaration_bytes -| writer.written().len -| content.len)
+        {
+            return error.TooLarge;
+        }
+        if (found) writer.writer.writeByte('\n') catch return error.OutOfMemory;
+        writer.writer.writeAll(content) catch return error.OutOfMemory;
+        found = true;
+    }
+    if (!found) {
+        writer.deinit();
+        return null;
+    }
     return writer.toOwnedSlice() catch return error.OutOfMemory;
 }
 
@@ -509,6 +598,8 @@ fn renderNode(
         .code_block => {
             const language = document.string(view.data.code_block.tag);
             const content = document.string(view.data.code_block.content);
+            if (renderer.context.hide_math_macro_declarations and
+                std.mem.eql(u8, language, "math-macros")) return;
             if (language.len == 0) {
                 try writer.writeAll("<pre><code>");
             } else {
@@ -780,6 +871,72 @@ test "renders caller-configured macros across a Markdown document" {
     defer std.testing.allocator.free(fallback);
     try std.testing.expect(std.mem.indexOf(u8, fallback, "language-math") != null);
     try std.testing.expect(std.mem.indexOf(u8, fallback, "\\f\\relax{x}") != null);
+}
+
+test "document-local macro fences are collected before rendering and hidden" {
+    const source =
+        \\Before $\R$.
+        \\
+        \\```math-macros
+        \\\newcommand{\R}{R}
+        \\```
+        \\
+        \\~~~math-macros
+        \\\newcommand{\f}[2]{#1f(#2)}
+        \\~~~
+        \\
+        \\After $\f{x}{y}$.
+    ;
+    const html = try renderAlloc(std.testing.allocator, source);
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expectEqual(@as(usize, 2), std.mem.count(u8, html, "<math class=\"zig-math\""));
+    try std.testing.expect(std.mem.indexOf(u8, html, "<mi>R</mi>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "<mi>x</mi><mi>f</mi><mo>(</mo><mi>y</mi>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "math-macros") == null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "newcommand") == null);
+}
+
+test "document-local macro tables are atomic and authoritative" {
+    const caller_macros = [_]MathMacroDefinition{.{
+        .name = "external",
+        .replacement = "x",
+    }};
+    const invalid_source =
+        \\```math-macros
+        \\\newcommand{\frac}{x}
+        \\```
+        \\
+        \\Local $\external$.
+    ;
+    const invalid_html = try renderAllocOptions(
+        std.testing.allocator,
+        invalid_source,
+        .{ .math_macros = &caller_macros },
+    );
+    defer std.testing.allocator.free(invalid_html);
+
+    try std.testing.expect(std.mem.indexOf(u8, invalid_html, "language-math-macros") != null);
+    try std.testing.expect(std.mem.indexOf(u8, invalid_html, "newcommand") != null);
+    try std.testing.expect(std.mem.indexOf(u8, invalid_html, "<math") == null);
+    try std.testing.expect(std.mem.indexOf(u8, invalid_html, "$\\external$") != null);
+
+    const valid_source =
+        \\```math-macros
+        \\\newcommand{\local}{y}
+        \\```
+        \\
+        \\$\local$ and $\external$.
+    ;
+    const valid_html = try renderAllocOptions(
+        std.testing.allocator,
+        valid_source,
+        .{ .math_macros = &caller_macros },
+    );
+    defer std.testing.allocator.free(valid_html);
+
+    try std.testing.expectEqual(@as(usize, 1), std.mem.count(u8, valid_html, "<math class=\"zig-math\""));
+    try std.testing.expect(std.mem.indexOf(u8, valid_html, "$\\external$") != null);
 }
 
 test "math diagnostics fall back to complete escaped source" {
