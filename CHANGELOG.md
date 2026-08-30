@@ -18,6 +18,8 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 
 ### Changed
 
+- Updated `zig-math-typesetter` to 0.3.0 for the optional bounded AMS table
+  profile.
 - Extended the inert MathML policy with table elements and fixed aligned-cell
   values required by the AMS profile.
 - Updated `zig-math-typesetter` to 0.2.0 for Greek accents, named operators,
