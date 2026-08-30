@@ -1,4 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 64 64">
   <rect width="64" height="64" rx="12" fill="#2563eb"/>
-  <path d="M14 49V15h8l10 15 10-15h8v34h-8V28L32 42 22 28v21H14Z" fill="#c8d0d8"/>
+  <g fill="#f8fafc" font-family="STIX Two Math, Cambria Math, FreeSerif, serif" font-style="italic">
+    <text x="7" y="51" font-size="48">M</text>
+    <text x="42" y="24" font-size="23">z</text>
+  </g>
 </svg>

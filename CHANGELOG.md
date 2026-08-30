@@ -18,6 +18,7 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 
 - Updated `zig-math-typesetter` to 0.2.0 for Greek accents, named operators,
   `\relax`, and generic token-macro expansion.
+- Replaced the extension and popup mark with the rendered `M^{\;z}` formula.
 
 ## [0.2.0] - 2026-08-30
 

@@ -89,6 +89,7 @@ node --test tests/wasm.test.mjs
 node --test tests/standalone.test.cjs
 node --test tests/mathml-policy.test.cjs
 node --test tests/math-macros.test.cjs
+node --test tests/branding.test.cjs
 node --check extension/js/background.js
 node --check extension/js/content.js
 node --check extension/js/math-macros.js
