@@ -733,6 +733,7 @@ test "renders expanded math command families" {
         \\\aleph+\hbar+\ell+\Re+\Im+\ldots+\vdots+\ddots
         \\a\pmod{n}+\overbrace{x+y}^{k}+\underbrace{a+b}_{m}
         \\\sum_{\substack{i=0\\j<n}}+\mathfrak{AbRz7}
+        \\\int\limits_0^1+\sum\nolimits_i^n
         \\```
     );
     defer std.testing.allocator.free(html);
@@ -749,6 +750,8 @@ test "renders expanded math command families" {
         "<munder accentunder=\"true\">",
         "<munder><mo>∑</mo><mrow><mtable>",
         "<mi>𝔄</mi>",
+        "<munderover><mo>∫</mo><mn>0</mn><mn>1</mn></munderover>",
+        "<msubsup><mo>∑</mo><mi>i</mi><mi>n</mi></msubsup>",
     }) |fragment| try std.testing.expect(std.mem.indexOf(u8, html, fragment) != null);
 }
 

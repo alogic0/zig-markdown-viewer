@@ -24,10 +24,12 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 - Logic, relation, large-operator, arrow, binary-operator, constant, and dot
   commands; `\pmod`, stretchable braces, bounded multi-line `\substack`
   limits, compact AMS `smallmatrix`, and scoped `\mathfrak`.
+- Explicit `\limits` and `\nolimits` placement overrides for large and named
+  operators.
 
 ### Changed
 
-- Pinned `zig-math-typesetter` at `ed998db` for the expanded command surface
+- Pinned `zig-math-typesetter` at `e9ad54a` for the expanded command surface
   and allowed only its fixed `accentunder="true"` underbrace attribute.
 
 - Updated `zig-math-typesetter` to 0.4.0 and replaced the viewer-local macro
