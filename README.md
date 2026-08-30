@@ -78,9 +78,8 @@ as the extension; it does not instantiate the WebAssembly renderer.
 - inline `$...$` math and display math in `math`, `tex`, or `latex` fences,
   rendered locally as an inert MathML Core subset with literal-source fallback;
   the AMS profile supports matrices, cases, and aligned equations
-- bounded custom math macros declared in `math-macros` fences or configured in
-  the extension popup, validated once per document without enabling mutable
-  definitions inside math expressions
+- bounded custom math macros declared in `math-macros` fences, validated once
+  per document without enabling mutable definitions inside math expressions
 - a curated set of quality-verified `zig-native-syntax` backends, with escaped
   plain-text fallback for experimental, unsupported, or unknown fence languages
 - local and remote Markdown URLs
@@ -129,11 +128,10 @@ should follow the [release checklist](docs/RELEASING.md) and use the canonical
 node --test tests/wasm.test.mjs
 node --test tests/standalone.test.cjs
 node --test tests/mathml-policy.test.cjs
-node --test tests/math-macros.test.cjs
+node --test tests/settings.test.cjs
 node --test tests/branding.test.cjs
 node --check extension/js/background.js
 node --check extension/js/content.js
-node --check extension/js/math-macros.js
 node --check extension/js/mathml-policy.js
 node --check extension/js/popup.js
 node --check extension/js/standalone.js

@@ -4,7 +4,6 @@ import { createRequire } from 'node:module';
 import test from 'node:test';
 
 const require = createRequire(import.meta.url);
-require('../extension/js/math-macros.js');
 const { Renderer } = require('../extension/js/wasm.js');
 
 const wasmPath = new URL('../zig-out/extension/renderer.wasm', import.meta.url);
@@ -29,45 +28,6 @@ function render(source) {
   return html;
 }
 
-function encodeMacros(macros) {
-  const encoded = macros.map(macro => ({
-    name: encoder.encode(macro.name),
-    replacement: encoder.encode(macro.replacement),
-    argumentCount: macro.argumentCount,
-  }));
-  const length = 4 + encoded.reduce(
-    (total, macro) => total + 12 + macro.name.length + macro.replacement.length,
-    0
-  );
-  const bytes = new Uint8Array(length);
-  const view = new DataView(bytes.buffer);
-  view.setUint32(0, encoded.length, true);
-  let offset = 4;
-  for (const macro of encoded) {
-    view.setUint32(offset, macro.name.length, true);
-    view.setUint32(offset + 4, macro.replacement.length, true);
-    view.setUint32(offset + 8, macro.argumentCount, true);
-    offset += 12;
-    bytes.set(macro.name, offset);
-    offset += macro.name.length;
-    bytes.set(macro.replacement, offset);
-    offset += macro.replacement.length;
-  }
-  return bytes;
-}
-
-function configureMacros(macros) {
-  const bytes = encodeMacros(macros);
-  const pointer = wasm.allocateMacroConfig(bytes.length);
-  assert.notEqual(pointer, 0);
-  new Uint8Array(wasm.memory.buffer, pointer, bytes.length).set(bytes);
-  const configured = wasm.configureMathMacros(bytes.length);
-  wasm.releaseMacroConfig();
-  return configured;
-}
-
-test.afterEach(() => wasm.clearMathMacros());
-
 test('exports the browser ABI', () => {
   assert.equal(WebAssembly.Module.customSections(module, 'name').length, 0);
   for (const name of [
@@ -78,81 +38,29 @@ test('exports the browser ABI', () => {
     'errorCode',
     'releaseSource',
     'releaseOutput',
-    'allocateMacroConfig',
-    'configureMathMacros',
-    'releaseMacroConfig',
-    'clearMathMacros',
   ]) {
     assert.ok(name in wasm, `missing WebAssembly export: ${name}`);
   }
 });
 
-test('configures bounded math macros atomically through WebAssembly', () => {
-  assert.equal(configureMacros([{
-    name: 'f',
-    replacement: '#1f(#2)',
-    argumentCount: 2,
-  }]), 1);
-  assert.equal(wasm.errorCode(), 0);
+test('renders document-local macros through WebAssembly', () => {
+  const source = `\`\`\`math-macros
+\\newcommand{\\f}[2]{#1f(#2)}
+\`\`\`
 
-  const source = `~~~math
+~~~math
 % \\f is defined as #1f(#2) using the macro
 \\f\\relax{x} = \\int_{-\\infty}^\\infty
     \\f\\hat\\xi\\,e^{2 \\pi i \\xi x}
     \\,d\\xi
 ~~~
 `;
-  const configured = render(source);
-  assert.match(configured, /<math class="zig-math" display="block">/);
-  assert.match(configured, /<mover>/);
-  assert.match(configured, /<mi>ξ<\/mi>/);
-  assert.doesNotMatch(configured, /language-math/);
-
-  const invalid = encodeMacros([{
-    name: 'frac',
-    replacement: '#1',
-    argumentCount: 1,
-  }]);
-  const invalidPointer = wasm.allocateMacroConfig(invalid.length);
-  new Uint8Array(wasm.memory.buffer, invalidPointer, invalid.length).set(invalid);
-  assert.equal(wasm.configureMathMacros(invalid.length), 0);
-  assert.equal(wasm.errorCode(), 5);
-  wasm.releaseMacroConfig();
-
-  assert.match(render(source), /<math class="zig-math" display="block">/);
-  wasm.clearMathMacros();
-  assert.match(render(source), /<code class="language-math">/);
-});
-
-test('rejects malformed and oversized macro configuration buffers', () => {
-  const pointer = wasm.allocateMacroConfig(4);
-  assert.notEqual(pointer, 0);
-  new Uint8Array(wasm.memory.buffer, pointer, 4).set([1, 0, 0, 0]);
-  assert.equal(wasm.configureMathMacros(4), 0);
-  assert.equal(wasm.errorCode(), 5);
-  wasm.releaseMacroConfig();
-
-  assert.equal(wasm.allocateMacroConfig(1024 * 1024 + 1), 0);
-  assert.equal(wasm.errorCode(), 5);
-});
-
-test('browser bridge validates configures and clears math macros', () => {
-  assert.deepEqual(browserRenderer.configureMathMacros([{
-    name: '\\f',
-    replacement: '#1f(#2)',
-    argumentCount: 2,
-  }]), [{ name: 'f', replacement: '#1f(#2)', argumentCount: 2 }]);
-  assert.match(browserRenderer.render('$\\f{x}{y}$\n'), /<math/);
-
-  assert.throws(() => browserRenderer.configureMathMacros([{
-    name: 'frac',
-    replacement: '#1',
-    argumentCount: 1,
-  }]), /conflicts with a built-in command/);
-  assert.match(browserRenderer.render('$\\f{x}{y}$\n'), /<math/);
-
-  assert.deepEqual(browserRenderer.configureMathMacros([]), []);
-  assert.equal(browserRenderer.render('$\\f{x}{y}$\n'), '<p>$\\f{x}{y}$</p>\n');
+  for (const html of [render(source), browserRenderer.render(source)]) {
+    assert.match(html, /<math class="zig-math" display="block">/);
+    assert.match(html, /<mover>/);
+    assert.match(html, /<mi>ξ<\/mi>/);
+    assert.doesNotMatch(html, /math-macros|newcommand|language-math/);
+  }
 });
 
 test('renders GFM-style features through WebAssembly', () => {

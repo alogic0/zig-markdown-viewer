@@ -1,6 +1,10 @@
 (() => {
   'use strict';
 
+  chrome.runtime.onInstalled.addListener(() => {
+    chrome.storage.local.remove('mathMacros');
+  });
+
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message?.action !== 'fetchMarkdown') return false;
     fetchMarkdown(message.url || sender.url)
@@ -26,4 +30,3 @@
     };
   }
 })();
-

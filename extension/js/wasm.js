@@ -6,7 +6,6 @@
     2: 'The Markdown parser rejected this document.',
     3: 'The Markdown renderer could not produce HTML.',
     4: 'The WebAssembly renderer received an invalid input buffer.',
-    5: 'The math macro configuration is invalid or conflicts with a built-in command.',
   };
 
   class Renderer {
@@ -35,48 +34,6 @@
       } finally {
         this.exports.releaseSource();
       }
-    }
-
-    configureMathMacros(definitions) {
-      const normalized = globalThis.ZigMarkdownMathMacros.validate(definitions);
-      if (normalized.length === 0) {
-        this.exports.clearMathMacros();
-        return normalized;
-      }
-
-      const encoded = normalized.map(definition => ({
-        name: this.encoder.encode(definition.name),
-        replacement: this.encoder.encode(definition.replacement),
-        argumentCount: definition.argumentCount,
-      }));
-      const length = 4 + encoded.reduce(
-        (total, definition) => total + 12 + definition.name.length + definition.replacement.length,
-        0
-      );
-      const bytes = new Uint8Array(length);
-      const view = new DataView(bytes.buffer);
-      view.setUint32(0, encoded.length, true);
-      let offset = 4;
-      for (const definition of encoded) {
-        view.setUint32(offset, definition.name.length, true);
-        view.setUint32(offset + 4, definition.replacement.length, true);
-        view.setUint32(offset + 8, definition.argumentCount, true);
-        offset += 12;
-        bytes.set(definition.name, offset);
-        offset += definition.name.length;
-        bytes.set(definition.replacement, offset);
-        offset += definition.replacement.length;
-      }
-
-      const pointer = this.exports.allocateMacroConfig(bytes.length);
-      if (pointer === 0) this.throwLastError();
-      try {
-        new Uint8Array(this.exports.memory.buffer, pointer, bytes.length).set(bytes);
-        if (this.exports.configureMathMacros(bytes.length) !== 1) this.throwLastError();
-      } finally {
-        this.exports.releaseMacroConfig();
-      }
-      return normalized;
     }
 
     throwLastError() {

@@ -94,49 +94,6 @@
           </select>
         </label>
 
-        <section class="macro-settings" aria-labelledby="math-macros-heading">
-          <div class="section-title">
-            <h2 id="math-macros-heading">Custom math macros</h2>
-            <button type="button" id="add-math-macro" class="text-button">Add</button>
-          </div>
-          <p class="setting-note">
-            Define bounded TeX-like token macros with positional arguments such as #1.
-            Source-defined macros remain disabled.
-          </p>
-          <div id="math-macro-list" class="macro-list"></div>
-          <p id="math-macro-status" class="macro-status" role="status"></p>
-          <form id="math-macro-editor" class="macro-editor" hidden>
-            <label>
-              <span>Name</span>
-              <input id="math-macro-name" type="text" placeholder="\f" autocomplete="off" spellcheck="false">
-            </label>
-            <label>
-              <span>Arguments</span>
-              <select id="math-macro-arguments">
-                <option value="0">0</option>
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-                <option value="6">6</option>
-                <option value="7">7</option>
-                <option value="8">8</option>
-                <option value="9">9</option>
-              </select>
-            </label>
-            <label>
-              <span>Replacement</span>
-              <textarea id="math-macro-replacement" rows="3" placeholder="#1f(#2)" spellcheck="false"></textarea>
-            </label>
-            <p id="math-macro-error" class="macro-status is-error" role="alert"></p>
-            <div class="macro-editor-actions">
-              <button type="button" id="cancel-math-macro" class="text-button">Cancel</button>
-              <button type="submit" class="primary-button">Save macro</button>
-            </div>
-          </form>
-        </section>
-
         <button type="button" id="reset-settings" class="wide-button">Reset settings</button>
       </section>
     </main>
@@ -145,7 +102,6 @@
       <span id="version"></span>
       <span>Enable file access in extension details for local files.</span>
     </footer>
-    <script src="js/math-macros.js"></script>
     <script src="js/wasm.js"></script>
     <script src="js/popup.js"></script>
   </body>

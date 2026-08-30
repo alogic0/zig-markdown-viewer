@@ -13,11 +13,6 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
   the bounded `zig-math-typesetter` AMS profile.
 - Caller-provided, bounded math macros can be configured per native renderer
   operation and are compiled once for all expressions in the document.
-- The WebAssembly renderer accepts atomic, bounded macro-table configuration
-  while preserving the previous valid session when an update is rejected.
-- The extension popup can add, edit, and remove custom math macros. Accepted
-  definitions are stored locally and applied immediately to open documents.
-
 ### Changed
 
 - Updated `zig-math-typesetter` to 0.3.0 for the optional bounded AMS table
@@ -30,6 +25,11 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
   reproducible SVG generator backed by `zig-math-typesetter` with configurable
   foreground and background colors. The logo update step also regenerates every
   checked-in Chrome icon size for the normal build to install.
+
+### Removed
+
+- Extension-level math macro settings and their stored definitions; portable
+  `math-macros` fences are now the browser integration.
 
 ## [0.2.0] - 2026-08-30
 

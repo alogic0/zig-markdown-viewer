@@ -373,10 +373,6 @@ fn addWasmRenderer(
         "errorCode",
         "releaseSource",
         "releaseOutput",
-        "allocateMacroConfig",
-        "configureMathMacros",
-        "releaseMacroConfig",
-        "clearMathMacros",
     };
     const renderer = b.addExecutable(.{
         .name = name,
