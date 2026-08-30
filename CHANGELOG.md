@@ -5,10 +5,18 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-30
+
 ### Added
 
 - Local inline and fenced display math rendering through `zig-math-typesetter`
   and an allowlisted MathML Core subset, with escaped literal fallback.
+
+### Security
+
+- MathML is accepted at the browser boundary only when its namespace,
+  elements, attributes, and fixed spacing widths match the typesetter's inert
+  output contract.
 
 ## [0.1.0] - 2026-08-29
 
@@ -35,5 +43,6 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 - Release Wasm removes compiler name and DWARF metadata, preventing local
   checkout paths from entering published artifacts.
 
-[Unreleased]: https://github.com/alogic0/zig-markdown-viewer/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/alogic0/zig-markdown-viewer/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/alogic0/zig-markdown-viewer/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/alogic0/zig-markdown-viewer/releases/tag/v0.1.0

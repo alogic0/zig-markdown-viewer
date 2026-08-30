@@ -1,6 +1,6 @@
 # Chrome Web Store Submission
 
-This document contains the canonical copy and disclosures for the `0.1.0`
+This document contains the canonical copy and disclosures for the `0.2.0`
 submission. Keep the dashboard answers consistent with `PRIVACY.md` and the
 extension manifest.
 
@@ -18,12 +18,12 @@ Fast, local-first Markdown rendering powered by Zig and WebAssembly.
 Zig Markdown Viewer turns `.md`, `.markdown`, `.mkd`, and `.mdx` documents into
 readable pages directly in Chrome. It includes a responsive table of contents,
 high-quality fenced-code highlighting, light and dark themes, raw source view,
-printing, code-copy controls, optional auto-refresh, and one-click standalone
-HTML export.
+local inline and display math rendering, printing, code-copy controls, optional
+auto-refresh, and one-click standalone HTML export.
 
-Rendering and syntax highlighting run locally in the bundled WebAssembly
-module. The extension includes no analytics, advertising, remote executable
-code, CDN dependency, or developer-operated service.
+Rendering, math typesetting, and syntax highlighting run locally in the
+bundled WebAssembly module. The extension includes no analytics, advertising,
+remote executable code, CDN dependency, or developer-operated service.
 
 ## Permission justifications
 
@@ -66,7 +66,8 @@ public URL for `PRIVACY.md` as the dashboard privacy-policy URL.
 
 1. Load or install the extension.
 2. Enable **Allow access to file URLs** on the extension details page.
-3. Open a `.md` file and confirm that it renders.
+3. Open a `.md` file and confirm that Markdown, inline math, and a fenced
+   `math` block render.
 4. Use the toolbar to switch raw/rendered mode and theme.
 5. Open the extension popup to change display settings and clear recent files.
 6. Use the download control to create a standalone HTML copy.

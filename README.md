@@ -3,12 +3,11 @@
 A local-first Chrome/Chromium extension that renders `.md`, `.markdown`,
 `.mkd`, and `.mdx` documents with a small Zig WebAssembly core.
 
-The renderer uses `zig-markdown-parser`, `zig-math-typesetter`, and a
-revision-pinned `zig-native-syntax` package. Markdown parsing, TeX-like math
-typesetting, and all source highlighting run in the same WebAssembly module
-without a JavaScript rendering library or runtime network dependency. The two
-workspace packages use sibling-path dependencies until their first tagged
-releases are available; releases must replace those paths with immutable pins.
+The renderer uses revision-pinned `zig-markdown-parser`,
+`zig-math-typesetter`, and `zig-native-syntax` packages. Markdown parsing,
+TeX-like math typesetting, and all source highlighting run in the same
+WebAssembly module without a JavaScript rendering library or runtime network
+dependency.
 
 ## Build and load
 
@@ -27,7 +26,7 @@ Build the deterministic Chrome Web Store/GitHub release archive with:
 ```
 
 The validated package is written to
-`zig-out/dist/zig-markdown-viewer-0.1.0.zip` with `manifest.json` at the ZIP
+`zig-out/dist/zig-markdown-viewer-0.2.0.zip` with `manifest.json` at the ZIP
 root.
 
 No npm install, remote script, or CDN is required. Zig package dependencies used

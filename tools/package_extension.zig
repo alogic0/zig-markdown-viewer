@@ -218,10 +218,10 @@ fn fatal(init: std.process.Init, comptime format: []const u8, args: anytype) nor
 
 test "builds deterministic ZIP archives with manifest at the root" {
     var files = [_]InputFile{
-        .{ .name = "manifest.json", .data = "{\"version\":\"0.1.0\"}" },
+        .{ .name = "manifest.json", .data = "{\"version\":\"0.2.0\"}" },
         .{ .name = "renderer.wasm", .data = "\x00asm" },
     };
-    try validateFiles(std.testing.allocator, &files, "0.1.0");
+    try validateFiles(std.testing.allocator, &files, "0.2.0");
     const first = try buildArchive(std.testing.allocator, &files);
     defer std.testing.allocator.free(first);
     const second = try buildArchive(std.testing.allocator, &files);

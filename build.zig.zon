@@ -1,14 +1,16 @@
 .{
     .name = .zig_markdown_viewer,
-    .version = "0.1.0",
+    .version = "0.2.0",
     .fingerprint = 0xf144d88b71f63db,
     .minimum_zig_version = "0.17.0-dev.1756+613c03321",
     .dependencies = .{
         .markdown_parser = .{
-            .path = "../zig-markdown-parser",
+            .url = "git+https://github.com/alogic0/zig-markdown-parser.git#f1c34b5348d080a577d4e3317afcce95a97b805d",
+            .hash = "zig_markdown_parser-0.2.0-Hjn7-EaYAgAspbYQFbOgofwSB1ECRmqFj2E5hn3PHXEQ",
         },
         .math_typesetter = .{
-            .path = "../zig-math-typesetter",
+            .url = "git+https://github.com/alogic0/zig-math-typesetter.git#3acddd7885a95666f8e315be75055dd896ee25e3",
+            .hash = "zig_math_typesetter-0.1.0-sPTkimWfAwCO4tkiWwpQNtmUGiVdQQm8cnDc_emmU5ZX",
         },
         .native_syntax = .{
             .url = "git+https://github.com/alogic0/zig-native-syntax.git#20b1d9c6ac6ad4799bdfe5393889d87449004bf3",
