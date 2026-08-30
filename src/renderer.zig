@@ -718,6 +718,37 @@ test "renders AMS matrices cases and aligned equations" {
     try std.testing.expect(std.mem.indexOf(u8, html, "language-math") == null);
 }
 
+test "renders extended math structures as fixed safe MathML" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\```math
+        \\\mathbf{\alpha}+\mathit{\vartheta}
+        \\\dfrac{1}{2}+\tfrac{1}{2}+\binom{n}{k}
+        \\\left\langle x\right\rangle+\left\lfloor y\right\rfloor
+        \\\left\lceil z\right\rceil+\left\Vert v\right\Vert
+        \\\operatorname{rank}_A+\widehat{xyz}+\widetilde{ab}
+        \\\displaystyle\sum_i+\textstyle{x}+\scriptstyle{y}+\scriptscriptstyle{z}
+        \\```
+    );
+    defer std.testing.allocator.free(html);
+
+    for ([_][]const u8{
+        "<mi>𝛂</mi>",
+        "<mi>𝜗</mi>",
+        "<mfrac displaystyle=\"true\">",
+        "<mfrac displaystyle=\"false\">",
+        "<mfrac linethickness=\"0\">",
+        "<mo>⟨</mo>",
+        "<mo>⌊</mo>",
+        "<mo>⌈</mo>",
+        "<mo>‖</mo>",
+        "<mi mathvariant=\"normal\">rank</mi>",
+        "<mover accent=\"true\">",
+        "<mo stretchy=\"true\">^</mo>",
+        "<mstyle displaystyle=\"true\" scriptlevel=\"0\">",
+        "<mstyle displaystyle=\"false\" scriptlevel=\"2\">",
+    }) |fragment| try std.testing.expect(std.mem.indexOf(u8, html, fragment) != null);
+}
+
 test "renders caller-configured macros across a Markdown document" {
     const macros = [_]MathMacroDefinition{.{
         .name = "f",

@@ -56,4 +56,27 @@ test('accepts only inert descendants and fixed spacing widths', () => {
     ['mathvariant', 'normal'],
     ['class', 'roman'],
   ], false), false);
+  assert.equal(policy.allowsElement('mfrac', ns, [['displaystyle', 'true']], false), true);
+  assert.equal(policy.allowsElement('mfrac', ns, [['displaystyle', 'false']], false), true);
+  assert.equal(policy.allowsElement('mfrac', ns, [['linethickness', '0']], false), true);
+  assert.equal(policy.allowsElement('mfrac', ns, [['linethickness', '1px']], false), false);
+  assert.equal(policy.allowsElement('mover', ns, [['accent', 'true']], false), true);
+  assert.equal(policy.allowsElement('mover', ns, [['accent', 'false']], false), false);
+  assert.equal(policy.allowsElement('mo', ns, [['stretchy', 'true']], false), true);
+  assert.equal(policy.allowsElement('mi', ns, [['stretchy', 'true']], false), false);
+  for (const attributes of [
+    [['displaystyle', 'true'], ['scriptlevel', '0']],
+    [['displaystyle', 'false'], ['scriptlevel', '0']],
+    [['displaystyle', 'false'], ['scriptlevel', '1']],
+    [['displaystyle', 'false'], ['scriptlevel', '2']],
+  ]) assert.equal(policy.allowsElement('mstyle', ns, attributes, false), true);
+  assert.equal(policy.allowsElement('mstyle', ns, [
+    ['displaystyle', 'true'],
+    ['scriptlevel', '1'],
+  ], false), false);
+  assert.equal(policy.allowsElement('mstyle', ns, [['displaystyle', 'true']], false), false);
+  assert.equal(policy.allowsElement('mfrac', ns, [
+    ['displaystyle', 'true'],
+    ['linethickness', '0'],
+  ], false), false);
 });

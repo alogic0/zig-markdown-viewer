@@ -9,7 +9,7 @@
   const elements = new Set([
     'math', 'mrow', 'mi', 'mn', 'mo', 'mtext', 'mspace', 'mfrac', 'msqrt',
     'mroot', 'msub', 'msup', 'msubsup', 'munder', 'mover', 'munderover',
-    'mtable', 'mtr', 'mtd',
+    'mstyle', 'mtable', 'mtr', 'mtd',
   ]);
   const spaceWidths = new Set([
     '-0.1667em', '0.1667em', '0.2222em', '0.2778em', '0.3333em', '1em', '2em',
@@ -35,6 +35,26 @@
     if (name === 'mi') {
       return values.size === 0 ||
         (values.size === 1 && values.get('mathvariant') === 'normal');
+    }
+    if (name === 'mfrac') {
+      return values.size === 0 ||
+        (values.size === 1 && ['true', 'false'].includes(values.get('displaystyle'))) ||
+        (values.size === 1 && values.get('linethickness') === '0');
+    }
+    if (name === 'mover') {
+      return values.size === 0 ||
+        (values.size === 1 && values.get('accent') === 'true');
+    }
+    if (name === 'mo') {
+      return values.size === 0 ||
+        (values.size === 1 && values.get('stretchy') === 'true');
+    }
+    if (name === 'mstyle') {
+      if (values.size !== 2) return false;
+      const displaystyle = values.get('displaystyle');
+      const scriptlevel = values.get('scriptlevel');
+      return (displaystyle === 'true' && scriptlevel === '0') ||
+        (displaystyle === 'false' && ['0', '1', '2'].includes(scriptlevel));
     }
     return values.size === 0;
   }

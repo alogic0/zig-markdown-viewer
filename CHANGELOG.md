@@ -15,6 +15,9 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
   operation and are compiled once for all expressions in the document.
 - Scoped roman, bold, italic, sans-serif, monospace, double-struck, and script
   mathematical alphabets.
+- Bold and italic Greek alphabets, styled fractions, binomial coefficients,
+  angle/floor/ceiling/double-vertical fences, custom operator names, wide
+  accents, and explicit math styles.
 
 ### Changed
 
@@ -26,6 +29,9 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
   values required by the AMS profile.
 - Extended the inert MathML policy with only the fixed
   `mathvariant="normal"` value on `mi` required by roman identifiers.
+- Extended the inert MathML policy with `mstyle` and only the fixed fraction,
+  accent, stretching, display-style, and script-level values emitted by the
+  typesetter.
 - Updated `zig-math-typesetter` to 0.2.0 for Greek accents, named operators,
   `\relax`, and generic token-macro expansion.
 - Replaced the extension and popup mark with the `M^{\,z}` formula and added a

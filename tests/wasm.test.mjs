@@ -126,6 +126,34 @@ test('renders AMS table environments through WebAssembly', () => {
   assert.doesNotMatch(html, /language-math/);
 });
 
+test('renders extended math structures through WebAssembly', () => {
+  const html = render(`~~~math
+\\mathbf{\\alpha}+\\mathit{\\vartheta}
+\\dfrac{1}{2}+\\tfrac{1}{2}+\\binom{n}{k}
+\\left\\langle x\\right\\rangle+\\left\\lfloor y\\right\\rfloor
+\\left\\lceil z\\right\\rceil+\\left\\Vert v\\right\\Vert
+\\operatorname{rank}_A+\\widehat{xyz}+\\widetilde{ab}
+\\displaystyle\\sum_i+\\textstyle{x}+\\scriptstyle{y}+\\scriptscriptstyle{z}
+~~~
+`);
+  for (const fragment of [
+    '<mi>𝛂</mi>',
+    '<mi>𝜗</mi>',
+    '<mfrac displaystyle="true">',
+    '<mfrac displaystyle="false">',
+    '<mfrac linethickness="0">',
+    '<mo>⟨</mo>',
+    '<mo>⌊</mo>',
+    '<mo>⌈</mo>',
+    '<mo>‖</mo>',
+    '<mi mathvariant="normal">rank</mi>',
+    '<mover accent="true">',
+    '<mo stretchy="true">^</mo>',
+    '<mstyle displaystyle="true" scriptlevel="0">',
+    '<mstyle displaystyle="false" scriptlevel="2">',
+  ]) assert.ok(html.includes(fragment), fragment);
+});
+
 test('keeps malformed math as escaped literal source', () => {
   assert.equal(
     render('Broken $\\frac{x}$ here.\n'),
