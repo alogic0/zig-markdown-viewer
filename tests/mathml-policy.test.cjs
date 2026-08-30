@@ -78,6 +78,12 @@ test('accepts only inert descendants and fixed spacing widths', () => {
     '1.2em', '1.44em', '1.73em', '2.07em', '2.49em',
   ]) assert.equal(policy.allowsElement('mstyle', ns, [['mathsize', size]], false), true);
   assert.equal(policy.allowsElement('mstyle', ns, [['mathsize', '100vw']], false), false);
+  for (const color of [
+    'black', 'white', 'red', 'green', 'blue', 'cyan',
+    'magenta', 'yellow', 'gray', 'orange', 'purple', 'brown',
+  ]) assert.equal(policy.allowsElement('mstyle', ns, [['mathcolor', color]], false), true);
+  assert.equal(policy.allowsElement('mstyle', ns, [['mathcolor', '#fff']], false), false);
+  assert.equal(policy.allowsElement('mstyle', ns, [['mathcolor', 'rgb(0,0,0)']], false), false);
   assert.equal(policy.allowsElement('mstyle', ns, [
     ['displaystyle', 'true'],
     ['scriptlevel', '1'],

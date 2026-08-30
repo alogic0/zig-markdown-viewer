@@ -86,7 +86,7 @@ as the extension; it does not instantiate the WebAssembly renderer.
   operators through `\operatorname`, `\operatorname*`, and `\mathop`, narrow
   diacritic and wide arrow accents,
   braces, multi-line limits, explicit limit placement, math styles, fixed
-  scoped sizes, and an
+  scoped sizes, fixed named colors, and an
   expanded set of symbols and operators are also supported
 - bounded custom math macros declared in `math-macros` fences, validated once
   per document without enabling mutable definitions inside math expressions

@@ -179,6 +179,7 @@ test('renders extended math structures through WebAssembly', () => {
 \\operatorname{rank}_A+\\widehat{xyz}+\\widetilde{ab}
 \\acute a+\\grave b+\\check c+\\breve d+\\mathring e+\\overleftrightarrow{xy}
 \\tiny{x}+\\Huge{y}
+\\textcolor{red}{x}+\\color{blue}{y}
 \\displaystyle\\sum_i+\\textstyle{x}+\\scriptstyle{y}+\\scriptscriptstyle{z}
 ~~~
 `);
@@ -200,6 +201,8 @@ test('renders extended math structures through WebAssembly', () => {
     '<mo stretchy="true">↔</mo>',
     '<mstyle mathsize="0.5em"><mrow><mi>x</mi></mrow></mstyle>',
     '<mstyle mathsize="2.49em"><mrow><mi>y</mi></mrow></mstyle>',
+    '<mstyle mathcolor="red"><mrow><mi>x</mi></mrow></mstyle>',
+    '<mstyle mathcolor="blue"><mrow><mi>y</mi></mrow></mstyle>',
     '<mstyle displaystyle="true" scriptlevel="0">',
     '<mstyle displaystyle="false" scriptlevel="2">',
   ]) assert.ok(html.includes(fragment), fragment);

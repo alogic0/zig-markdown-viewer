@@ -14,6 +14,7 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 - Generic bounded AMS arrays with validated left, center, and right columns.
 - Acute, grave, check, breve, ring, and stretchable over-arrow accents.
 - Ten scoped math size commands with an exact fixed-value browser allowlist.
+- Scoped math colors with twelve compiled names and no arbitrary CSS input.
 
 - Portable document-local math macros through restricted, atomic
   `math-macros` declaration fences.
@@ -36,7 +37,7 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 
 ### Changed
 
-- Pinned `zig-math-typesetter` at `2c71b89` for the expanded command surface
+- Pinned `zig-math-typesetter` at `daa2051` for the expanded command surface
   and allowed only its fixed `accentunder="true"` underbrace attribute.
 
 - Updated `zig-math-typesetter` to 0.4.0 and replaced the viewer-local macro
