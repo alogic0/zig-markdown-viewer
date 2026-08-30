@@ -69,7 +69,7 @@ as the extension; it does not instantiate the WebAssembly renderer.
 - optional auto-refresh and a recent-document list
 - a Manifest V3 service worker and settings popup
 
-Mermaid and the KaTeX JavaScript runtime are not bundled.
+Mermaid diagrams are not currently supported.
 
 See [Highlighting quality](docs/HIGHLIGHTING_QUALITY.md) for the supported-language registry,
 admission criteria, and parser/tokenizer policy.
