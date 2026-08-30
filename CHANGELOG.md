@@ -26,10 +26,12 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
   limits, compact AMS `smallmatrix`, and scoped `\mathfrak`.
 - Explicit `\limits` and `\nolimits` placement overrides for large and named
   operators.
+- Custom display-limit operators through `\operatorname*{name}` and grouped
+  expression operators through `\mathop{body}`.
 
 ### Changed
 
-- Pinned `zig-math-typesetter` at `e9ad54a` for the expanded command surface
+- Pinned `zig-math-typesetter` at `6705faf` for the expanded command surface
   and allowed only its fixed `accentunder="true"` underbrace attribute.
 
 - Updated `zig-math-typesetter` to 0.4.0 and replaced the viewer-local macro

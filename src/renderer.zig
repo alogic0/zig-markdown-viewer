@@ -734,6 +734,7 @@ test "renders expanded math command families" {
         \\a\pmod{n}+\overbrace{x+y}^{k}+\underbrace{a+b}_{m}
         \\\sum_{\substack{i=0\\j<n}}+\mathfrak{AbRz7}
         \\\int\limits_0^1+\sum\nolimits_i^n
+        \\\operatorname*{argmax}_{x\in X}+\mathop{F}_n+\mathop{G}\nolimits_k
         \\```
     );
     defer std.testing.allocator.free(html);
@@ -752,6 +753,9 @@ test "renders expanded math command families" {
         "<mi>𝔄</mi>",
         "<munderover><mo>∫</mo><mn>0</mn><mn>1</mn></munderover>",
         "<msubsup><mo>∑</mo><mi>i</mi><mi>n</mi></msubsup>",
+        "<munder><mi mathvariant=\"normal\">argmax</mi><mrow><mi>x</mi><mo>∈</mo><mi>X</mi></mrow></munder>",
+        "<munder><mrow><mi>F</mi></mrow><mi>n</mi></munder>",
+        "<msub><mrow><mi>G</mi></mrow><mi>k</mi></msub>",
     }) |fragment| try std.testing.expect(std.mem.indexOf(u8, html, fragment) != null);
 }
 
