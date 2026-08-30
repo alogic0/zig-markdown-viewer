@@ -90,6 +90,8 @@ test('renders inline and fenced display math through WebAssembly', () => {
 ~~~math
 \\frac{x}{\\sqrt[3]{y}}
 ~~~
+
+Alphabets $\\mathrm{d}\\mathbf{x}\\mathbb{R}\\mathcal{F}$.
 `);
   assert.match(html, /<math class="zig-math" display="inline">/);
   assert.match(html, /<msub>/);
@@ -97,6 +99,10 @@ test('renders inline and fenced display math through WebAssembly', () => {
   assert.match(html, /<math class="zig-math" display="block">/);
   assert.match(html, /<mfrac>/);
   assert.match(html, /<mroot>/);
+  assert.match(html, /<mi mathvariant="normal">d<\/mi>/);
+  assert.match(html, /<mi>𝐱<\/mi>/);
+  assert.match(html, /<mi>ℝ<\/mi>/);
+  assert.match(html, /<mi>ℱ<\/mi>/);
 });
 
 test('renders AMS table environments through WebAssembly', () => {

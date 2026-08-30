@@ -665,6 +665,8 @@ test "renders inline and display math as safe MathML" {
         \\```math
         \\\frac{x}{\sqrt[3]{y}}
         \\```
+        \\
+        \\Alphabets $\mathrm{d}\mathbf{x}\mathbb{R}\mathcal{F}$.
     );
     defer std.testing.allocator.free(html);
 
@@ -682,6 +684,14 @@ test "renders inline and display math as safe MathML" {
     ) != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "<mfrac>") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "<mroot>") != null);
+    try std.testing.expect(std.mem.indexOf(
+        u8,
+        html,
+        "<mi mathvariant=\"normal\">d</mi>",
+    ) != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "<mi>𝐱</mi>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "<mi>ℝ</mi>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "<mi>ℱ</mi>") != null);
 }
 
 test "renders AMS matrices cases and aligned equations" {

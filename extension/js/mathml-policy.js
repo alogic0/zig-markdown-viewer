@@ -32,6 +32,10 @@
       return values.size === 0 ||
         (values.size === 1 && ['right', 'left'].includes(values.get('columnalign')));
     }
+    if (name === 'mi') {
+      return values.size === 0 ||
+        (values.size === 1 && values.get('mathvariant') === 'normal');
+    }
     return values.size === 0;
   }
 

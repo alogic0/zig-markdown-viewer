@@ -49,4 +49,11 @@ test('accepts only inert descendants and fixed spacing widths', () => {
   assert.equal(policy.allowsElement('mtd', ns, [['columnalign', 'left']], false), true);
   assert.equal(policy.allowsElement('mtd', ns, [['columnalign', 'center']], false), false);
   assert.equal(policy.allowsElement('mtr', ns, [['columnalign', 'right']], false), false);
+  assert.equal(policy.allowsElement('mi', ns, [['mathvariant', 'normal']], false), true);
+  assert.equal(policy.allowsElement('mi', ns, [['mathvariant', 'bold']], false), false);
+  assert.equal(policy.allowsElement('mn', ns, [['mathvariant', 'normal']], false), false);
+  assert.equal(policy.allowsElement('mi', ns, [
+    ['mathvariant', 'normal'],
+    ['class', 'roman'],
+  ], false), false);
 });
