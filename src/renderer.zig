@@ -707,15 +707,49 @@ test "renders AMS matrices cases and aligned equations" {
         \\```math
         \\\begin{aligned}x&=1\\y&=2\end{aligned}
         \\```
+        \\
+        \\```math
+        \\\begin{smallmatrix}a&b\\c&d\end{smallmatrix}
+        \\```
     );
     defer std.testing.allocator.free(html);
 
-    try std.testing.expectEqual(@as(usize, 3), std.mem.count(u8, html, "<mtable>"));
+    try std.testing.expectEqual(@as(usize, 4), std.mem.count(u8, html, "<mtable>"));
     try std.testing.expect(std.mem.indexOf(u8, html, "<mo>(</mo>") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "<mo>{</mo><mtable>") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "<mtd columnalign=\"right\">") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "<mtd columnalign=\"left\">") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "language-math") == null);
+}
+
+test "renders expanded math command families" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\```math
+        \\\forall x\exists y\nexists z\implies x\iff y
+        \\a\ll b\cong c\parallel d\perp e
+        \\\iint_A+\oint_C+\bigcup_i
+        \\\uparrow+\nearrow+\hookrightarrow
+        \\a\mp b\circ c\sqcup d\triangleleft e
+        \\\aleph+\hbar+\ell+\Re+\Im+\ldots+\vdots+\ddots
+        \\a\pmod{n}+\overbrace{x+y}^{k}+\underbrace{a+b}_{m}
+        \\\sum_{\substack{i=0\\j<n}}+\mathfrak{AbRz7}
+        \\```
+    );
+    defer std.testing.allocator.free(html);
+
+    for ([_][]const u8{
+        "<mo>∀</mo>",
+        "<mo>≪</mo>",
+        "<mo>∬</mo>",
+        "<mo>↪</mo>",
+        "<mo>⊔</mo>",
+        "<mi>ℵ</mi>",
+        "<mi mathvariant=\"normal\">mod</mi>",
+        "<mo stretchy=\"true\">⏞</mo>",
+        "<munder accentunder=\"true\">",
+        "<munder><mo>∑</mo><mrow><mtable>",
+        "<mi>𝔄</mi>",
+    }) |fragment| try std.testing.expect(std.mem.indexOf(u8, html, fragment) != null);
 }
 
 test "renders extended math structures as fixed safe MathML" {

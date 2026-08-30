@@ -45,6 +45,10 @@
       return values.size === 0 ||
         (values.size === 1 && values.get('accent') === 'true');
     }
+    if (name === 'munder') {
+      return values.size === 0 ||
+        (values.size === 1 && values.get('accentunder') === 'true');
+    }
     if (name === 'mo') {
       return values.size === 0 ||
         (values.size === 1 && values.get('stretchy') === 'true');

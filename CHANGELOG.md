@@ -18,8 +18,14 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 - Bold and italic Greek alphabets, styled fractions, binomial coefficients,
   angle/floor/ceiling/double-vertical fences, custom operator names, wide
   accents, and explicit math styles.
+- Logic, relation, large-operator, arrow, binary-operator, constant, and dot
+  commands; `\pmod`, stretchable braces, bounded multi-line `\substack`
+  limits, compact AMS `smallmatrix`, and scoped `\mathfrak`.
 
 ### Changed
+
+- Pinned `zig-math-typesetter` at `ed998db` for the expanded command surface
+  and allowed only its fixed `accentunder="true"` underbrace attribute.
 
 - Updated `zig-math-typesetter` to 0.4.0 and replaced the viewer-local macro
   declaration scanner with its allocator-owned public API.

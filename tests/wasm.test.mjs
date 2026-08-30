@@ -117,13 +117,44 @@ test('renders AMS table environments through WebAssembly', () => {
 ~~~math
 \\begin{aligned}x&=1\\\\y&=2\\end{aligned}
 ~~~
+
+~~~math
+\\begin{smallmatrix}a&b\\\\c&d\\end{smallmatrix}
+~~~
 `);
-  assert.equal((html.match(/<mtable>/g) || []).length, 3);
+  assert.equal((html.match(/<mtable>/g) || []).length, 4);
   assert.match(html, /<mo>\(<\/mo>/);
   assert.match(html, /<mo>\{<\/mo><mtable>/);
   assert.match(html, /<mtd columnalign="right">/);
   assert.match(html, /<mtd columnalign="left">/);
   assert.doesNotMatch(html, /language-math/);
+});
+
+test('renders expanded math command families through WebAssembly', () => {
+  const html = render(`~~~math
+\\forall x\\exists y\\nexists z\\implies x\\iff y
+a\\ll b\\cong c\\parallel d\\perp e
+\\iint_A+\\oint_C+\\bigcup_i
+\\uparrow+\\nearrow+\\hookrightarrow
+a\\mp b\\circ c\\sqcup d\\triangleleft e
+\\aleph+\\hbar+\\ell+\\Re+\\Im+\\ldots+\\vdots+\\ddots
+a\\pmod{n}+\\overbrace{x+y}^{k}+\\underbrace{a+b}_{m}
+\\sum_{\\substack{i=0\\\\j<n}}+\\mathfrak{AbRz7}
+~~~
+`);
+  for (const fragment of [
+    '<mo>∀</mo>',
+    '<mo>≪</mo>',
+    '<mo>∬</mo>',
+    '<mo>↪</mo>',
+    '<mo>⊔</mo>',
+    '<mi>ℵ</mi>',
+    '<mi mathvariant="normal">mod</mi>',
+    '<mo stretchy="true">⏞</mo>',
+    '<munder accentunder="true">',
+    '<munder><mo>∑</mo><mrow><mtable>',
+    '<mi>𝔄</mi>',
+  ]) assert.ok(html.includes(fragment), fragment);
 });
 
 test('renders extended math structures through WebAssembly', () => {

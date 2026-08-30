@@ -65,7 +65,8 @@ documents, active media, forms, unsafe URL schemes, event handlers, and active
 attributes are removed. MathML is accepted only when its namespace, element
 tree, root metadata, and the exact fixed attribute values emitted for spacing,
 alignment, roman identifiers, styled and binomial fractions, wide accents, and
-explicit math styles match the typesetter's strict allowlist. Relative links and images are resolved against the
+stretchable braces, and explicit math styles match the typesetter's strict
+allowlist. Relative links and images are resolved against the
 Markdown document URL after validation.
 
 Standalone export runs the source through the same renderer and sanitizer. The

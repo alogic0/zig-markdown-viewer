@@ -62,6 +62,9 @@ test('accepts only inert descendants and fixed spacing widths', () => {
   assert.equal(policy.allowsElement('mfrac', ns, [['linethickness', '1px']], false), false);
   assert.equal(policy.allowsElement('mover', ns, [['accent', 'true']], false), true);
   assert.equal(policy.allowsElement('mover', ns, [['accent', 'false']], false), false);
+  assert.equal(policy.allowsElement('munder', ns, [['accentunder', 'true']], false), true);
+  assert.equal(policy.allowsElement('munder', ns, [['accentunder', 'false']], false), false);
+  assert.equal(policy.allowsElement('mover', ns, [['accentunder', 'true']], false), false);
   assert.equal(policy.allowsElement('mo', ns, [['stretchy', 'true']], false), true);
   assert.equal(policy.allowsElement('mi', ns, [['stretchy', 'true']], false), false);
   for (const attributes of [
