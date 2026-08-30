@@ -77,26 +77,11 @@ pub fn build(b: *std.Build) void {
             b.fmt("extension/icons/icon{d}.png", .{size}),
         );
     }
-    const install_generated_formula_logo = b.addInstallFile(
-        generated_formula_logo,
-        "extension/icons/favicon.svg",
-    );
-    var install_generated_formula_logo_pngs: [logo_sizes.len]*std.Build.Step.InstallFile = undefined;
-    for (logo_sizes, generated_formula_logo_pngs, 0..) |size, generated_png, index| {
-        install_generated_formula_logo_pngs[index] = b.addInstallFile(
-            generated_png,
-            b.fmt("extension/icons/icon{d}.png", .{size}),
-        );
-    }
     const update_formula_logo_step = b.step(
         "update-logo",
-        "Render, rasterize, and install the configured math formula logo",
+        "Render and rasterize the configured math formula logo into extension/icons",
     );
     update_formula_logo_step.dependOn(&update_formula_logo.step);
-    update_formula_logo_step.dependOn(&install_generated_formula_logo.step);
-    for (install_generated_formula_logo_pngs) |installed_png| {
-        update_formula_logo_step.dependOn(&installed_png.step);
-    }
 
     const renderer = addWasmRenderer(b, strip_wasm_names, "renderer", wasm_target, optimize, syntax_inclusions, syntax_exclusions);
     const checked_renderer = if (optimize == .small)
@@ -114,7 +99,7 @@ pub fn build(b: *std.Build) void {
         .install_subdir = "extension",
     });
     const install_renderer = b.addInstallFile(
-        renderer,
+        checked_renderer,
         "extension/renderer.wasm",
     );
     b.getInstallStep().dependOn(&install_renderer.step);

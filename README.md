@@ -38,8 +38,9 @@ Regenerate the SVG logo from the default `$M^{\,z}$` formula with:
 ./build.sh update-logo
 ```
 
-The generator renders through `zig-math-typesetter`, rasterizes the four Chrome
-icon sizes with Chrome or Chromium, and updates both `extension/icons` and
+The generator renders through `zig-math-typesetter` and updates
+`extension/icons`, rasterizing the four Chrome icon sizes with Chrome or
+Chromium. A subsequent normal `./build.sh` copies those source assets into
 `zig-out/extension/icons`. Set `CHROME_EXE` when the browser executable is not
 on `PATH`. Formula and six-digit hex colors can be overridden with
 `-Dlogo-formula`, `-Dlogo-background`, and `-Dlogo-foreground`.
