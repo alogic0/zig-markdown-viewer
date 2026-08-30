@@ -54,6 +54,12 @@ buffer and length-prefixed UTF-8 fields. A valid table is compiled before the
 previous session is released; malformed or invalid updates leave the active
 configuration unchanged.
 
+The popup normalizes macro names and validates structural limits before asking
+its own Wasm instance to compile the complete candidate table. Only a table
+accepted by the typesetter is written to `chrome.storage.local`. Each open
+document observes that storage update, atomically reconfigures its own Wasm
+instance, and re-renders the current source.
+
 Raw HTML is preserved by the syntax renderer for source fidelity, then filtered
 in the content script before any nodes enter the live page. Scripts, embedded
 documents, active media, forms, unsafe URL schemes, event handlers, and active

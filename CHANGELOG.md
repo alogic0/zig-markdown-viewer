@@ -11,6 +11,8 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
   operation and are compiled once for all expressions in the document.
 - The WebAssembly renderer accepts atomic, bounded macro-table configuration
   while preserving the previous valid session when an update is rejected.
+- The extension popup can add, edit, and remove custom math macros. Accepted
+  definitions are stored locally and applied immediately to open documents.
 
 ### Changed
 

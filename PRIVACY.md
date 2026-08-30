@@ -15,6 +15,7 @@ generation, and standalone HTML export happen locally on the user's device.
 The extension stores these values in `chrome.storage.local`:
 
 - display and refresh preferences;
+- user-defined math macro names, argument counts, and replacement text;
 - up to 20 recently opened document URLs;
 - each recent document's displayed title and last-opened timestamp.
 
@@ -41,14 +42,16 @@ are included in the installed extension package.
 
 ## Data retention and control
 
-Preferences and recent-document metadata remain in local extension storage
-until the user changes or clears them, clears extension data, or uninstalls the
-extension. Standalone HTML files are created only when the user presses the
-download button and are saved through the browser's normal download behavior.
+Preferences, math macro definitions, and recent-document metadata remain in
+local extension storage until the user changes or clears them, clears extension
+data, or uninstalls the extension. Standalone HTML files are created only when
+the user presses the download button and are saved through the browser's normal
+download behavior.
 
 ## Permissions
 
-- `storage` stores display settings and the local recent-document list.
+- `storage` stores display settings, math macro definitions, and the local
+  recent-document list.
 - `file:///*` allows rendering local Markdown files after the user explicitly
   enables file URL access for the extension.
 - `http://*/*` and `https://*/*` allow rendering Markdown documents on arbitrary

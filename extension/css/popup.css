@@ -89,6 +89,8 @@ input,
 select { font: inherit; }
 
 input[type='search'],
+input[type='text'],
+textarea,
 select {
   border: 1px solid var(--border);
   border-radius: 7px;
@@ -101,6 +103,14 @@ input[type='search'] {
   margin-bottom: 10px;
   padding: 9px 10px;
 }
+
+input[type='text'],
+textarea {
+  width: 100%;
+  padding: 7px 8px;
+}
+
+textarea { resize: vertical; }
 
 select { min-width: 112px; padding: 6px 8px; }
 
@@ -180,6 +190,77 @@ small { margin-top: 2px; color: var(--muted); }
 
 .wide-button:hover { border-color: var(--accent); color: var(--accent); }
 
+.macro-settings {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.macro-settings .section-title { margin-bottom: 4px; }
+
+.setting-note,
+.macro-empty,
+.macro-status {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.macro-list { display: grid; gap: 6px; margin-top: 10px; }
+
+.macro-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+}
+
+.macro-item > div:first-child { display: grid; min-width: 0; gap: 2px; }
+.macro-item code { font-size: 11px; }
+.macro-replacement { overflow-wrap: anywhere; color: var(--muted); }
+.macro-item-actions { display: flex; gap: 3px; }
+.macro-item-actions .text-button { padding: 2px; font-size: 10px; }
+.text-button.is-danger,
+.macro-status.is-error { color: #cf222e; }
+
+.macro-status { min-height: 16px; margin-top: 7px; }
+
+.macro-editor {
+  display: grid;
+  gap: 9px;
+  margin-top: 4px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+}
+
+.macro-editor[hidden] { display: none; }
+.macro-editor label { display: grid; gap: 4px; }
+.macro-editor label > span { font-size: 11px; font-weight: 700; }
+.macro-editor .macro-status { margin-top: 0; }
+.macro-editor-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+.primary-button {
+  padding: 6px 9px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--accent);
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.primary-button:disabled { opacity: 0.6; cursor: progress; }
+
+@media (prefers-color-scheme: dark) {
+  .text-button.is-danger,
+  .macro-status.is-error { color: #ff7b72; }
+}
+
 footer {
   display: flex;
   justify-content: space-between;
@@ -189,4 +270,3 @@ footer {
   color: var(--muted);
   font-size: 10px;
 }
-

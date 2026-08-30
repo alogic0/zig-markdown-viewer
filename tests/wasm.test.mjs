@@ -1,12 +1,18 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import test from 'node:test';
+
+const require = createRequire(import.meta.url);
+require('../extension/js/math-macros.js');
+const { Renderer } = require('../extension/js/wasm.js');
 
 const wasmPath = new URL('../zig-out/extension/renderer.wasm', import.meta.url);
 const bytes = await readFile(wasmPath);
 const module = new WebAssembly.Module(bytes);
 const instance = new WebAssembly.Instance(module, {});
 const wasm = instance.exports;
+const browserRenderer = new Renderer(instance);
 const encoder = new TextEncoder();
 const decoder = new TextDecoder('utf-8', { fatal: true });
 
@@ -128,6 +134,25 @@ test('rejects malformed and oversized macro configuration buffers', () => {
 
   assert.equal(wasm.allocateMacroConfig(1024 * 1024 + 1), 0);
   assert.equal(wasm.errorCode(), 5);
+});
+
+test('browser bridge validates configures and clears math macros', () => {
+  assert.deepEqual(browserRenderer.configureMathMacros([{
+    name: '\\f',
+    replacement: '#1f(#2)',
+    argumentCount: 2,
+  }]), [{ name: 'f', replacement: '#1f(#2)', argumentCount: 2 }]);
+  assert.match(browserRenderer.render('$\\f{x}{y}$\n'), /<math/);
+
+  assert.throws(() => browserRenderer.configureMathMacros([{
+    name: 'frac',
+    replacement: '#1',
+    argumentCount: 1,
+  }]), /conflicts with a built-in command/);
+  assert.match(browserRenderer.render('$\\f{x}{y}$\n'), /<math/);
+
+  assert.deepEqual(browserRenderer.configureMathMacros([]), []);
+  assert.equal(browserRenderer.render('$\\f{x}{y}$\n'), '<p>$\\f{x}{y}$</p>\n');
 });
 
 test('renders GFM-style features through WebAssembly', () => {

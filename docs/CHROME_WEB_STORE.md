@@ -18,8 +18,9 @@ Fast, local-first Markdown rendering powered by Zig and WebAssembly.
 Zig Markdown Viewer turns `.md`, `.markdown`, `.mkd`, and `.mdx` documents into
 readable pages directly in Chrome. It includes a responsive table of contents,
 high-quality fenced-code highlighting, light and dark themes, raw source view,
-local inline and display math rendering, printing, code-copy controls, optional
-auto-refresh, and one-click standalone HTML export.
+local inline and display math rendering with optional custom macros, printing,
+code-copy controls, optional auto-refresh, and one-click standalone HTML
+export.
 
 Rendering, math typesetting, and syntax highlighting run locally in the
 bundled WebAssembly module. The extension includes no analytics, advertising,
@@ -29,9 +30,10 @@ remote executable code, CDN dependency, or developer-operated service.
 
 ### storage
 
-Required to retain the user's display preferences, refresh settings, and a
-user-clearable list of up to 20 recently opened Markdown documents. The data
-remains in `chrome.storage.local` and is not transmitted to the developer.
+Required to retain the user's display preferences, refresh settings, custom
+math macro definitions, and a user-clearable list of up to 20 recently opened
+Markdown documents. The data remains in `chrome.storage.local` and is not
+transmitted to the developer.
 
 ### Host access: file URLs
 
@@ -69,7 +71,8 @@ public URL for `PRIVACY.md` as the dashboard privacy-policy URL.
 3. Open a `.md` file and confirm that Markdown, inline math, and a fenced
    `math` block render.
 4. Use the toolbar to switch raw/rendered mode and theme.
-5. Open the extension popup to change display settings and clear recent files.
+5. Open the extension popup to change display settings, configure a custom math
+   macro, and clear recent files.
 6. Use the download control to create a standalone HTML copy.
 
 No account, credentials, payment, or external service is required.

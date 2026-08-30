@@ -56,6 +56,8 @@ as the extension; it does not instantiate the WebAssembly renderer.
   autolinks, smart punctuation, and highlighted fenced code
 - inline `$...$` math and display math in `math`, `tex`, or `latex` fences,
   rendered locally as an inert MathML Core subset with literal-source fallback
+- bounded custom math macros configured in the extension popup, validated by
+  the Wasm typesetter, and applied locally without enabling source definitions
 - a curated set of quality-verified `zig-native-syntax` backends, with escaped
   plain-text fallback for experimental, unsupported, or unknown fence languages
 - local and remote Markdown URLs
@@ -86,8 +88,10 @@ should follow the [release checklist](docs/RELEASING.md) and use the canonical
 node --test tests/wasm.test.mjs
 node --test tests/standalone.test.cjs
 node --test tests/mathml-policy.test.cjs
+node --test tests/math-macros.test.cjs
 node --check extension/js/background.js
 node --check extension/js/content.js
+node --check extension/js/math-macros.js
 node --check extension/js/mathml-policy.js
 node --check extension/js/popup.js
 node --check extension/js/standalone.js

@@ -12,6 +12,7 @@
     codeWrap: false,
     autoRefresh: false,
     autoRefreshInterval: 3,
+    mathMacros: [],
   };
   const mobileToc = window.matchMedia('(max-width: 680px)');
 
@@ -239,6 +240,12 @@
     content.append(sanitize(html));
     enhanceCodeBlocks(content);
     buildToc(content);
+  }
+
+  function configureMathMacros(definitions) {
+    const normalized = state.renderer.configureMathMacros(definitions);
+    state.settings.mathMacros = normalized;
+    return normalized;
   }
 
   function enhanceCodeBlocks(content) {
@@ -483,9 +490,18 @@
 
     try {
       state.renderer = await globalThis.ZigMarkdownRenderer.load();
+      let macroConfigurationError = null;
+      try {
+        configureMathMacros(state.settings.mathMacros);
+      } catch (error) {
+        state.settings.mathMacros = [];
+        macroConfigurationError = error;
+        console.error('Stored math macros were ignored:', error);
+      }
       buildShell();
       applySettings();
       renderCurrent();
+      if (macroConfigurationError) notify('Stored math macros were invalid and were ignored.', true);
       document.title = state.documentTitle;
       await saveRecent();
       if (window.location.hash) {
@@ -500,7 +516,26 @@
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== 'local') return;
     for (const [key, change] of Object.entries(changes)) {
-      if (key in DEFAULTS) state.settings[key] = change.newValue;
+      if (key in DEFAULTS && key !== 'mathMacros') {
+        state.settings[key] = change.newValue ?? DEFAULTS[key];
+      }
+    }
+    if (changes.mathMacros) {
+      const nextMacros = changes.mathMacros.newValue ?? DEFAULTS.mathMacros;
+      if (state.renderer) {
+        try {
+          configureMathMacros(nextMacros);
+          if (document.querySelector('#zig-md-shell')) {
+            renderCurrent();
+            notify('Math macros updated');
+          }
+        } catch (error) {
+          console.error('Math macro update was rejected:', error);
+          notify('Math macro update was rejected.', true);
+        }
+      } else {
+        state.settings.mathMacros = nextMacros;
+      }
     }
     if (changes.tocVisible) state.tocOpen = changes.tocVisible.newValue;
     if (changes.enabled?.newValue === false) {
