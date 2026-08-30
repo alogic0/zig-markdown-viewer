@@ -18,6 +18,13 @@ Chrome extension ZIP generated from that exact commit.
 
 Run the complete local gate with the pinned Zig compiler:
 
+When publishing viewer changes that depend on local `zig-math-typesetter`
+development, push that repository first and refresh the viewer pin:
+
+```sh
+./build.sh pin-math
+```
+
 ```sh
 zig fmt --check build.zig src tools
 ./build.sh update-logo

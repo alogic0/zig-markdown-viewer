@@ -152,6 +152,28 @@ checks prevent accidental growth; they do not prohibit justified growth.
 Intentional changes are accepted after reviewing `./build.sh wasm-size-report`
 and running `./build.sh update-wasm-size-baseline` to record the new size.
 
+## Local math-typesetter development
+
+Use the sibling `zig-math-typesetter` checkout without changing the committed
+GitHub dependency:
+
+```sh
+./build.sh math-dev test
+```
+
+`math-dev` accepts the same build step and options as the normal wrapper and
+adds Zig's `--fork ../zig-math-typesetter` package override. After committing
+and pushing the typesetter, refresh the viewer's exact GitHub revision and
+package hash with:
+
+```sh
+./build.sh pin-math
+./build.sh test
+```
+
+`pin-math` refuses a dirty typesetter worktree or a HEAD commit that is not
+present on an `origin` branch or tag.
+
 ## Provenance
 
 The extension is an independent implementation inspired by the local [Markview](https://github.com/markview-app/markview)

@@ -7,6 +7,9 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 
 ### Added
 
+- `./build.sh math-dev` for temporary sibling typesetter overrides and
+  `./build.sh pin-math` for validated exact GitHub revision updates.
+
 - Portable document-local math macros through restricted, atomic
   `math-macros` declaration fences.
 - Math matrices, fenced matrix variants, cases, and aligned equations through

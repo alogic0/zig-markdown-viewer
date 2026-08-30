@@ -24,6 +24,24 @@ if [ "${viewer_actual_zig_version}" != "${viewer_zig_version}" ]; then
     exit 1
 fi
 
+viewer_math_dev=false
+if [ "$#" -ge 1 ]; then
+    case "$1" in
+        math-dev)
+            viewer_math_dev=true
+            shift
+            ;;
+        pin-math)
+            shift
+            if [ "$#" -ne 0 ]; then
+                echo "usage: ./build.sh pin-math" >&2
+                exit 2
+            fi
+            exec "${viewer_zig_exe}" run tools/pin_math_dependency.zig -- "${viewer_zig_exe}"
+            ;;
+    esac
+fi
+
 # Zig handles --help before selecting a build step. Forward help following the
 # render-html step explicitly so it reaches the renderer instead.
 if [ "$#" -ge 2 ] && [ "$1" = "render-html" ]; then
@@ -34,6 +52,10 @@ if [ "$#" -ge 2 ] && [ "$1" = "render-html" ]; then
             set -- render-html -- "${renderer_help_flag}" "$@"
             ;;
     esac
+fi
+
+if [ "${viewer_math_dev}" = true ]; then
+    set -- --fork ../zig-math-typesetter "$@"
 fi
 
 exec "${viewer_zig_exe}" build "$@"
