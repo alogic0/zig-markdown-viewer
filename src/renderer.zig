@@ -11,15 +11,21 @@ else
     std.heap.page_allocator;
 const Renderer = markdown.Renderer(*const RenderContext);
 
+pub const MathMacroDefinition = math.MacroDefinition;
+
 pub const RenderOptions = struct {
     escape_raw_html: bool = false,
     safe_urls: bool = false,
+    /// Caller-owned definitions compiled once and reused for every math span
+    /// in this render operation.
+    math_macros: []const MathMacroDefinition = &.{},
 };
 
 const RenderContext = struct {
     allocator: std.mem.Allocator,
     headings: *const HeadingIndex,
     options: RenderOptions,
+    math_session: ?*const math.MacroSession,
 };
 
 var input: []u8 = &.{};
@@ -105,10 +111,21 @@ pub fn renderAllocOptions(
 
     var headings = HeadingIndex.init(gpa, document) catch return error.OutOfMemory;
     defer headings.deinit();
+
+    var math_session = if (options.math_macros.len == 0)
+        null
+    else
+        math.MacroSession.init(gpa, options.math_macros, .{}) catch |err| switch (err) {
+            error.OutOfMemory => return error.OutOfMemory,
+            else => return error.RenderFailed,
+        };
+    defer if (math_session) |*session| session.deinit();
+
     const context: RenderContext = .{
         .allocator = gpa,
         .headings = &headings,
         .options = options,
+        .math_session = if (math_session) |*session| session else null,
     };
 
     var writer: std.Io.Writer.Allocating = .init(gpa);
@@ -415,9 +432,14 @@ fn renderMath(
     display_mode: math.DisplayMode,
     writer: *std.Io.Writer,
 ) std.Io.Writer.Error!void {
-    var result = math.renderMathMlAlloc(context.allocator, source, .{
-        .display_mode = display_mode,
-    }) catch return renderMathFallback(source, display_mode, writer);
+    var result = if (context.math_session) |session|
+        session.renderMathMlAlloc(context.allocator, source, .{
+            .display_mode = display_mode,
+        }) catch return renderMathFallback(source, display_mode, writer)
+    else
+        math.renderMathMlAlloc(context.allocator, source, .{
+            .display_mode = display_mode,
+        }) catch return renderMathFallback(source, display_mode, writer);
     defer result.deinit(context.allocator);
 
     switch (result) {
@@ -545,6 +567,45 @@ test "renders inline and display math as safe MathML" {
     ) != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "<mfrac>") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "<mroot>") != null);
+}
+
+test "renders caller-configured macros across a Markdown document" {
+    const macros = [_]MathMacroDefinition{.{
+        .name = "f",
+        .replacement = "#1f(#2)",
+        .argument_count = 2,
+    }};
+    const source =
+        \\# KaTeX macro formula
+        \\
+        \\~~~math
+        \\% \f is defined as #1f(#2) using the macro
+        \\\f\relax{x} = \int_{-\infty}^\infty
+        \\    \f\hat\xi\,e^{2 \pi i \xi x}
+        \\    \,d\xi
+        \\~~~
+    ;
+    const html = try renderAllocOptions(
+        std.testing.allocator,
+        source,
+        .{ .math_macros = &macros },
+    );
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expect(std.mem.indexOf(
+        u8,
+        html,
+        "<math class=\"zig-math\" display=\"block\">",
+    ) != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "<mover>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "<mi>ξ</mi>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "language-math") == null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "using the macro") == null);
+
+    const fallback = try renderAlloc(std.testing.allocator, source);
+    defer std.testing.allocator.free(fallback);
+    try std.testing.expect(std.mem.indexOf(u8, fallback, "language-math") != null);
+    try std.testing.expect(std.mem.indexOf(u8, fallback, "\\f\\relax{x}") != null);
 }
 
 test "math diagnostics fall back to complete escaped source" {

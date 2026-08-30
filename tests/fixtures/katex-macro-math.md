@@ -1,7 +1,8 @@
 # KaTeX macro formula
 
-This formula uses KaTeX commands outside the current Zig Math Typesetter core
-profile. The viewer should preserve the complete source as a display fallback.
+This formula exercises a caller-configured two-argument macro. A host that
+registers `\f` as `#1f(#2)` should render it as display MathML; without that
+configuration, the viewer preserves the complete source as a display fallback.
 
 ~~~math
 % \f is defined as #1f(#2) using the macro

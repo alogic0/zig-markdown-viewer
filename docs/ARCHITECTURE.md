@@ -23,7 +23,11 @@ HTML sanitizer -> relative URL resolution -> document UI
   document rendering, including source-preserving inline and block math nodes.
 - `zig-math-typesetter` parses the supported delimiter-free TeX-like subset,
   normalizes its semantic tree, and emits one complete inert MathML fragment.
-  Diagnostics produce escaped literal source instead of partial MathML.
+  Diagnostics produce escaped literal source instead of partial MathML. Native
+  renderer integrations may pass caller-owned definitions through
+  `RenderOptions.math_macros`; the renderer validates and compiles that table
+  once per document. The browser WebAssembly entry point uses the empty default
+  table and does not accept source-defined macros.
 - `zig-native-syntax` supplies core and optional backends, quality metadata, aliases,
   and a configured registry of verified enabled backends. The viewer consumes that
   registry without maintaining a second allowlist. Its safe HTML renderer emits only

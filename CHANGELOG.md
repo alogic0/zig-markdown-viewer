@@ -5,6 +5,16 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 
 ## [Unreleased]
 
+### Added
+
+- Caller-provided, bounded math macros can be configured per native renderer
+  operation and are compiled once for all expressions in the document.
+
+### Changed
+
+- Updated `zig-math-typesetter` to 0.2.0 for Greek accents, named operators,
+  `\relax`, and generic token-macro expansion.
+
 ## [0.2.0] - 2026-08-30
 
 ### Added
