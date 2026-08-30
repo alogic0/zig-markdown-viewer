@@ -3,7 +3,6 @@ const builtin = @import("builtin");
 const markdown = @import("markdown");
 const math = @import("math_typesetter");
 const highlight = @import("highlight.zig");
-const math_macro_declarations = @import("math_macro_declarations.zig");
 const unicode_slug = @import("unicode_slug.zig");
 
 const allocator = if (builtin.target.cpu.arch.isWasm())
@@ -153,24 +152,28 @@ fn renderAllocWithMathSession(
     };
     defer if (declaration_source) |bytes| gpa.free(bytes);
 
-    var parsed_declarations: ?math_macro_declarations.Parsed = if (declaration_source) |bytes|
-        math_macro_declarations.parseAlloc(
-            gpa,
-            bytes,
-            (math.Limits{}).max_macro_definitions,
-        ) catch |err| switch (err) {
-            error.OutOfMemory => return error.OutOfMemory,
-            error.InvalidDeclaration, error.TooManyDefinitions => null,
+    var declaration_limits: math.Limits = .{};
+    declaration_limits.max_source_bytes = @intCast(max_macro_declaration_bytes);
+    var declaration_result: ?math.MacroDeclarationResult = if (declaration_source) |bytes|
+        math.parseMacroDeclarationsAlloc(gpa, bytes, declaration_limits) catch
+            return error.OutOfMemory
+    else
+        null;
+    defer if (declaration_result) |*result| result.deinit();
+
+    const parsed_definitions: ?[]const MathMacroDefinition = if (declaration_result) |result|
+        switch (result) {
+            .declarations => |declarations| declarations.definitions,
+            .diagnostic => null,
         }
     else
         null;
-    defer if (parsed_declarations) |*declarations| declarations.deinit();
 
-    var local_math_session: ?math.MacroSession = if (parsed_declarations) |declarations|
-        if (declarations.definitions.len == 0)
+    var local_math_session: ?math.MacroSession = if (parsed_definitions) |definitions|
+        if (definitions.len == 0)
             null
         else
-            math.MacroSession.init(gpa, declarations.definitions, .{}) catch |err| switch (err) {
+            math.MacroSession.init(gpa, definitions, .{}) catch |err| switch (err) {
                 error.OutOfMemory => return error.OutOfMemory,
                 else => null,
             }
@@ -178,8 +181,8 @@ fn renderAllocWithMathSession(
         null;
     defer if (local_math_session) |*session| session.deinit();
 
-    const declarations_valid = declaration_source != null and parsed_declarations != null and
-        (parsed_declarations.?.definitions.len == 0 or local_math_session != null);
+    const declarations_valid = declaration_source != null and parsed_definitions != null and
+        (parsed_definitions.?.len == 0 or local_math_session != null);
     const effective_math_session = if (declaration_source == null and
         !declaration_collection_failed)
         math_session

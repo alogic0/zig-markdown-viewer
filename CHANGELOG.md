@@ -13,8 +13,11 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
   the bounded `zig-math-typesetter` AMS profile.
 - Caller-provided, bounded math macros can be configured per native renderer
   operation and are compiled once for all expressions in the document.
+
 ### Changed
 
+- Updated `zig-math-typesetter` to 0.4.0 and replaced the viewer-local macro
+  declaration scanner with its allocator-owned public API.
 - Updated `zig-math-typesetter` to 0.3.0 for the optional bounded AMS table
   profile.
 - Extended the inert MathML policy with table elements and fixed aligned-cell

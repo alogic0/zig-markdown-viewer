@@ -52,11 +52,12 @@ calls `releaseSource`. The renderer owns its output until the next render or
 `releaseOutput`.
 
 Document-local declarations use only
-`\newcommand{\name}[N]{replacement}` syntax. They are parsed separately from
-math expressions, then passed through the typesetter's existing name,
-replacement, collision, and resource-limit validation. All declaration fences
-are hidden only when the complete table is valid; otherwise the table is
-disabled and the fences render as ordinary code.
+`\newcommand{\name}[N]{replacement}` syntax. The viewer collects their fenced
+contents, while `zig-math-typesetter` owns declaration parsing, byte-spanned
+diagnostics, source lifetime, and the existing name, replacement, collision,
+and resource-limit validation. All declaration fences are hidden only when the
+complete table is valid; otherwise the table is disabled and the fences render
+as ordinary code.
 
 Raw HTML is preserved by the syntax renderer for source fidelity, then filtered
 in the content script before any nodes enter the live page. Scripts, embedded
