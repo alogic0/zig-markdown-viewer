@@ -105,7 +105,7 @@ and running `./build.sh update-wasm-size-baseline` to record the new size.
 
 ## Provenance
 
-The extension is an independent implementation inspired by the local Markview
+The extension is an independent implementation inspired by the local [Markview](https://github.com/markview-app/markview)
 extension's user experience. `zig-markdown-parser`, [Zine](https://zine-ssg.io), [SuperHTML](https://github.com/kristoff-it/superhtml), and
 Markview retain their own licenses and copyrights.
 
