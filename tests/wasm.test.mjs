@@ -177,6 +177,7 @@ test('renders extended math structures through WebAssembly', () => {
 \\left\\langle x\\right\\rangle+\\left\\lfloor y\\right\\rfloor
 \\left\\lceil z\\right\\rceil+\\left\\Vert v\\right\\Vert
 \\operatorname{rank}_A+\\widehat{xyz}+\\widetilde{ab}
+\\acute a+\\grave b+\\check c+\\breve d+\\mathring e+\\overleftrightarrow{xy}
 \\displaystyle\\sum_i+\\textstyle{x}+\\scriptstyle{y}+\\scriptscriptstyle{z}
 ~~~
 `);
@@ -193,6 +194,9 @@ test('renders extended math structures through WebAssembly', () => {
     '<mi mathvariant="normal">rank</mi>',
     '<mover accent="true">',
     '<mo stretchy="true">^</mo>',
+    '<mo>´</mo>',
+    '<mo>˚</mo>',
+    '<mo stretchy="true">↔</mo>',
     '<mstyle displaystyle="true" scriptlevel="0">',
     '<mstyle displaystyle="false" scriptlevel="2">',
   ]) assert.ok(html.includes(fragment), fragment);

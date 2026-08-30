@@ -83,7 +83,8 @@ as the extension; it does not instantiate the WebAssembly renderer.
   `\mathrm`, `\mathbf`, `\mathit`, `\mathsf`, `\mathtt`, `\mathbb`, and
   `\mathcal` and `\mathfrak` provide scoped mathematical alphabets; styled
   fractions, binomials, extended fences, custom side- and display-limit
-  operators through `\operatorname`, `\operatorname*`, and `\mathop`, wide accents,
+  operators through `\operatorname`, `\operatorname*`, and `\mathop`, narrow
+  diacritic and wide arrow accents,
   braces, multi-line limits, explicit limit placement and math styles, and an
   expanded set of symbols and operators are also supported
 - bounded custom math macros declared in `math-macros` fences, validated once
