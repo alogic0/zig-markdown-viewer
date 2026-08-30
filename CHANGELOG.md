@@ -9,6 +9,7 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 
 - `./build.sh math-dev` for temporary sibling typesetter overrides and
   `./build.sh pin-math` for validated exact GitHub revision updates.
+- Centered multi-row formulas through the bounded AMS `gathered` environment.
 
 - Portable document-local math macros through restricted, atomic
   `math-macros` declaration fences.
@@ -31,7 +32,7 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 
 ### Changed
 
-- Pinned `zig-math-typesetter` at `6705faf` for the expanded command surface
+- Pinned `zig-math-typesetter` at `2f68046` for the expanded command surface
   and allowed only its fixed `accentunder="true"` underbrace attribute.
 
 - Updated `zig-math-typesetter` to 0.4.0 and replaced the viewer-local macro

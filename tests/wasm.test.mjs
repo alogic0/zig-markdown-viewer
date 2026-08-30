@@ -120,9 +120,11 @@ test('renders AMS table environments through WebAssembly', () => {
 
 ~~~math
 \\begin{smallmatrix}a&b\\\\c&d\\end{smallmatrix}
+\\begin{gathered}u=1\\\\v=2\\end{gathered}
 ~~~
 `);
-  assert.equal((html.match(/<mtable>/g) || []).length, 4);
+  assert.equal((html.match(/<mtable>/g) || []).length, 5);
+  assert.match(html, /<mi>u<\/mi><mo>=<\/mo><mn>1<\/mn>/);
   assert.match(html, /<mo>\(<\/mo>/);
   assert.match(html, /<mo>\{<\/mo><mtable>/);
   assert.match(html, /<mtd columnalign="right">/);
