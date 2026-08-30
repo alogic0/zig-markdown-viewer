@@ -711,12 +711,18 @@ test "renders AMS matrices cases and aligned equations" {
         \\```math
         \\\begin{smallmatrix}a&b\\c&d\end{smallmatrix}
         \\\begin{gathered}u=1\\v=2\end{gathered}
+        \\\begin{alignedat}{2}a&=b&c&=d\end{alignedat}
         \\```
     );
     defer std.testing.allocator.free(html);
 
-    try std.testing.expectEqual(@as(usize, 5), std.mem.count(u8, html, "<mtable>"));
+    try std.testing.expectEqual(@as(usize, 6), std.mem.count(u8, html, "<mtable>"));
     try std.testing.expect(std.mem.indexOf(u8, html, "<mi>u</mi><mo>=</mo><mn>1</mn>") != null);
+    try std.testing.expectEqual(@as(usize, 4), std.mem.count(
+        u8,
+        html,
+        "<mtd columnalign=\"right\">",
+    ));
     try std.testing.expect(std.mem.indexOf(u8, html, "<mo>(</mo>") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "<mo>{</mo><mtable>") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "<mtd columnalign=\"right\">") != null);
