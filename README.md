@@ -65,7 +65,7 @@ as the extension; it does not instantiate the WebAssembly renderer.
 - optional auto-refresh and a recent-document list
 - a Manifest V3 service worker and settings popup
 
-Mermaid and KaTeX rendering from Markview are not bundled.
+Mermaid and KaTeX rendering like in [Markview](https://github.com/markview-app/markview) are not bundled.
 
 See [Highlighting quality](docs/HIGHLIGHTING_QUALITY.md) for the supported-language registry,
 admission criteria, and parser/tokenizer policy.
@@ -100,7 +100,7 @@ and running `./build.sh update-wasm-size-baseline` to record the new size.
 ## Provenance
 
 The extension is an independent implementation inspired by the local Markview
-extension's user experience. `zig-markdown-parser`, Zine, SuperHTML, and
+extension's user experience. `zig-markdown-parser`, [Zine](https://zine-ssg.io), [SuperHTML](https://github.com/kristoff-it/superhtml), and
 Markview retain their own licenses and copyrights.
 
 Changes are recorded in [CHANGELOG.md](CHANGELOG.md). The project is licensed
