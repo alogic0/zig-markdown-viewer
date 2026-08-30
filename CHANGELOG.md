@@ -9,6 +9,8 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 
 - Caller-provided, bounded math macros can be configured per native renderer
   operation and are compiled once for all expressions in the document.
+- The WebAssembly renderer accepts atomic, bounded macro-table configuration
+  while preserving the previous valid session when an update is rejected.
 
 ### Changed
 

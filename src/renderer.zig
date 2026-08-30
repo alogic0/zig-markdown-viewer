@@ -10,6 +10,7 @@ const allocator = if (builtin.target.cpu.arch.isWasm())
 else
     std.heap.page_allocator;
 const Renderer = markdown.Renderer(*const RenderContext);
+const max_macro_config_bytes = 1024 * 1024;
 
 pub const MathMacroDefinition = math.MacroDefinition;
 
@@ -30,6 +31,8 @@ const RenderContext = struct {
 
 var input: []u8 = &.{};
 var output: []u8 = &.{};
+var macro_config_input: []u8 = &.{};
+var configured_math_session: ?math.MacroSession = null;
 var last_error: ErrorCode = .none;
 
 const ErrorCode = enum(u32) {
@@ -38,6 +41,7 @@ const ErrorCode = enum(u32) {
     parse = 2,
     render = 3,
     invalid_input = 4,
+    invalid_math_macros = 5,
 };
 
 /// Reserves a source buffer in WebAssembly memory. A later call invalidates
@@ -62,7 +66,12 @@ export fn renderMarkdown(length: u32) u32 {
         return 0;
     }
 
-    output = renderAlloc(allocator, input[0..length]) catch |err| {
+    output = renderAllocWithMathSession(
+        allocator,
+        input[0..length],
+        .{},
+        if (configured_math_session) |*session| session else null,
+    ) catch |err| {
         last_error = switch (err) {
             error.OutOfMemory => .out_of_memory,
             error.ParseFailed => .parse,
@@ -91,6 +100,131 @@ export fn releaseOutput() void {
     output = &.{};
 }
 
+/// Reserves a bounded binary macro-configuration buffer. A later call
+/// invalidates the previous buffer pointer.
+export fn allocateMacroConfig(length: u32) u32 {
+    releaseMacroConfig();
+    last_error = .none;
+    if (length > max_macro_config_bytes) {
+        last_error = .invalid_math_macros;
+        return 0;
+    }
+    macro_config_input = allocator.alloc(u8, length) catch {
+        last_error = .out_of_memory;
+        return 0;
+    };
+    return @intCast(@intFromPtr(macro_config_input.ptr));
+}
+
+/// Atomically installs the macro table encoded in the configuration buffer.
+/// The format is a little-endian definition count followed by, per definition,
+/// name length, replacement length, argument count, name bytes, and replacement
+/// bytes. All three per-definition integers are u32 values.
+export fn configureMathMacros(length: u32) u32 {
+    last_error = .none;
+    if (length > macro_config_input.len) {
+        last_error = .invalid_math_macros;
+        return 0;
+    }
+
+    const definitions = parseMacroConfigAlloc(
+        allocator,
+        macro_config_input[0..length],
+    ) catch |err| {
+        last_error = switch (err) {
+            error.OutOfMemory => .out_of_memory,
+            error.InvalidMacroConfig => .invalid_math_macros,
+        };
+        return 0;
+    };
+    defer allocator.free(definitions);
+
+    if (definitions.len == 0) {
+        clearConfiguredMathSession();
+        return 1;
+    }
+
+    const candidate = math.MacroSession.init(allocator, definitions, .{}) catch |err| {
+        last_error = switch (err) {
+            error.OutOfMemory => .out_of_memory,
+            else => .invalid_math_macros,
+        };
+        return 0;
+    };
+    clearConfiguredMathSession();
+    configured_math_session = candidate;
+    return 1;
+}
+
+export fn releaseMacroConfig() void {
+    if (macro_config_input.len != 0) allocator.free(macro_config_input);
+    macro_config_input = &.{};
+}
+
+export fn clearMathMacros() void {
+    last_error = .none;
+    clearConfiguredMathSession();
+}
+
+fn clearConfiguredMathSession() void {
+    if (configured_math_session) |*session| session.deinit();
+    configured_math_session = null;
+}
+
+const ParseMacroConfigError = error{ OutOfMemory, InvalidMacroConfig };
+
+fn parseMacroConfigAlloc(
+    gpa: std.mem.Allocator,
+    bytes: []const u8,
+) ParseMacroConfigError![]MathMacroDefinition {
+    var cursor: usize = 0;
+    const definition_count = readMacroConfigU32(bytes, &cursor) orelse
+        return error.InvalidMacroConfig;
+    if (definition_count > (math.Limits{}).max_macro_definitions) {
+        return error.InvalidMacroConfig;
+    }
+
+    const definitions = try gpa.alloc(MathMacroDefinition, definition_count);
+    errdefer gpa.free(definitions);
+    for (definitions) |*definition| {
+        const name_length = readMacroConfigU32(bytes, &cursor) orelse
+            return error.InvalidMacroConfig;
+        const replacement_length = readMacroConfigU32(bytes, &cursor) orelse
+            return error.InvalidMacroConfig;
+        const argument_count = readMacroConfigU32(bytes, &cursor) orelse
+            return error.InvalidMacroConfig;
+        if (argument_count > std.math.maxInt(u8)) return error.InvalidMacroConfig;
+
+        if (name_length > bytes.len - cursor) return error.InvalidMacroConfig;
+        const name_end = cursor + name_length;
+        const name = bytes[cursor..name_end];
+        cursor = name_end;
+
+        if (replacement_length > bytes.len - cursor) return error.InvalidMacroConfig;
+        const replacement_end = cursor + replacement_length;
+        const replacement = bytes[cursor..replacement_end];
+        cursor = replacement_end;
+
+        definition.* = .{
+            .name = name,
+            .replacement = replacement,
+            .argument_count = @intCast(argument_count),
+        };
+    }
+    if (cursor != bytes.len) return error.InvalidMacroConfig;
+    return definitions;
+}
+
+fn readMacroConfigU32(bytes: []const u8, cursor: *usize) ?u32 {
+    if (cursor.* > bytes.len or bytes.len - cursor.* < 4) return null;
+    const value = @as(u32, bytes[cursor.*]) |
+        (@as(u32, bytes[cursor.* + 1]) << 8) |
+        (@as(u32, bytes[cursor.* + 2]) << 16) |
+        (@as(u32, bytes[cursor.* + 3]) << 24);
+    cursor.* += 4;
+    return value;
+}
+
 pub const RenderError = error{ OutOfMemory, ParseFailed, RenderFailed };
 
 pub fn renderAlloc(gpa: std.mem.Allocator, source: []const u8) RenderError![]u8 {
@@ -102,6 +236,29 @@ pub fn renderAllocOptions(
     source: []const u8,
     options: RenderOptions,
 ) RenderError![]u8 {
+    var math_session = if (options.math_macros.len == 0)
+        null
+    else
+        math.MacroSession.init(gpa, options.math_macros, .{}) catch |err| switch (err) {
+            error.OutOfMemory => return error.OutOfMemory,
+            else => return error.RenderFailed,
+        };
+    defer if (math_session) |*session| session.deinit();
+
+    return renderAllocWithMathSession(
+        gpa,
+        source,
+        options,
+        if (math_session) |*session| session else null,
+    );
+}
+
+fn renderAllocWithMathSession(
+    gpa: std.mem.Allocator,
+    source: []const u8,
+    options: RenderOptions,
+    math_session: ?*const math.MacroSession,
+) RenderError![]u8 {
     var parser = markdown.Parser.init(gpa) catch return error.OutOfMemory;
     defer parser.deinit();
     parser.feed(source) catch return error.ParseFailed;
@@ -112,20 +269,11 @@ pub fn renderAllocOptions(
     var headings = HeadingIndex.init(gpa, document) catch return error.OutOfMemory;
     defer headings.deinit();
 
-    var math_session = if (options.math_macros.len == 0)
-        null
-    else
-        math.MacroSession.init(gpa, options.math_macros, .{}) catch |err| switch (err) {
-            error.OutOfMemory => return error.OutOfMemory,
-            else => return error.RenderFailed,
-        };
-    defer if (math_session) |*session| session.deinit();
-
     const context: RenderContext = .{
         .allocator = gpa,
         .headings = &headings,
         .options = options,
-        .math_session = if (math_session) |*session| session else null,
+        .math_session = math_session,
     };
 
     var writer: std.Io.Writer.Allocating = .init(gpa);

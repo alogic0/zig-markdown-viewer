@@ -26,8 +26,10 @@ HTML sanitizer -> relative URL resolution -> document UI
   Diagnostics produce escaped literal source instead of partial MathML. Native
   renderer integrations may pass caller-owned definitions through
   `RenderOptions.math_macros`; the renderer validates and compiles that table
-  once per document. The browser WebAssembly entry point uses the empty default
-  table and does not accept source-defined macros.
+  once per document. The browser WebAssembly entry point accepts the same
+  definitions through a bounded binary configuration buffer and atomically
+  replaces its reusable macro session only after successful validation. It does
+  not accept source-defined macros.
 - `zig-native-syntax` supplies core and optional backends, quality metadata, aliases,
   and a configured registry of verified enabled backends. The viewer consumes that
   registry without maintaining a second allowlist. Its safe HTML renderer emits only
@@ -47,7 +49,10 @@ The registry and promotion requirements are defined in
 The content script allocates UTF-8 source with `allocateSource`, writes into
 exported memory, calls `renderMarkdown`, reads `renderedLength` bytes, and then
 calls `releaseSource`. The renderer owns its output until the next render or
-`releaseOutput`.
+`releaseOutput`. Macro configuration uses a separate, one-mebibyte bounded
+buffer and length-prefixed UTF-8 fields. A valid table is compiled before the
+previous session is released; malformed or invalid updates leave the active
+configuration unchanged.
 
 Raw HTML is preserved by the syntax renderer for source fidelity, then filtered
 in the content script before any nodes enter the live page. Scripts, embedded
