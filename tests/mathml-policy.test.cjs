@@ -73,6 +73,11 @@ test('accepts only inert descendants and fixed spacing widths', () => {
     [['displaystyle', 'false'], ['scriptlevel', '1']],
     [['displaystyle', 'false'], ['scriptlevel', '2']],
   ]) assert.equal(policy.allowsElement('mstyle', ns, attributes, false), true);
+  for (const size of [
+    '0.5em', '0.7em', '0.8em', '0.85em', '1em',
+    '1.2em', '1.44em', '1.73em', '2.07em', '2.49em',
+  ]) assert.equal(policy.allowsElement('mstyle', ns, [['mathsize', size]], false), true);
+  assert.equal(policy.allowsElement('mstyle', ns, [['mathsize', '100vw']], false), false);
   assert.equal(policy.allowsElement('mstyle', ns, [
     ['displaystyle', 'true'],
     ['scriptlevel', '1'],

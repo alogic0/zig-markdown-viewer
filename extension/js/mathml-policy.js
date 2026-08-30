@@ -14,6 +14,10 @@
   const spaceWidths = new Set([
     '-0.1667em', '0.1667em', '0.2222em', '0.2778em', '0.3333em', '1em', '2em',
   ]);
+  const mathSizes = new Set([
+    '0.5em', '0.7em', '0.8em', '0.85em', '1em',
+    '1.2em', '1.44em', '1.73em', '2.07em', '2.49em',
+  ]);
 
   function allowsElement(name, elementNamespace, attributes, isRoot) {
     if (elementNamespace !== namespace || !elements.has(name)) return false;
@@ -54,6 +58,7 @@
         (values.size === 1 && values.get('stretchy') === 'true');
     }
     if (name === 'mstyle') {
+      if (values.size === 1) return mathSizes.has(values.get('mathsize'));
       if (values.size !== 2) return false;
       const displaystyle = values.get('displaystyle');
       const scriptlevel = values.get('scriptlevel');

@@ -13,6 +13,7 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 - Explicit bounded alignment-pair groups through the AMS `alignedat` environment.
 - Generic bounded AMS arrays with validated left, center, and right columns.
 - Acute, grave, check, breve, ring, and stretchable over-arrow accents.
+- Ten scoped math size commands with an exact fixed-value browser allowlist.
 
 - Portable document-local math macros through restricted, atomic
   `math-macros` declaration fences.
@@ -35,7 +36,7 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 
 ### Changed
 
-- Pinned `zig-math-typesetter` at `35f4a12` for the expanded command surface
+- Pinned `zig-math-typesetter` at `2c71b89` for the expanded command surface
   and allowed only its fixed `accentunder="true"` underbrace attribute.
 
 - Updated `zig-math-typesetter` to 0.4.0 and replaced the viewer-local macro

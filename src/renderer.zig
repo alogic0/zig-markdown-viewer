@@ -782,6 +782,7 @@ test "renders extended math structures as fixed safe MathML" {
         \\\left\lceil z\right\rceil+\left\Vert v\right\Vert
         \\\operatorname{rank}_A+\widehat{xyz}+\widetilde{ab}
         \\\acute a+\grave b+\check c+\breve d+\mathring e+\overleftrightarrow{xy}
+        \\\tiny{x}+\Huge{y}
         \\\displaystyle\sum_i+\textstyle{x}+\scriptstyle{y}+\scriptscriptstyle{z}
         \\```
     );
@@ -803,6 +804,8 @@ test "renders extended math structures as fixed safe MathML" {
         "<mo>´</mo>",
         "<mo>˚</mo>",
         "<mo stretchy=\"true\">↔</mo>",
+        "<mstyle mathsize=\"0.5em\"><mrow><mi>x</mi></mrow></mstyle>",
+        "<mstyle mathsize=\"2.49em\"><mrow><mi>y</mi></mrow></mstyle>",
         "<mstyle displaystyle=\"true\" scriptlevel=\"0\">",
         "<mstyle displaystyle=\"false\" scriptlevel=\"2\">",
     }) |fragment| try std.testing.expect(std.mem.indexOf(u8, html, fragment) != null);
