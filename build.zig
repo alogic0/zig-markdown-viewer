@@ -28,6 +28,36 @@ pub fn build(b: *std.Build) void {
         "size-analysis-include-backends",
         "Comma-separated experimental syntax backends linked only for code-size analysis",
     ) orelse "";
+    const logo_formula = b.option(
+        []const u8,
+        "logo-formula",
+        "Inline math formula rendered into the extension logo",
+    ) orelse "$M^{\\,z}$";
+    const logo_background = b.option(
+        []const u8,
+        "logo-background",
+        "Six-digit hex background color for the extension logo",
+    ) orelse "#2563eb";
+    const logo_foreground = b.option(
+        []const u8,
+        "logo-foreground",
+        "Six-digit hex foreground color for the extension logo",
+    ) orelse "#f8fafc";
+
+    const formula_logo_generator = b.addExecutable(.{
+        .name = "generate-formula-logo",
+        .root_module = formulaLogoModule(b, b.graph.host, .safe),
+    });
+    const run_formula_logo_generator = b.addRunArtifact(formula_logo_generator);
+    run_formula_logo_generator.addArgs(&.{ logo_formula, logo_background, logo_foreground });
+    const generated_formula_logo = run_formula_logo_generator.addOutputFileArg("favicon.svg");
+    const update_formula_logo = b.addUpdateSourceFiles();
+    update_formula_logo.addCopyFileToSource(generated_formula_logo, "extension/icons/favicon.svg");
+    const update_formula_logo_step = b.step(
+        "update-logo",
+        "Render the configured math formula and colors into the SVG logo",
+    );
+    update_formula_logo_step.dependOn(&update_formula_logo.step);
 
     const renderer = addWasmRenderer(b, strip_wasm_names, "renderer", wasm_target, optimize, syntax_inclusions, syntax_exclusions);
     const checked_renderer = if (optimize == .small)
@@ -210,6 +240,10 @@ pub fn build(b: *std.Build) void {
     const tests = b.addTest(.{ .root_module = rendererCoreModule(b, b.graph.host, .debug, syntax_inclusions, syntax_exclusions) });
     const test_step = b.step("test", "Run renderer tests");
     test_step.dependOn(&b.addRunArtifact(tests).step);
+    const formula_logo_tests = b.addTest(.{
+        .root_module = formulaLogoModule(b, b.graph.host, .debug),
+    });
+    test_step.dependOn(&b.addRunArtifact(formula_logo_tests).step);
     const install_test_renderer = b.addInstallFile(checked_renderer, "extension/renderer.wasm");
     test_step.dependOn(&install_test_renderer.step);
     test_step.dependOn(&run_size_checker.step);
@@ -263,6 +297,23 @@ pub fn build(b: *std.Build) void {
     run_unicode_generator.setCwd(b.path("."));
     const unicode_step = b.step("generate-unicode", "Regenerate focused Unicode slug tables");
     unicode_step.dependOn(&run_unicode_generator.step);
+}
+
+fn formulaLogoModule(
+    b: *std.Build,
+    target: std.Build.ResolvedTarget,
+    optimize: std.builtin.OptimizeMode,
+) *std.Build.Module {
+    const math_typesetter = b.dependency("math_typesetter", .{
+        .target = target,
+        .optimize = optimize,
+    }).module("math_typesetter");
+    return b.createModule(.{
+        .root_source_file = b.path("tools/generate_formula_logo.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{.{ .name = "math_typesetter", .module = math_typesetter }},
+    });
 }
 
 fn addWasmRenderer(

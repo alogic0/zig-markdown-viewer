@@ -32,6 +32,24 @@ root.
 No npm install, remote script, or CDN is required. Zig package dependencies used
 by optional highlighting backends are pinned by `zig-native-syntax`.
 
+Regenerate the SVG logo from the default `$M^{\,z}$` formula with:
+
+```sh
+./build.sh update-logo
+```
+
+The generator renders through `zig-math-typesetter`. Formula and six-digit hex
+colors can be overridden with `-Dlogo-formula`, `-Dlogo-background`, and
+`-Dlogo-foreground`.
+
+```sh
+./build.sh \
+  -Dlogo-formula='$M^{\,z}$' \
+  -Dlogo-background='#2563eb' \
+  -Dlogo-foreground='#f8fafc' \
+  update-logo
+```
+
 ## Native standalone HTML tool
 
 Render Markdown directly with the native Zig parser and syntax backends:

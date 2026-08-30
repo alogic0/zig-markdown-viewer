@@ -20,6 +20,7 @@ Run the complete local gate with the pinned Zig compiler:
 
 ```sh
 zig fmt --check build.zig src tools
+./build.sh update-logo
 ./build.sh test
 ./build.sh check-wasm-size
 node --test tests/wasm.test.mjs
