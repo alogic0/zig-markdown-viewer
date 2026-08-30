@@ -9,6 +9,7 @@
   const elements = new Set([
     'math', 'mrow', 'mi', 'mn', 'mo', 'mtext', 'mspace', 'mfrac', 'msqrt',
     'mroot', 'msub', 'msup', 'msubsup', 'munder', 'mover', 'munderover',
+    'mtable', 'mtr', 'mtd',
   ]);
   const spaceWidths = new Set([
     '-0.1667em', '0.1667em', '0.2222em', '0.2778em', '0.3333em', '1em', '2em',
@@ -26,6 +27,10 @@
     }
     if (name === 'mspace') {
       return values.size === 1 && spaceWidths.has(values.get('width'));
+    }
+    if (name === 'mtd') {
+      return values.size === 0 ||
+        (values.size === 1 && ['right', 'left'].includes(values.get('columnalign')));
     }
     return values.size === 0;
   }

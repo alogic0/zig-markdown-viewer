@@ -7,6 +7,8 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 
 ### Added
 
+- Math matrices, fenced matrix variants, cases, and aligned equations through
+  the bounded `zig-math-typesetter` AMS profile.
 - Caller-provided, bounded math macros can be configured per native renderer
   operation and are compiled once for all expressions in the document.
 - The WebAssembly renderer accepts atomic, bounded macro-table configuration
@@ -16,6 +18,8 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 
 ### Changed
 
+- Extended the inert MathML policy with table elements and fixed aligned-cell
+  values required by the AMS profile.
 - Updated `zig-math-typesetter` to 0.2.0 for Greek accents, named operators,
   `\relax`, and generic token-macro expansion.
 - Replaced the extension and popup mark with the `M^{\,z}` formula and added a

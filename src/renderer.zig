@@ -583,10 +583,12 @@ fn renderMath(
     var result = if (context.math_session) |session|
         session.renderMathMlAlloc(context.allocator, source, .{
             .display_mode = display_mode,
+            .profile = .ams,
         }) catch return renderMathFallback(source, display_mode, writer)
     else
         math.renderMathMlAlloc(context.allocator, source, .{
             .display_mode = display_mode,
+            .profile = .ams,
         }) catch return renderMathFallback(source, display_mode, writer);
     defer result.deinit(context.allocator);
 
@@ -715,6 +717,30 @@ test "renders inline and display math as safe MathML" {
     ) != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "<mfrac>") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "<mroot>") != null);
+}
+
+test "renders AMS matrices cases and aligned equations" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\```math
+        \\\begin{pmatrix}a&b\\c&d\end{pmatrix}
+        \\```
+        \\
+        \\```math
+        \\\begin{cases}x&x>0\\-x&x\le0\end{cases}
+        \\```
+        \\
+        \\```math
+        \\\begin{aligned}x&=1\\y&=2\end{aligned}
+        \\```
+    );
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expectEqual(@as(usize, 3), std.mem.count(u8, html, "<mtable>"));
+    try std.testing.expect(std.mem.indexOf(u8, html, "<mo>(</mo>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "<mo>{</mo><mtable>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "<mtd columnalign=\"right\">") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "<mtd columnalign=\"left\">") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "language-math") == null);
 }
 
 test "renders caller-configured macros across a Markdown document" {

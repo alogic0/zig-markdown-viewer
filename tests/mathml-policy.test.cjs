@@ -31,7 +31,7 @@ test('accepts only the generated MathML root contract', () => {
 test('accepts only inert descendants and fixed spacing widths', () => {
   for (const name of [
     'mrow', 'mi', 'mn', 'mo', 'mtext', 'mfrac', 'msqrt', 'mroot', 'msub',
-    'msup', 'msubsup', 'munder', 'mover', 'munderover',
+    'msup', 'msubsup', 'munder', 'mover', 'munderover', 'mtable', 'mtr', 'mtd',
   ]) {
     assert.equal(policy.allowsElement(name, ns, [], false), true, name);
   }
@@ -45,4 +45,8 @@ test('accepts only inert descendants and fixed spacing widths', () => {
   assert.equal(policy.allowsElement('script', ns, [], false), false);
   assert.equal(policy.allowsElement('mi', ns, [['href', 'javascript:alert(1)']], false), false);
   assert.equal(policy.allowsElement('mspace', ns, [['width', '100vw']], false), false);
+  assert.equal(policy.allowsElement('mtd', ns, [['columnalign', 'right']], false), true);
+  assert.equal(policy.allowsElement('mtd', ns, [['columnalign', 'left']], false), true);
+  assert.equal(policy.allowsElement('mtd', ns, [['columnalign', 'center']], false), false);
+  assert.equal(policy.allowsElement('mtr', ns, [['columnalign', 'right']], false), false);
 });

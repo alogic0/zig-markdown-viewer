@@ -191,6 +191,27 @@ test('renders inline and fenced display math through WebAssembly', () => {
   assert.match(html, /<mroot>/);
 });
 
+test('renders AMS table environments through WebAssembly', () => {
+  const html = render(`~~~math
+\\begin{pmatrix}a&b\\\\c&d\\end{pmatrix}
+~~~
+
+~~~math
+\\begin{cases}x&x>0\\\\-x&x\\le0\\end{cases}
+~~~
+
+~~~math
+\\begin{aligned}x&=1\\\\y&=2\\end{aligned}
+~~~
+`);
+  assert.equal((html.match(/<mtable>/g) || []).length, 3);
+  assert.match(html, /<mo>\(<\/mo>/);
+  assert.match(html, /<mo>\{<\/mo><mtable>/);
+  assert.match(html, /<mtd columnalign="right">/);
+  assert.match(html, /<mtd columnalign="left">/);
+  assert.doesNotMatch(html, /language-math/);
+});
+
 test('keeps malformed math as escaped literal source', () => {
   assert.equal(
     render('Broken $\\frac{x}$ here.\n'),

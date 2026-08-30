@@ -76,7 +76,8 @@ as the extension; it does not instantiate the WebAssembly renderer.
 - Common Markdown plus tables, task lists, footnotes, strikethrough,
   autolinks, smart punctuation, and highlighted fenced code
 - inline `$...$` math and display math in `math`, `tex`, or `latex` fences,
-  rendered locally as an inert MathML Core subset with literal-source fallback
+  rendered locally as an inert MathML Core subset with literal-source fallback;
+  the AMS profile supports matrices, cases, and aligned equations
 - bounded custom math macros configured in the extension popup, validated by
   the Wasm typesetter, and applied locally without enabling source definitions
 - a curated set of quality-verified `zig-native-syntax` backends, with escaped
