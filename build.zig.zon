@@ -5,8 +5,10 @@
     .minimum_zig_version = "0.17.0-dev.1756+613c03321",
     .dependencies = .{
         .markdown_parser = .{
-            .url = "git+https://github.com/alogic0/zig-markdown-parser.git#0842913426dde83d2527650bce238cd03b3b4103",
-            .hash = "zig_markdown_parser-0.1.1-Hjn7-LWAAgBbOyNf5p_kYUKkgBYpN4U0MpHfSzt42BTk",
+            .path = "../zig-markdown-parser",
+        },
+        .math_typesetter = .{
+            .path = "../zig-math-typesetter",
         },
         .native_syntax = .{
             .url = "git+https://github.com/alogic0/zig-native-syntax.git#20b1d9c6ac6ad4799bdfe5393889d87449004bf3",

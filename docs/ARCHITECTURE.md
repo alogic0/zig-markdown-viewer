@@ -9,6 +9,8 @@ content script ---- settings/history ---- chrome.storage.local
         v
 renderer.wasm ---- zig-markdown-parser
         |
+        +-------- zig-math-typesetter ---- safe MathML Core subset
+        |
         +-------- zig-native-syntax ---- optional native tokenizers/parsers
         |
         v
@@ -18,7 +20,10 @@ HTML sanitizer -> relative URL resolution -> document UI
 ## Local project boundaries
 
 - `zig-markdown-parser` owns Markdown syntax, source spans, and deterministic
-  document rendering.
+  document rendering, including source-preserving inline and block math nodes.
+- `zig-math-typesetter` parses the supported delimiter-free TeX-like subset,
+  normalizes its semantic tree, and emits one complete inert MathML fragment.
+  Diagnostics produce escaped literal source instead of partial MathML.
 - `zig-native-syntax` supplies core and optional backends, quality metadata, aliases,
   and a configured registry of verified enabled backends. The viewer consumes that
   registry without maintaining a second allowlist. Its safe HTML renderer emits only
@@ -43,7 +48,9 @@ calls `releaseSource`. The renderer owns its output until the next render or
 Raw HTML is preserved by the syntax renderer for source fidelity, then filtered
 in the content script before any nodes enter the live page. Scripts, embedded
 documents, active media, forms, unsafe URL schemes, event handlers, and active
-attributes are removed. Relative links and images are resolved against the
+attributes are removed. MathML is accepted only when its namespace, element
+tree, root metadata, and fixed spacing widths match the typesetter's strict
+allowlist. Relative links and images are resolved against the
 Markdown document URL after validation.
 
 Standalone export runs the source through the same renderer and sanitizer. The

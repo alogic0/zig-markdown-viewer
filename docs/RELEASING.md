@@ -24,8 +24,10 @@ zig fmt --check build.zig src tools
 ./build.sh check-wasm-size
 node --test tests/wasm.test.mjs
 node --test tests/standalone.test.cjs
+node --test tests/mathml-policy.test.cjs
 node --check extension/js/background.js
 node --check extension/js/content.js
+node --check extension/js/mathml-policy.js
 node --check extension/js/popup.js
 node --check extension/js/standalone.js
 node --check extension/js/wasm.js

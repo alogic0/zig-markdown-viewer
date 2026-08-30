@@ -3,10 +3,12 @@
 A local-first Chrome/Chromium extension that renders `.md`, `.markdown`,
 `.mkd`, and `.mdx` documents with a small Zig WebAssembly core.
 
-The renderer uses revision-pinned `zig-markdown-parser` and
-`zig-native-syntax` packages. Markdown parsing and all source highlighting run
-in the same WebAssembly module without a JavaScript highlighting library or
-runtime network dependency.
+The renderer uses `zig-markdown-parser`, `zig-math-typesetter`, and a
+revision-pinned `zig-native-syntax` package. Markdown parsing, TeX-like math
+typesetting, and all source highlighting run in the same WebAssembly module
+without a JavaScript rendering library or runtime network dependency. The two
+workspace packages use sibling-path dependencies until their first tagged
+releases are available; releases must replace those paths with immutable pins.
 
 ## Build and load
 
@@ -53,6 +55,8 @@ as the extension; it does not instantiate the WebAssembly renderer.
 
 - Common Markdown plus tables, task lists, footnotes, strikethrough,
   autolinks, smart punctuation, and highlighted fenced code
+- inline `$...$` math and display math in `math`, `tex`, or `latex` fences,
+  rendered locally as an inert MathML Core subset with literal-source fallback
 - a curated set of quality-verified `zig-native-syntax` backends, with escaped
   plain-text fallback for experimental, unsupported, or unknown fence languages
 - local and remote Markdown URLs
@@ -65,7 +69,7 @@ as the extension; it does not instantiate the WebAssembly renderer.
 - optional auto-refresh and a recent-document list
 - a Manifest V3 service worker and settings popup
 
-Mermaid and KaTeX rendering like in [Markview](https://github.com/markview-app/markview) are not bundled.
+Mermaid and the KaTeX JavaScript runtime are not bundled.
 
 See [Highlighting quality](docs/HIGHLIGHTING_QUALITY.md) for the supported-language registry,
 admission criteria, and parser/tokenizer policy.
@@ -82,8 +86,10 @@ should follow the [release checklist](docs/RELEASING.md) and use the canonical
 ./build.sh check-wasm-size
 node --test tests/wasm.test.mjs
 node --test tests/standalone.test.cjs
+node --test tests/mathml-policy.test.cjs
 node --check extension/js/background.js
 node --check extension/js/content.js
+node --check extension/js/mathml-policy.js
 node --check extension/js/popup.js
 node --check extension/js/standalone.js
 node --check extension/js/wasm.js

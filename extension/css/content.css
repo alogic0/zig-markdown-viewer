@@ -261,6 +261,24 @@ body.zig-md-page {
   padding: 0.15em 0.38em;
 }
 
+#zig-md-document .zig-math {
+  font-family: math, "STIX Two Math", "Cambria Math", serif;
+}
+
+#zig-md-document .zig-math[display="inline"] {
+  font-size: 1.05em;
+  vertical-align: -0.08em;
+}
+
+#zig-md-document .zig-math[display="block"] {
+  display: block;
+  max-width: 100%;
+  margin: 1.25em auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+  text-align: center;
+}
+
 #zig-md-document pre {
   position: relative;
   overflow: auto;
@@ -576,4 +594,5 @@ body.zig-md-page {
   .zig-md-heading-anchor { display: none !important; }
   #zig-md-shell.has-toc #zig-md-main { margin-left: 0; }
   #zig-md-document { max-width: none !important; padding: 0; }
+  #zig-md-document .zig-math[display="block"] { break-inside: avoid; }
 }

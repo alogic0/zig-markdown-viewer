@@ -5,6 +5,11 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 
 ## [Unreleased]
 
+### Added
+
+- Local inline and fenced display math rendering through `zig-math-typesetter`
+  and an allowlisted MathML Core subset, with escaped literal fallback.
+
 ## [0.1.0] - 2026-08-29
 
 ### Added

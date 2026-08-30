@@ -161,6 +161,12 @@ test('keeps code copy controls visible without hover', () => {
   );
 });
 
+test('styles native inline display and printed math', () => {
+  assert.match(contentCss, /\.zig-math\[display="inline"\][^{]*\{[^}]*vertical-align:/s);
+  assert.match(contentCss, /\.zig-math\[display="block"\][^{]*\{[^}]*overflow-x: auto;/s);
+  assert.match(contentCss, /@media print \{[\s\S]*\.zig-math\[display="block"\][^{]*\{ break-inside: avoid; \}/);
+});
+
 test('matches the Zig 0.17 standalone language reference code style', () => {
   const light = contentCss.match(/^:root \{([\s\S]*?)^\}/m)[1];
   const dark = contentCss.match(

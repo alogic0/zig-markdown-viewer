@@ -75,7 +75,7 @@
         "file://*/*.MKD?*",
         "file://*/*.MDX?*"
       ],
-      "js": ["js/standalone.js", "js/wasm.js", "js/content.js"],
+      "js": ["js/standalone.js", "js/wasm.js", "js/mathml-policy.js", "js/content.js"],
       "css": ["css/content.css"],
       "run_at": "document_end"
     }

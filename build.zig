@@ -278,6 +278,10 @@ fn addWasmRenderer(
         .target = target,
         .optimize = optimize,
     }).module("markdown");
+    const math_typesetter = b.dependency("math_typesetter", .{
+        .target = target,
+        .optimize = optimize,
+    }).module("math_typesetter");
     const native_syntax = nativeSyntaxDependency(b, target, optimize, syntax_inclusions, syntax_exclusions);
     const renderer_module = b.createModule(.{
         .root_source_file = b.path("src/renderer.zig"),
@@ -285,7 +289,7 @@ fn addWasmRenderer(
         .optimize = optimize,
         .single_threaded = true,
         .strip = optimize != .debug,
-        .imports = rendererImports(b, markdown, native_syntax),
+        .imports = rendererImports(b, markdown, math_typesetter, native_syntax),
     });
     renderer_module.export_symbol_names = &.{
         "allocateSource",
@@ -324,6 +328,10 @@ fn rendererCoreModule(
                 .target = target,
                 .optimize = optimize,
             }).module("markdown"),
+            b.dependency("math_typesetter", .{
+                .target = target,
+                .optimize = optimize,
+            }).module("math_typesetter"),
             nativeSyntaxDependency(b, target, optimize, syntax_inclusions, syntax_exclusions),
         ),
     });
@@ -355,10 +363,12 @@ fn nativeSyntaxDependency(
 fn rendererImports(
     b: *std.Build,
     markdown: *std.Build.Module,
+    math_typesetter: *std.Build.Module,
     native_syntax: *std.Build.Dependency,
 ) []const std.Build.Module.Import {
     return b.allocator.dupe(std.Build.Module.Import, &.{
         .{ .name = "markdown", .module = markdown },
+        .{ .name = "math_typesetter", .module = math_typesetter },
         .{ .name = "native_syntax", .module = native_syntax.module("native_syntax") },
         .{ .name = "native_syntax_registry", .module = native_syntax.module("native_syntax_registry") },
     }) catch @panic("out of memory");

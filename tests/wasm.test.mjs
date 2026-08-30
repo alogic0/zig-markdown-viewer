@@ -59,6 +59,32 @@ const answer = 42;
   assert.match(html, /class="syntax-keyword">const<\/span>/);
 });
 
+test('renders inline and fenced display math through WebAssembly', () => {
+  const html = render(`Inline $x_1 + \\alpha$.
+
+~~~math
+\\frac{x}{\\sqrt[3]{y}}
+~~~
+`);
+  assert.match(html, /<math class="zig-math" display="inline">/);
+  assert.match(html, /<msub>/);
+  assert.match(html, /<mi>α<\/mi>/);
+  assert.match(html, /<math class="zig-math" display="block">/);
+  assert.match(html, /<mfrac>/);
+  assert.match(html, /<mroot>/);
+});
+
+test('keeps malformed math as escaped literal source', () => {
+  assert.equal(
+    render('Broken $\\frac{x}$ here.\n'),
+    '<p>Broken $\\frac{x}$ here.</p>\n'
+  );
+  assert.equal(
+    render('~~~latex\n\\text{a<&\n~~~\n'),
+    '<pre><code class="language-math">\\text{a&lt;&amp;\n</code></pre>\n'
+  );
+});
+
 test('highlights core and optional languages through WebAssembly', () => {
   const html = render(`~~~js
 const answer = 42;

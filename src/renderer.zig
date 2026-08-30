@@ -1,6 +1,7 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const markdown = @import("markdown");
+const math = @import("math_typesetter");
 const highlight = @import("highlight.zig");
 const unicode_slug = @import("unicode_slug.zig");
 
@@ -220,7 +221,7 @@ fn writeHeadingText(
             }
         },
         .image, .html_inline => {},
-        .code_span, .text => try writer.writeAll(document.string(view.data.text.content)),
+        .code_span, .math_inline, .text => try writer.writeAll(document.string(view.data.text.content)),
         .footnote_reference => try writer.print(
             "{d}",
             .{footnoteOrdinal(document, document.string(view.data.text.content))},
@@ -359,6 +360,21 @@ fn renderNode(
             }
             try writer.writeAll("</code></pre>\n");
         },
+        .math_inline => try renderMath(
+            renderer.context,
+            document.string(view.data.text.content),
+            .inline_math,
+            writer,
+        ),
+        .math_block => {
+            try renderMath(
+                renderer.context,
+                document.string(view.data.text.content),
+                .display_math,
+                writer,
+            );
+            try writer.writeByte('\n');
+        },
         .html_block, .html_inline => {
             if (!renderer.context.options.escape_raw_html) {
                 try renderer.renderDefault(document, node, writer);
@@ -390,6 +406,37 @@ fn renderNode(
             }
         },
         else => try renderer.renderDefault(document, node, writer),
+    }
+}
+
+fn renderMath(
+    context: *const RenderContext,
+    source: []const u8,
+    display_mode: math.DisplayMode,
+    writer: *std.Io.Writer,
+) std.Io.Writer.Error!void {
+    var result = math.renderMathMlAlloc(context.allocator, source, .{
+        .display_mode = display_mode,
+    }) catch return renderMathFallback(source, display_mode, writer);
+    defer result.deinit(context.allocator);
+
+    switch (result) {
+        .output => |output_html| try writer.writeAll(output_html),
+        .diagnostic => try renderMathFallback(source, display_mode, writer),
+    }
+}
+
+fn renderMathFallback(
+    source: []const u8,
+    display_mode: math.DisplayMode,
+    writer: *std.Io.Writer,
+) std.Io.Writer.Error!void {
+    switch (display_mode) {
+        .inline_math => try writer.print("${f}$", .{markdown.fmtHtml(source)}),
+        .display_math => try writer.print(
+            "<pre><code class=\"language-math\">{f}</code></pre>",
+            .{markdown.fmtHtml(source)},
+        ),
     }
 }
 
@@ -472,6 +519,57 @@ test "renders the viewer's core Markdown features" {
     try std.testing.expect(std.mem.indexOf(u8, html, "<li class=\"zig-md-task-item\">") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "class=\"language-zig\"") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "syntax-keyword") != null);
+}
+
+test "renders inline and display math as safe MathML" {
+    const html = try renderAlloc(std.testing.allocator,
+        \\Inline $x_1 + \alpha$.
+        \\
+        \\```math
+        \\\frac{x}{\sqrt[3]{y}}
+        \\```
+    );
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expect(std.mem.indexOf(
+        u8,
+        html,
+        "<math class=\"zig-math\" display=\"inline\">",
+    ) != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "<msub>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "<mi>α</mi>") != null);
+    try std.testing.expect(std.mem.indexOf(
+        u8,
+        html,
+        "<math class=\"zig-math\" display=\"block\">",
+    ) != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "<mfrac>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "<mroot>") != null);
+}
+
+test "math diagnostics fall back to complete escaped source" {
+    const inline_html = try renderAlloc(std.testing.allocator, "Broken $\\frac{x}$ here.\n");
+    defer std.testing.allocator.free(inline_html);
+    try std.testing.expectEqualStrings("<p>Broken $\\frac{x}$ here.</p>\n", inline_html);
+    try std.testing.expect(std.mem.indexOf(u8, inline_html, "<math") == null);
+
+    const display = try renderAlloc(std.testing.allocator,
+        \\```tex
+        \\\text{a<&
+        \\```
+    );
+    defer std.testing.allocator.free(display);
+    try std.testing.expectEqualStrings(
+        "<pre><code class=\"language-math\">\\text{a&lt;&amp;\n</code></pre>\n",
+        display,
+    );
+    try std.testing.expect(std.mem.indexOf(u8, display, "<math") == null);
+}
+
+test "math source contributes to heading anchors" {
+    const html = try renderAlloc(std.testing.allocator, "# Energy $E=mc^2$\n");
+    defer std.testing.allocator.free(html);
+    try std.testing.expect(std.mem.indexOf(u8, html, "id=\"energy-emc2\"") != null);
 }
 
 test "generates compatible unique heading anchors" {

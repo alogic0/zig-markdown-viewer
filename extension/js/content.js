@@ -80,8 +80,11 @@
   function sanitize(html) {
     const template = document.createElement('template');
     template.innerHTML = html;
+    for (const root of [...template.content.querySelectorAll('math')]) {
+      if (!globalThis.ZigMarkdownMathMlPolicy.allowsTree(root)) root.remove();
+    }
     template.content
-      .querySelectorAll('script,style,iframe,frame,frameset,object,embed,applet,base,meta,link,form,svg,math,audio,video,source,track')
+      .querySelectorAll('script,style,iframe,frame,frameset,object,embed,applet,base,meta,link,form,svg,audio,video,source,track')
       .forEach(element => element.remove());
 
     const walker = document.createTreeWalker(template.content, NodeFilter.SHOW_ELEMENT);
