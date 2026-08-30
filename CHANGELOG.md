@@ -20,7 +20,8 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
   `\relax`, and generic token-macro expansion.
 - Replaced the extension and popup mark with the `M^{\,z}` formula and added a
   reproducible SVG generator backed by `zig-math-typesetter` with configurable
-  foreground and background colors.
+  foreground and background colors. The logo update step also regenerates and
+  installs every Chrome icon size.
 
 ## [0.2.0] - 2026-08-30
 

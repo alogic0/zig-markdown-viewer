@@ -51,13 +51,52 @@ pub fn build(b: *std.Build) void {
     const run_formula_logo_generator = b.addRunArtifact(formula_logo_generator);
     run_formula_logo_generator.addArgs(&.{ logo_formula, logo_background, logo_foreground });
     const generated_formula_logo = run_formula_logo_generator.addOutputFileArg("favicon.svg");
+
+    const logo_sizes = [_]u16{ 16, 32, 48, 128 };
+    var generated_formula_logo_pngs: [logo_sizes.len]std.Build.LazyPath = undefined;
+    var previous_rasterize_formula_logo: ?*std.Build.Step = null;
+    for (logo_sizes, 0..) |size, index| {
+        const rasterize_formula_logo = b.addSystemCommand(&.{"sh"});
+        if (previous_rasterize_formula_logo) |previous| {
+            rasterize_formula_logo.step.dependOn(previous);
+        }
+        rasterize_formula_logo.addFileArg(b.path("tools/rasterize_formula_logo.sh"));
+        rasterize_formula_logo.addFileArg(generated_formula_logo);
+        rasterize_formula_logo.addArg(b.fmt("{d}", .{size}));
+        generated_formula_logo_pngs[index] = rasterize_formula_logo.addOutputFileArg(
+            b.fmt("icon{d}.png", .{size}),
+        );
+        previous_rasterize_formula_logo = &rasterize_formula_logo.step;
+    }
+
     const update_formula_logo = b.addUpdateSourceFiles();
     update_formula_logo.addCopyFileToSource(generated_formula_logo, "extension/icons/favicon.svg");
+    for (logo_sizes, generated_formula_logo_pngs) |size, generated_png| {
+        update_formula_logo.addCopyFileToSource(
+            generated_png,
+            b.fmt("extension/icons/icon{d}.png", .{size}),
+        );
+    }
+    const install_generated_formula_logo = b.addInstallFile(
+        generated_formula_logo,
+        "extension/icons/favicon.svg",
+    );
+    var install_generated_formula_logo_pngs: [logo_sizes.len]*std.Build.Step.InstallFile = undefined;
+    for (logo_sizes, generated_formula_logo_pngs, 0..) |size, generated_png, index| {
+        install_generated_formula_logo_pngs[index] = b.addInstallFile(
+            generated_png,
+            b.fmt("extension/icons/icon{d}.png", .{size}),
+        );
+    }
     const update_formula_logo_step = b.step(
         "update-logo",
-        "Render the configured math formula and colors into the SVG logo",
+        "Render, rasterize, and install the configured math formula logo",
     );
     update_formula_logo_step.dependOn(&update_formula_logo.step);
+    update_formula_logo_step.dependOn(&install_generated_formula_logo.step);
+    for (install_generated_formula_logo_pngs) |installed_png| {
+        update_formula_logo_step.dependOn(&installed_png.step);
+    }
 
     const renderer = addWasmRenderer(b, strip_wasm_names, "renderer", wasm_target, optimize, syntax_inclusions, syntax_exclusions);
     const checked_renderer = if (optimize == .small)
