@@ -77,7 +77,7 @@ as the extension; it does not instantiate the WebAssembly renderer.
   autolinks, smart punctuation, and highlighted fenced code
 - inline `$...$` math and display math in `math`, `tex`, or `latex` fences,
   rendered locally as an inert MathML Core subset with literal-source fallback;
-  the AMS profile supports matrices, compact matrices, cases, `aligned`,
+  the AMS profile supports bounded `array` columns, matrices, compact matrices, cases, `aligned`,
   `alignedat`, and `gathered`
   equations, while
   `\mathrm`, `\mathbf`, `\mathit`, `\mathsf`, `\mathtt`, `\mathbb`, and
