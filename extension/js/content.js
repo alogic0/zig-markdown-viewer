@@ -312,9 +312,11 @@
     }
     if (!includeMath) return state.exportStylesPromise;
     if (!state.mathExportStylesPromise) {
+      const mathFontPath = 'css/fonts/ZigMathSTIX.woff2';
+      const mathFontUrl = chrome.runtime.getURL(mathFontPath);
       state.mathExportStylesPromise = Promise.all([
         fetch(chrome.runtime.getURL('css/math.css')),
-        fetch(chrome.runtime.getURL('css/fonts/ZigMathSTIX.woff2')),
+        fetch(mathFontUrl),
       ]).then(async responses => {
         for (const response of responses) {
           if (!response.ok) throw new Error(`Unable to load math styles (${response.status})`);
@@ -327,7 +329,9 @@
           binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
         }
         const fontUrl = `data:font/woff2;base64,${btoa(binary)}`;
-        return mathStyles.replace('./fonts/ZigMathSTIX.woff2', fontUrl);
+        return mathStyles
+          .replace(`chrome-extension://__MSG_@@extension_id__/${mathFontPath}`, fontUrl)
+          .replace(mathFontUrl, fontUrl);
       });
     }
     try {

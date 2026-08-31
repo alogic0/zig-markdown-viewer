@@ -6,7 +6,7 @@ const max_input_size = 256 * 1024 * 1024;
 const content_css = viewer_assets.content_css;
 const math_css = viewer_assets.math_css;
 const math_font = viewer_assets.math_font;
-const font_url = "./fonts/ZigMathSTIX.woff2";
+const font_url = "chrome-extension://__MSG_@@extension_id__/css/fonts/ZigMathSTIX.woff2";
 
 const Theme = enum { auto, light, dark };
 

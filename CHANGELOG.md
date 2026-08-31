@@ -78,6 +78,8 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
   retaining browser-centered layout.
 - Aligned, aligned-at, and split formulas whose rows all start with `&` no
   longer reserve an empty leading column or indent their visible content.
+- Manifest-injected math styles now load `ZigMathSTIX` from the extension
+  origin instead of resolving the font path beside the viewed Markdown file.
 
 ### Removed
 

@@ -32,6 +32,11 @@ trap cleanup EXIT HUP INT TERM
 cp -R "${extension_dir}/." "${work_dir}/"
 cp "${renderer_wasm}" "${work_dir}/renderer.wasm"
 cp "${harness_html}" "${work_dir}/visual-math-e2e.html"
+sed 's|chrome-extension://__MSG_@@extension_id__/css/fonts/ZigMathSTIX.woff2|./fonts/ZigMathSTIX.woff2|' \
+    "${work_dir}/css/math.css" >"${work_dir}/css/math-harness.css"
+sed 's|href="css/math.css"|href="css/math-harness.css"|' \
+    "${work_dir}/visual-math-e2e.html" >"${work_dir}/visual-math-e2e.html.tmp"
+mv "${work_dir}/visual-math-e2e.html.tmp" "${work_dir}/visual-math-e2e.html"
 
 if ! "${browser}" \
     --headless=new \

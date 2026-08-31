@@ -7,6 +7,7 @@ const test = require('node:test');
 const vm = require('node:vm');
 const standalone = require('../extension/js/standalone.js');
 const contentCss = readFileSync(path.join(__dirname, '../extension/css/content.css'), 'utf8');
+const mathCss = readFileSync(path.join(__dirname, '../extension/css/math.css'), 'utf8');
 
 class FakeClassList {
   constructor(...names) {
@@ -170,6 +171,14 @@ test('styles native inline display and printed math', () => {
   assert.match(contentCss, /\.zig-math mtd\[columnalign="right"\][^{]*\{[^}]*text-align: right;/s);
   assert.match(contentCss, /\.zig-math-display-start mtr > mtd:first-child\[columnalign="left"\][^{]*\{[^}]*padding-left: 0;/s);
   assert.match(contentCss, /@media print \{[\s\S]*\.zig-math\[display="block"\][^{]*\{ break-inside: avoid; \}/);
+});
+
+test('loads the packaged math font from the extension origin', () => {
+  assert.match(
+    mathCss,
+    /url\("chrome-extension:\/\/__MSG_@@extension_id__\/css\/fonts\/ZigMathSTIX\.woff2"\)/
+  );
+  assert.doesNotMatch(mathCss, /url\("\.\/fonts\/ZigMathSTIX\.woff2"\)/);
 });
 
 test('matches the Zig 0.17 standalone language reference code style', () => {
