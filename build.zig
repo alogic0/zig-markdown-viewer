@@ -308,6 +308,15 @@ pub fn build(b: *std.Build) void {
     });
     test_step.dependOn(&b.addRunArtifact(pin_math_dependency_tests).step);
 
+    const package_version_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("tools/package_version.zig"),
+            .target = b.graph.host,
+            .optimize = .debug,
+        }),
+    });
+    test_step.dependOn(&b.addRunArtifact(package_version_tests).step);
+
     const render_html_tests_root = b.createModule(.{
         .root_source_file = b.path("tools/render_html.zig"),
         .target = b.graph.host,

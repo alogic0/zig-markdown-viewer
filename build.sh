@@ -39,6 +39,10 @@ if [ "$#" -ge 1 ]; then
             fi
             exec "${viewer_zig_exe}" run tools/pin_math_dependency.zig -- "${viewer_zig_exe}"
             ;;
+        package-version)
+            shift
+            exec "${viewer_zig_exe}" run tools/package_version.zig -- "$@"
+            ;;
     esac
 fi
 
