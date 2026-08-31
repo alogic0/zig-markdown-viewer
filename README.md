@@ -27,7 +27,7 @@ Build the deterministic Chrome Web Store/GitHub release archive with:
 ```
 
 The validated package is written to
-`zig-out/dist/zig-markdown-viewer-0.5.0.zip` with `manifest.json` at the ZIP
+`zig-out/dist/zig-markdown-viewer-0.5.1.zip` with `manifest.json` at the ZIP
 root.
 
 Read the package version or update every viewer-version location with:
@@ -112,6 +112,8 @@ as the extension; it does not instantiate the WebAssembly renderer.
 - supported local and remote source-code URLs, including attachment responses
   that Chromium would otherwise download; the source viewer provides theme,
   wrapping, copy, raw-download, auto-refresh, and recent-file controls
+- raw GitHub content URLs are supported, while `github.com` repository and
+  `blob` pages remain in GitHub because their responses are HTML, not source
 - safe handling of raw HTML before DOM insertion
 - relative link and image resolution
 - automatic heading anchors and responsive table of contents

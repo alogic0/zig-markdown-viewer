@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Zig Markdown Viewer",
   "short_name": "Zig MD",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Fast, local-first Markdown and source rendering powered by Zig and WebAssembly.",
   "icons": {
     "16": "icons/icon16.png",

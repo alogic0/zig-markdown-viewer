@@ -13,6 +13,7 @@ test('maps supported source URLs and special filenames', () => {
     ['https://example.test/project/BUILD', 'starlark'],
     ['https://example.test/types.d.ts', 'typescript'],
     ['file:///tmp/hello%20world.rs', 'rust'],
+    ['https://raw.githubusercontent.com/kristoff-it/superhtml/main/src/Ast.zig', 'zig'],
   ]);
   for (const [url, expected] of cases) {
     assert.equal(languages.languageForUrl(url), expected, url);
@@ -26,6 +27,8 @@ test('leaves Markdown, unsupported dialects, binary files, and non-web URLs alon
     'https://example.test/component.tsx',
     'https://example.test/image.svg',
     'https://example.test/archive.zig.zip',
+    'https://github.com/kristoff-it/superhtml/blob/main/src/Ast.zig',
+    'https://gist.github.com/example/file/test.zig',
     'data:text/plain,const%20x=1',
   ]) assert.equal(languages.languageForUrl(url), null, url);
 });
@@ -43,6 +46,7 @@ test('builds a case-insensitive main-frame redirect that preserves the original 
   const rule = rules[0];
   assert.equal(rule.id, 1001);
   assert.deepEqual(rule.condition.resourceTypes, ['main_frame']);
+  assert.deepEqual(rule.condition.excludedRequestDomains, ['github.com']);
   assert.equal(rule.condition.isUrlFilterCaseSensitive, false);
   assert.equal(
     rule.action.redirect.regexSubstitution,
