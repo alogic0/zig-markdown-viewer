@@ -10,7 +10,7 @@
     'zig-math-html', 'zig-math-inline', 'zig-math-display',
     'zig-math-list', 'zig-math-hlist', 'zig-math-vlist',
     'zig-math-glyph', 'zig-math-kern', 'zig-math-rule',
-    'zig-math-overlap', 'zig-math-shift', 'zig-math-delimiter',
+    'zig-math-overlap', 'zig-math-shift', 'zig-math-position', 'zig-math-delimiter',
     'zig-math-delimiter-vertical', 'zig-math-delimiter-horizontal', 'zig-math-assembled',
     'zig-math-scope', 'zig-math-text', 'zig-math-alpha-roman',
     'zig-math-alpha-bold', 'zig-math-alpha-italic', 'zig-math-alpha-sans_serif',
@@ -26,7 +26,7 @@
     'zig-math-color-orange', 'zig-math-color-purple', 'zig-math-color-brown',
   ]);
   const dimension = /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]{1,6})?em$/;
-  const styleProperties = new Set(['width', 'height', 'vertical-align', 'margin-left', 'top']);
+  const styleProperties = new Set(['width', 'height', 'vertical-align', 'font-size', 'left', 'top']);
   const scopeClasses = new Set([...classes].filter(name =>
     name.startsWith('zig-math-alpha-') || name.startsWith('zig-math-style-') ||
     name.startsWith('zig-math-size-') || name.startsWith('zig-math-color-') ||
@@ -79,14 +79,22 @@
     const style = parseStyle(values.get('style'));
     if (!style) return false;
     if (tokens.has('zig-math-kern')) return tokens.size === 1 && sameKeys(style, ['width']);
-    if (tokens.has('zig-math-shift')) return tokens.size === 1 && sameKeys(style, ['margin-left', 'top']);
+    if (tokens.has('zig-math-shift')) {
+      return tokens.size === 1 && sameKeys(style, ['width', 'height', 'vertical-align']);
+    }
+    if (tokens.has('zig-math-position')) {
+      return tokens.size === 1 && (sameKeys(style, ['top']) || sameKeys(style, ['left', 'top']));
+    }
     if (tokens.has('zig-math-delimiter')) {
       const axes = Number(tokens.has('zig-math-delimiter-vertical')) +
         Number(tokens.has('zig-math-delimiter-horizontal'));
       return axes === 1 && tokens.size === (tokens.has('zig-math-assembled') ? 3 : 2) &&
         sameKeys(style, ['width', 'height', 'vertical-align']);
     }
-    if (tokens.has('zig-math-glyph') || tokens.has('zig-math-rule')) {
+    if (tokens.has('zig-math-glyph')) {
+      return tokens.size === 1 && sameKeys(style, ['font-size', 'width', 'height', 'vertical-align']);
+    }
+    if (tokens.has('zig-math-rule')) {
       return tokens.size === 1 && sameKeys(style, ['width', 'height', 'vertical-align']);
     }
     if (tokens.has('zig-math-list')) {
@@ -125,7 +133,8 @@
       if (glyph && (childElements.length !== 0 || element.childNodes.length === 0)) return false;
       if ((element.classList.contains('zig-math-kern') || element.classList.contains('zig-math-rule')) &&
           element.childNodes.length !== 0) return false;
-      if ((element.classList.contains('zig-math-shift') || element.classList.contains('zig-math-scope')) &&
+      if ((element.classList.contains('zig-math-shift') || element.classList.contains('zig-math-position') ||
+           element.classList.contains('zig-math-scope')) &&
           childElements.length !== 1) return false;
     }
     return visualRoot.children.length === 1;

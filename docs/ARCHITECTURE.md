@@ -77,8 +77,9 @@ scoped sizes, and named colors match the typesetter's strict allowlist. Relative
 links and images are resolved against the Markdown document URL after
 validation. Visual math is accepted only as an exact two-child composite: a
 hidden fixed-class span tree followed by valid MathML. Its sanitizer permits
-only the typesetter's class vocabulary, canonical bounded `em` dimensions,
-and Plane 15 private-use glyph scalars mapped by the packaged WOFF2 font.
+only the typesetter's class vocabulary, canonical bounded `em` dimensions and
+position offsets, exact glyph font scales, and Plane 15 private-use glyph
+scalars mapped by the packaged WOFF2 font.
 
 Standalone export runs the source through the same renderer and sanitizer. The
 content script then serializes the safe document, current layout settings,
@@ -103,5 +104,6 @@ current development or release requirement.
 `./build.sh math-dev chromium-math-e2e` runs the release-small Wasm renderer in
 Chromium with the production content script, sanitizer policies, styles, and
 packaged font. It verifies the visual/MathML composite boundary, retained safe
-dimensions, non-empty glyph geometry, hostile-markup filtering, font loading,
-and standalone-export embedding.
+dimensions, script scaling, non-overlapping fraction layers, non-empty glyph
+geometry, hostile-markup filtering, font loading, and standalone-export
+embedding.

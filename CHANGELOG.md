@@ -72,6 +72,9 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 
 ### Fixed
 
+- Visual HTML math now applies the typesetter's exact glyph scale and explicit
+  box positions, preventing scripts, fractions, roots, limits, and table rows
+  from collapsing or overlapping in Chromium.
 - Document-local `start` alignment now places shrink-wrapped MathML and visual
   HTML display blocks at the document's start edge, and preserves the
   renderer's left/right alignment inside MathML table columns instead of

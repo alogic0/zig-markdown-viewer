@@ -124,6 +124,34 @@ Inline $x_2^3 + \alpha$ math.
       invariant(visualRect.width > 1 && visualRect.height > 1, 'visual math has empty geometry');
       invariant(glyphRect.width > 0 && glyphRect.height > 0, 'visual glyph has empty geometry');
 
+      const scriptGlyphs = [...composites[0].querySelectorAll('.zig-math-glyph')]
+        .filter(element => element.style.fontSize === '0.699996em');
+      invariant(scriptGlyphs.length >= 2, 'script glyph scale is missing from visual HTML');
+      const baseFontSize = Number.parseFloat(getComputedStyle(composites[0].children[0]).fontSize);
+      const scriptFontSizes = scriptGlyphs.map(element => Number.parseFloat(getComputedStyle(element).fontSize));
+      invariant(
+        scriptFontSizes.every(size => size > 0 && size < baseFontSize * 0.75),
+        'script glyph font size is not smaller than the text-style font size'
+      );
+
+      const fractionStack = composites[1].querySelector('.zig-math-vlist');
+      const fractionLayers = fractionStack ? [...fractionStack.children] : [];
+      invariant(fractionLayers.length === 3, 'fraction position layers are missing');
+      invariant(
+        fractionLayers.every(layer => layer.matches('.zig-math-position') && layer.children.length === 1),
+        'fraction layers do not use deterministic position wrappers'
+      );
+      const fractionRule = fractionLayers[1].querySelector('.zig-math-rule');
+      const numeratorGlyphs = [...fractionLayers[0].querySelectorAll('.zig-math-glyph')];
+      const denominatorGlyphs = [...fractionLayers[2].querySelectorAll('.zig-math-glyph')];
+      invariant(fractionRule && numeratorGlyphs.length > 0 && denominatorGlyphs.length > 0,
+        'fraction visual parts are missing');
+      const ruleRect = fractionRule.getBoundingClientRect();
+      const numeratorBottom = Math.max(...numeratorGlyphs.map(element => element.getBoundingClientRect().bottom));
+      const denominatorTop = Math.min(...denominatorGlyphs.map(element => element.getBoundingClientRect().top));
+      invariant(numeratorBottom <= ruleRect.top + 1, 'fraction numerator overlaps its rule');
+      invariant(denominatorTop >= ruleRect.bottom - 1, 'fraction denominator overlaps its rule');
+
       document.querySelector('[data-action="download"]').click();
       await waitFor(() => globalThis.capturedStandaloneBlob !== null, 'standalone export did not create a Blob');
       const standalone = await globalThis.capturedStandaloneBlob.text();
@@ -173,6 +201,11 @@ math-block-alignment = start
         inline_width: Math.round(visualRect.width * 1000) / 1000,
         inline_height: Math.round(visualRect.height * 1000) / 1000,
         glyph_width: Math.round(glyphRect.width * 1000) / 1000,
+        script_font_size: Math.round(scriptFontSizes[0] * 1000) / 1000,
+        fraction_clearance: Math.round(Math.min(
+          ruleRect.top - numeratorBottom,
+          denominatorTop - ruleRect.bottom
+        ) * 1000) / 1000,
         mathml_width: Math.round(mathmlRect.width * 1000) / 1000,
         mathml_row_offset: Math.round((mathmlRowLefts[0] - wrapperRect.left) * 1000) / 1000,
         mathml_row_spread: Math.round(mathmlRowSpread * 1000) / 1000,

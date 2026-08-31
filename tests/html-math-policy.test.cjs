@@ -34,7 +34,19 @@ test('accepts generated box classes and canonical em styles', () => {
   ], false), true);
   assert.equal(policy.allowsElement('span', ns, [
     ['class', 'zig-math-shift'],
-    ['style', 'margin-left:-0.166666em;top:0em'],
+    ['style', 'width:1.25em;height:2em;vertical-align:-0.5em'],
+  ], false), true);
+  assert.equal(policy.allowsElement('span', ns, [
+    ['class', 'zig-math-position'],
+    ['style', 'top:-0.5em'],
+  ], false), true);
+  assert.equal(policy.allowsElement('span', ns, [
+    ['class', 'zig-math-position'],
+    ['style', 'left:-0.166666em;top:0em'],
+  ], false), true);
+  assert.equal(policy.allowsElement('span', ns, [
+    ['class', 'zig-math-glyph'],
+    ['style', 'font-size:0.699996em;width:0.5em;height:0.7em;vertical-align:-0.2em'],
   ], false), true);
   assert.equal(policy.allowsElement('span', ns, [
     ['class', 'zig-math-delimiter zig-math-delimiter-vertical zig-math-assembled'],
@@ -46,6 +58,16 @@ test('accepts generated box classes and canonical em styles', () => {
   assert.equal(policy.allowsElement('span', ns, [
     ['class', 'zig-math-scope zig-math-list'],
   ], false), false);
+
+  for (const [className, style] of [
+    ['zig-math-position', 'left:0em'],
+    ['zig-math-position', 'left:0em;top:0em;width:1em'],
+    ['zig-math-shift', 'margin-left:0em;top:0em'],
+    ['zig-math-glyph', 'width:0.5em;height:0.7em;vertical-align:-0.2em'],
+  ]) assert.equal(policy.allowsElement('span', ns, [
+    ['class', className],
+    ['style', style],
+  ], false), false, `${className}: ${style}`);
 
   for (const style of [
     'width:1px',
