@@ -24,3 +24,17 @@ test('extension settings exclude math macros and clear legacy definitions', () =
   assert.doesNotMatch(wasmBridge, /configureMathMacros|allocateMacroConfig/);
   assert.match(background, /chrome\.storage\.local\.remove\('mathMacros'\)/);
 });
+
+test('source-file interception has an independent persisted setting', () => {
+  const manifest = read('extension/manifest.json');
+  const popup = read('extension/popup.html');
+  const popupScript = read('extension/js/popup.js');
+  const background = read('extension/js/background.js');
+
+  assert.match(manifest, /declarativeNetRequestWithHostAccess/);
+  assert.match(popup, /id="sourceViewer"/);
+  assert.match(popupScript, /sourceViewer: true/);
+  assert.match(background, /enabled: true, sourceViewer: true/);
+  assert.match(background, /settings\.enabled && settings\.sourceViewer/);
+  assert.match(background, /changes\.enabled \|\| changes\.sourceViewer/);
+});

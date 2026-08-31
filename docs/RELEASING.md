@@ -31,17 +31,21 @@ zig fmt --check build.zig src tools
 ./build.sh test
 ./build.sh check-wasm-size
 ./build.sh chromium-math-e2e
+./build.sh chromium-source-e2e
 node --test tests/wasm.test.mjs
 node --test tests/standalone.test.cjs
 node --test tests/mathml-policy.test.cjs
 node --test tests/html-math-policy.test.cjs
 node --test tests/settings.test.cjs
 node --test tests/branding.test.cjs
+node --test tests/source-languages.test.cjs
 node --check extension/js/background.js
 node --check extension/js/content.js
 node --check extension/js/mathml-policy.js
 node --check extension/js/html-math-policy.js
 node --check extension/js/popup.js
+node --check extension/js/source-languages.js
+node --check extension/js/source.js
 node --check extension/js/standalone.js
 node --check extension/js/wasm.js
 ./build.sh package-extension
@@ -54,6 +58,10 @@ Build the package a second time and confirm that its SHA-256 is identical.
 Load `zig-out/extension` unpacked and smoke-test a local and remote Markdown
 document, settings persistence, raw mode, theme switching, table-of-contents
 navigation, code copying, printing, and standalone HTML export.
+
+Open a supported local and remote source file, including one returned with an
+attachment content disposition. Verify highlighting, wrapping, copying, raw
+download, auto-refresh, and disabling the source-viewer setting.
 
 Chromium is the required browser for this checklist and for visual-math
 regression review. Firefox coverage is deferred and is not a release gate for

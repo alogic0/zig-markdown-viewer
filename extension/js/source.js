@@ -154,7 +154,6 @@
     }
 
     const name = globalThis.ZigSourceLanguages.fileName(state.url) || 'Source file';
-    document.title = `${name} · Zig Markdown Viewer`;
     document.querySelector('#zig-source-name').textContent = name;
     document.querySelector('#zig-source-language').textContent = state.language;
     document.querySelector('#zig-source-location').textContent = state.url;
@@ -173,6 +172,7 @@
     try {
       state.renderer = await globalThis.ZigMarkdownRenderer.load();
       render();
+      document.title = `${name} · Zig Markdown Viewer`;
       await saveRecent();
     } catch (error) {
       console.error('Zig source viewer failed to initialize:', error);

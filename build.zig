@@ -115,6 +115,17 @@ pub fn build(b: *std.Build) void {
     );
     chromium_math_e2e_step.dependOn(&run_chromium_math_e2e.step);
 
+    const run_chromium_source_e2e = b.addSystemCommand(&.{"sh"});
+    run_chromium_source_e2e.addFileArg(b.path("tools/run_chromium_source_e2e.sh"));
+    run_chromium_source_e2e.addDirectoryArg(b.path("extension"));
+    run_chromium_source_e2e.addFileArg(checked_renderer);
+    run_chromium_source_e2e.addFileArg(b.path("tests/browser/source-server.cjs"));
+    const chromium_source_e2e_step = b.step(
+        "chromium-source-e2e",
+        "Verify attachment-style source navigation and highlighting in Chromium",
+    );
+    chromium_source_e2e_step.dependOn(&run_chromium_source_e2e.step);
+
     const size_checker = b.addExecutable(.{
         .name = "check-wasm-size",
         .root_module = b.createModule(.{

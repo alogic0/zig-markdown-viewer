@@ -1,12 +1,15 @@
 # Architecture
 
 ```text
-Chrome text document
-        |
-        v
-content script ---- settings/history ---- chrome.storage.local
-        |
-        v
+Chrome developer text file
+        | Markdown                         | source navigation
+        v                                  v
+content script                  main-frame redirect -> source.html
+        |                                  |
+        +------------ settings/history ----+---- chrome.storage.local
+        |                                  |
+        +----------------+-----------------+
+                         v
 renderer.wasm ---- zig-markdown-parser
         |
         +-------- zig-math-typesetter ---- safe MathML or visual HTML + MathML
@@ -14,7 +17,7 @@ renderer.wasm ---- zig-markdown-parser
         +-------- zig-native-syntax ---- optional native tokenizers/parsers
         |
         v
-HTML sanitizer -> relative URL resolution -> document UI
+safe renderer output -> Markdown or source UI
 ```
 
 ## Local project boundaries
@@ -57,6 +60,14 @@ The content script allocates UTF-8 source with `allocateSource`, writes into
 exported memory, calls `renderMarkdown`, reads `renderedLength` bytes, and then
 calls `releaseSource`. The renderer owns its output until the next render or
 `releaseOutput`.
+
+The source page uses the same buffer with the registered language bytes first
+and source bytes second, then calls `renderSource`. That entry point bypasses
+Markdown parsing and emits one escaped `<pre><code>` tree using only stable
+`syntax-*` spans. The background worker installs a dynamic, main-frame-only
+redirect derived from the shared fixed filename map. The original URL is kept
+in the extension page fragment, fetched without credentials, and never placed
+into executable HTML. Disabling the source viewer removes the redirect rule.
 
 Document-local declarations use only
 `\newcommand{\name}[N]{replacement}` syntax. The viewer collects their fenced
@@ -109,6 +120,10 @@ dimensions, script scaling, non-overlapping fraction layers, non-empty glyph
 geometry, inline baseline anchoring, horizontal glyph-baseline consistency,
 radical-rule joins, display-limit placement, aligned-row spacing,
 hostile-markup filtering, font loading, and standalone-export embedding.
+
+`./build.sh chromium-source-e2e` serves an attachment-style `.zig` response and
+verifies that Chromium redirects it before download, loads the exact source
+through the background worker, and displays native syntax highlighting.
 
 The repeatable equal-scale HTML/MathML screenshot procedure is documented in
 [`MATH_VISUAL_COMPARISON.md`](MATH_VISUAL_COMPARISON.md). Use it instead of

@@ -2,15 +2,16 @@
 
 Effective date: August 29, 2026
 
-Zig Markdown Viewer renders Markdown documents in Chrome and Chromium-based
-browsers. Its single purpose is to turn Markdown documents that the user opens
-into readable, navigable HTML.
+Zig Markdown Viewer renders Markdown documents and supported source-code files
+in Chrome and Chromium-based browsers. Its single purpose is to turn developer
+text files that the user opens into readable, locally rendered pages.
 
 ## Data the extension handles
 
-The extension handles the content and URL of a Markdown document only when the
-user opens that document. Rendering, syntax highlighting, table-of-contents
-generation, and standalone HTML export happen locally on the user's device.
+The extension handles the content and URL of a supported Markdown or source
+file only when the user opens that file. Rendering, syntax highlighting,
+table-of-contents generation, and standalone HTML export happen locally on the
+user's device.
 
 The extension stores these values in `chrome.storage.local`:
 
@@ -23,11 +24,11 @@ and history are not synchronized by this extension.
 
 ## Network access
 
-For an opened HTTP or HTTPS Markdown URL, the extension may fetch that same URL
-to obtain its source text. The request omits browser credentials and bypasses
-the HTTP cache so optional auto-refresh can detect changes. Any request needed
-to load a linked image is performed by the browser directly under normal
-browser rules.
+For an opened HTTP or HTTPS Markdown or supported source URL, the extension may
+fetch that same URL to obtain its text. The request omits browser credentials
+and bypasses the HTTP cache so optional auto-refresh can detect changes. Any
+request needed to load a linked image is performed by the browser directly
+under normal browser rules.
 
 The extension does not send document content, URLs, settings, or usage data to
 the developer or to a developer-operated service.
@@ -49,11 +50,17 @@ download button and are saved through the browser's normal download behavior.
 ## Permissions
 
 - `storage` stores display settings and the local recent-document list.
-- `file:///*` allows rendering local Markdown files after the user explicitly
-  enables file URL access for the extension.
-- `http://*/*` and `https://*/*` allow rendering Markdown documents on arbitrary
-  sites and fetching the exact document the user opened. Content scripts remain
-  restricted to URLs with supported Markdown filename extensions.
+- `declarativeNetRequestWithHostAccess` redirects only top-level supported
+  source-file navigations to the packaged source viewer before an attachment
+  response can start a download. The independent source-viewer setting removes
+  this redirect when disabled.
+- `file:///*` allows rendering local Markdown and supported source files after
+  the user explicitly enables file URL access for the extension.
+- `http://*/*` and `https://*/*` allow rendering developer text files on
+  arbitrary sites and fetching the exact file the user opened. Content scripts
+  remain restricted to supported Markdown extensions; source interception is
+  restricted to the extension's fixed source filename map and top-level
+  navigations.
 
 ## Changes and contact
 

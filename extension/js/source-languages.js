@@ -164,25 +164,38 @@
     return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
-  const extensionPattern = Object.keys(extensions).map(regexEscape).join('|');
-  const fileNamePattern = Object.keys(fileNames).map(regexEscape).join('|');
-  const navigationRegex =
-    `^(?:https?|file)://[^?#]*(?:/(?:${fileNamePattern})|\\.(?:${extensionPattern}))(?:\\?[^#]*)?$`;
+  function groups(values, size) {
+    const result = [];
+    for (let offset = 0; offset < values.length; offset += size) {
+      result.push(values.slice(offset, offset + size));
+    }
+    return result;
+  }
 
-  function redirectRule(id, destination) {
-    return {
-      id,
+  function extensionRegex(names) {
+    const pattern = names.map(regexEscape).join('|');
+    return `^(?:https?|file)://[^?#]*\\.(?:${pattern})(?:\\?[^#]*)?$`;
+  }
+
+  const navigationRegexes = Object.freeze([
+    ...groups(Object.keys(extensions), 12).map(extensionRegex),
+    `^(?:https?|file)://[^?#]*/(?:${Object.keys(fileNames).map(regexEscape).join('|')})(?:\\?[^#]*)?$`,
+  ]);
+
+  function redirectRules(firstId, destination) {
+    return navigationRegexes.map((regexFilter, index) => ({
+      id: firstId + index,
       priority: 1,
       action: {
         type: 'redirect',
         redirect: { regexSubstitution: `${destination}#\\0` },
       },
       condition: {
-        regexFilter: navigationRegex,
+        regexFilter,
         isUrlFilterCaseSensitive: false,
         resourceTypes: ['main_frame'],
       },
-    };
+    }));
   }
 
   globalThis.ZigSourceLanguages = Object.freeze({
@@ -190,8 +203,8 @@
     fileNames,
     fileName,
     languageForUrl,
-    navigationRegex,
-    redirectRule,
+    navigationRegexes,
+    redirectRules,
   });
 
   if (typeof module === 'object' && module.exports) module.exports = globalThis.ZigSourceLanguages;

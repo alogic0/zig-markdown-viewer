@@ -1,7 +1,8 @@
 # Zig Markdown Viewer
 
 A local-first Chrome/Chromium extension that renders `.md`, `.markdown`,
-`.mkd`, and `.mdx` documents with a small Zig WebAssembly core.
+`.mkd`, and `.mdx` documents and highlights supported source-code files with a
+small Zig WebAssembly core.
 
 The renderer uses revision-pinned `zig-markdown-parser`,
 `zig-math-typesetter`, and `zig-native-syntax` packages. Markdown parsing,
@@ -108,6 +109,9 @@ as the extension; it does not instantiate the WebAssembly renderer.
 - a curated set of quality-verified `zig-native-syntax` backends, with escaped
   plain-text fallback for experimental, unsupported, or unknown fence languages
 - local and remote Markdown URLs
+- supported local and remote source-code URLs, including attachment responses
+  that Chromium would otherwise download; the source viewer provides theme,
+  wrapping, copy, raw-download, auto-refresh, and recent-file controls
 - safe handling of raw HTML before DOM insertion
 - relative link and image resolution
 - automatic heading anchors and responsive table of contents
@@ -184,13 +188,17 @@ node --test tests/mathml-policy.test.cjs
 node --test tests/html-math-policy.test.cjs
 node --test tests/settings.test.cjs
 node --test tests/branding.test.cjs
+node --test tests/source-languages.test.cjs
 node --check extension/js/background.js
 node --check extension/js/content.js
 node --check extension/js/mathml-policy.js
 node --check extension/js/html-math-policy.js
 node --check extension/js/popup.js
+node --check extension/js/source-languages.js
+node --check extension/js/source.js
 node --check extension/js/standalone.js
 node --check extension/js/wasm.js
+./build.sh chromium-source-e2e
 ```
 
 The normal test step rebuilds the release-small renderer used by the Node test
@@ -235,6 +243,11 @@ development gate. The Chromium step loads the release-small Wasm renderer and
 production content scripts, sanitizer policies, CSS, and WOFF2 asset; it also
 checks rendered geometry and the standalone-export font embedding path. Set
 `CHROME_EXE` if Chrome or Chromium is not discoverable on `PATH`.
+
+The separate `chromium-source-e2e` step serves a Zig file with an attachment
+response header and verifies that main-frame interception opens the source
+viewer, fetches the original URL, and emits native syntax spans instead of
+starting a browser download.
 
 ## Provenance
 

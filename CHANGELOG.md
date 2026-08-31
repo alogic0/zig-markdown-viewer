@@ -7,6 +7,12 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 
 ### Added
 
+- A configurable source-file viewer that intercepts supported top-level local
+  and remote navigations before attachment responses trigger downloads, then
+  renders the complete file through the existing Zig/Wasm syntax backends with
+  theme, wrap, copy, download, auto-refresh, and recent-file controls.
+- A Chromium attachment-response integration gate for source interception and
+  native syntax highlighting.
 - A Zig `version` command that reads `build.zig.zon`, reports every tracked
   file that differs, and updates every viewer-version location with atomic file
   replacement after validating a canonical semantic version.

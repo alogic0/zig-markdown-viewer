@@ -3,6 +3,7 @@
 
   const DEFAULTS = {
     enabled: true,
+    sourceViewer: true,
     theme: 'auto',
     centered: true,
     maxWidth: 960,

@@ -15,7 +15,7 @@
       </div>
       <div>
         <h1>Zig Markdown Viewer</h1>
-        <p>Local Markdown, rendered by Zig</p>
+        <p>Local Markdown and source, rendered by Zig</p>
       </div>
     </header>
 
@@ -27,17 +27,22 @@
     <main>
       <section id="recent" class="panel is-active">
         <div class="section-title">
-          <h2>Recent documents</h2>
+          <h2>Recent files</h2>
           <button type="button" id="clear-recent" class="text-button">Clear</button>
         </div>
-        <input id="recent-search" type="search" placeholder="Search documents…" autocomplete="off">
+        <input id="recent-search" type="search" placeholder="Search files…" autocomplete="off">
         <div id="recent-list"></div>
       </section>
 
       <section id="settings" class="panel">
         <label class="row toggle-row">
-          <span><strong>Enabled</strong><small>Render matching Markdown URLs</small></span>
+          <span><strong>Enabled</strong><small>Render matching Markdown and source URLs</small></span>
           <input id="enabled" type="checkbox">
+        </label>
+
+        <label class="row toggle-row">
+          <span><strong>Source viewer</strong><small>Highlight supported source-file navigations</small></span>
+          <input id="sourceViewer" type="checkbox">
         </label>
 
         <label class="row">

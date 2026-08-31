@@ -13,7 +13,7 @@
   chrome.runtime.onStartup.addListener(configureSourceRedirect);
 
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === 'local' && changes.enabled) configureSourceRedirect();
+    if (area === 'local' && (changes.enabled || changes.sourceViewer)) configureSourceRedirect();
   });
 
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -25,13 +25,14 @@
   });
 
   function configureSourceRedirect() {
-    chrome.storage.local.get({ enabled: true }, settings => {
-      const update = { removeRuleIds: [SOURCE_REDIRECT_RULE_ID] };
-      if (settings.enabled) {
-        update.addRules = [globalThis.ZigSourceLanguages.redirectRule(
-          SOURCE_REDIRECT_RULE_ID,
-          chrome.runtime.getURL('source.html')
-        )];
+    chrome.storage.local.get({ enabled: true, sourceViewer: true }, settings => {
+      const rules = globalThis.ZigSourceLanguages.redirectRules(
+        SOURCE_REDIRECT_RULE_ID,
+        chrome.runtime.getURL('source.html')
+      );
+      const update = { removeRuleIds: rules.map(rule => rule.id) };
+      if (settings.enabled && settings.sourceViewer) {
+        update.addRules = rules;
       }
       chrome.declarativeNetRequest.updateDynamicRules(update, () => {
         if (chrome.runtime.lastError) {
