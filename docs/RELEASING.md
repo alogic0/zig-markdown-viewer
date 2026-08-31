@@ -6,9 +6,8 @@ Chrome extension ZIP generated from that exact commit.
 ## Prepare
 
 - Confirm `main` is clean and synchronized with its remote.
-- Read the synchronized package version with `./build.sh package-version get`,
-  then update every version location with
-  `./build.sh package-version set MAJOR.MINOR.PATCH`.
+- Read the synchronized package version with `./build.sh version`, then update
+  every version location with `./build.sh version set MAJOR.MINOR.PATCH`.
 - Move the release notes from `Unreleased` into the dated changelog section.
 - Confirm every Zig package dependency uses an immutable remote revision and
   package hash.

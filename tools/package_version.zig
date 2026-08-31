@@ -48,9 +48,23 @@ const LoadedFile = struct {
     contents: []u8,
 };
 
+const LocatedVersion = struct {
+    path: []const u8,
+    value: []const u8,
+};
+
+const VersionMismatch = struct {
+    actual: LocatedVersion,
+    expected: LocatedVersion,
+};
+
+const VersionInspection = union(enum) {
+    synchronized: []const u8,
+    mismatch: VersionMismatch,
+};
+
 pub fn main(init: std.process.Init) !void {
     const args = try init.minimal.args.toSlice(init.arena.allocator());
-    if (args.len < 2) return usage(init);
 
     var loaded: [files.len]LoadedFile = undefined;
     var loaded_count: usize = 0;
@@ -71,17 +85,29 @@ pub fn main(init: std.process.Init) !void {
         loaded_count += 1;
     }
 
-    const current = synchronizedVersion(&loaded) catch |err| return fatal(
+    const inspection = inspectVersions(&loaded) catch |err| return fatal(
         init,
         "cannot determine a synchronized package version: {s}",
         .{@errorName(err)},
     );
+    const current = switch (inspection) {
+        .synchronized => |version| version,
+        .mismatch => |mismatch| return fatal(
+            init,
+            "'{s}' has version {s}, but the other synchronized version locations use {s} (for example '{s}')",
+            .{
+                mismatch.actual.path,
+                mismatch.actual.value,
+                mismatch.expected.value,
+                mismatch.expected.path,
+            },
+        ),
+    };
 
-    if (std.mem.eql(u8, args[1], "get")) {
-        if (args.len != 2) return usage(init);
+    if (args.len == 1 or (args.len == 2 and std.mem.eql(u8, args[1], "get"))) {
         return printVersion(init, "{s}\n", .{current});
     }
-    if (!std.mem.eql(u8, args[1], "set") or args.len != 3) return usage(init);
+    if (args.len != 3 or !std.mem.eql(u8, args[1], "set")) return usage(init);
 
     const next = args[2];
     validateVersion(next) catch return fatal(
@@ -135,20 +161,44 @@ pub fn main(init: std.process.Init) !void {
     return printVersion(init, "package version: {s} -> {s}\n", .{ current, next });
 }
 
-fn synchronizedVersion(loaded: []const LoadedFile) ![]const u8 {
-    var current: ?[]const u8 = null;
+fn inspectVersions(loaded: []const LoadedFile) !VersionInspection {
+    var located: [16]LocatedVersion = undefined;
+    var located_count: usize = 0;
     for (loaded) |file| {
         for (file.spec.patterns) |pattern| {
             const found = try extractVersion(file.contents, pattern);
             try validateVersion(found);
-            if (current) |expected| {
-                if (!std.mem.eql(u8, expected, found)) return error.InconsistentVersion;
-            } else {
-                current = found;
-            }
+            if (located_count == located.len) return error.TooManyVersionLocations;
+            located[located_count] = .{ .path = file.spec.path, .value = found };
+            located_count += 1;
         }
     }
-    return current orelse error.MissingVersion;
+    if (located_count == 0) return error.MissingVersion;
+    return inspectLocatedVersions(located[0..located_count]);
+}
+
+fn inspectLocatedVersions(located: []const LocatedVersion) VersionInspection {
+    std.debug.assert(located.len > 0);
+    var consensus_index: usize = 0;
+    var consensus_count: usize = 0;
+    for (located, 0..) |candidate, candidate_index| {
+        var count: usize = 0;
+        for (located) |other| {
+            if (std.mem.eql(u8, candidate.value, other.value)) count += 1;
+        }
+        if (count > consensus_count) {
+            consensus_index = candidate_index;
+            consensus_count = count;
+        }
+    }
+
+    const consensus = located[consensus_index];
+    for (located) |candidate| {
+        if (!std.mem.eql(u8, candidate.value, consensus.value)) {
+            return .{ .mismatch = .{ .actual = candidate, .expected = consensus } };
+        }
+    }
+    return .{ .synchronized = consensus.value };
 }
 
 fn extractVersion(contents: []const u8, pattern: Pattern) ![]const u8 {
@@ -236,7 +286,7 @@ fn printVersion(init: std.process.Init, comptime format: []const u8, args: anyty
 fn usage(init: std.process.Init) noreturn {
     fatal(
         init,
-        "usage: package-version get\n       package-version set MAJOR.MINOR.PATCH",
+        "usage: version [get]\n       version set MAJOR.MINOR.PATCH",
         .{},
     );
 }
@@ -244,7 +294,7 @@ fn usage(init: std.process.Init) noreturn {
 fn fatal(init: std.process.Init, comptime format: []const u8, args: anytype) noreturn {
     var stderr_buffer: [1024]u8 = undefined;
     var stderr_writer = std.Io.File.stderr().writer(init.io, &stderr_buffer);
-    stderr_writer.interface.print("package-version: " ++ format ++ "\n", args) catch {};
+    stderr_writer.interface.print("version: " ++ format ++ "\n", args) catch {};
     stderr_writer.interface.flush() catch {};
     std.process.exit(1);
 }
@@ -279,4 +329,21 @@ test "rejects missing duplicate and inconsistent version markers" {
         error.InconsistentVersion,
         replaceVersion(std.testing.allocator, "version = \"1.0.0\";", pattern, "1.0.1", "1.0.2"),
     );
+}
+
+test "reports the file that differs from the majority version" {
+    const inspection = inspectLocatedVersions(&.{
+        .{ .path = "build.zig.zon", .value = "0.4.0" },
+        .{ .path = "build.zig", .value = "0.3.1" },
+        .{ .path = "extension/manifest.json", .value = "0.3.1" },
+    });
+    switch (inspection) {
+        .synchronized => return error.TestExpectedMismatch,
+        .mismatch => |mismatch| {
+            try std.testing.expectEqualStrings("build.zig.zon", mismatch.actual.path);
+            try std.testing.expectEqualStrings("0.4.0", mismatch.actual.value);
+            try std.testing.expectEqualStrings("build.zig", mismatch.expected.path);
+            try std.testing.expectEqualStrings("0.3.1", mismatch.expected.value);
+        },
+    }
 }
