@@ -27,7 +27,7 @@ Build the deterministic Chrome Web Store/GitHub release archive with:
 ```
 
 The validated package is written to
-`zig-out/dist/zig-markdown-viewer-0.4.0.zip` with `manifest.json` at the ZIP
+`zig-out/dist/zig-markdown-viewer-0.5.0.zip` with `manifest.json` at the ZIP
 root.
 
 Read the package version or update every viewer-version location with:
@@ -209,21 +209,24 @@ checks prevent accidental growth; they do not prohibit justified growth.
 Intentional changes are accepted after reviewing `./build.sh wasm-size-report`
 and running `./build.sh update-wasm-size-baseline` to record the new size.
 
-## Local math-typesetter development
+## Local dependency development
 
-Use the sibling `zig-math-typesetter` checkout without changing the committed
-GitHub dependency. This is the default workflow for ongoing math development:
+Use the sibling `zig-math-typesetter`, `zig-markdown-parser`, and
+`zig-native-syntax` checkouts without changing the committed GitHub
+dependencies. This is the default workflow for ongoing integration work:
 
 ```sh
-./build.sh math-dev test
-./build.sh math-dev chromium-math-e2e
+./build.sh dev test
+./build.sh dev chromium-math-e2e
 ```
 
-`math-dev` accepts the same build step and options as the normal wrapper and
-adds Zig's `--fork ../zig-math-typesetter` package override. Use it for test,
-build, packaging, size review, and focused development steps while the sibling
-checkout is advancing. Do not refresh the committed dependency during normal
-iteration.
+`dev` accepts the same build step and options as the normal wrapper and adds
+Zig package overrides for all three sibling checkouts. Its aggregate `test`
+step skips the exact pinned-dependency Wasm size comparison because local
+dependency revisions can legitimately differ; use `./build.sh dev
+wasm-size-report` to inspect their size. The explicit `check-wasm-size` step and
+normal `./build.sh test` retain the release baseline gate. `math-dev` remains a
+compatibility alias for `dev`.
 
 Only at the pre-push boundary for a viewer change that depends on a new
 typesetter revision, push the typesetter and refresh the viewer's exact GitHub

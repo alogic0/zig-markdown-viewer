@@ -1,6 +1,6 @@
 const std = @import("std");
 
-const release_version = "0.4.0";
+const release_version = "0.5.0";
 
 pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{
@@ -28,6 +28,11 @@ pub fn build(b: *std.Build) void {
         "size-analysis-include-backends",
         "Comma-separated experimental syntax backends linked only for code-size analysis",
     ) orelse "";
+    const check_wasm_size = b.option(
+        bool,
+        "check-wasm-size",
+        "Compare the test renderer with the checked-in pinned-dependency size baseline",
+    ) orelse true;
     const logo_formula = b.option(
         []const u8,
         "logo-formula",
@@ -283,7 +288,7 @@ pub fn build(b: *std.Build) void {
     test_step.dependOn(&b.addRunArtifact(formula_logo_tests).step);
     const install_test_renderer = b.addInstallFile(checked_renderer, "extension/renderer.wasm");
     test_step.dependOn(&install_test_renderer.step);
-    test_step.dependOn(&run_size_checker.step);
+    if (check_wasm_size) test_step.dependOn(&run_size_checker.step);
     const strip_wasm_names_tests = b.addTest(.{
         .root_module = b.createModule(.{
             .root_source_file = b.path("tools/strip_wasm_names.zig"),

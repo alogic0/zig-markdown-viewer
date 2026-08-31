@@ -17,10 +17,10 @@ mkdir -p "${math_compare_dir}/fonts"
 cp extension/css/fonts/ZigMathSTIX.woff2 \
   "${math_compare_dir}/fonts/ZigMathSTIX.woff2"
 
-./build.sh math-dev render-html -- \
+./build.sh dev render-html -- \
   /home/oleg/prog/docs/tst/math-mathml.md \
   -o "${math_compare_dir}/math-mathml.html"
-./build.sh math-dev render-html -- \
+./build.sh dev render-html -- \
   /home/oleg/prog/docs/tst/math-html.md \
   -o "${math_compare_dir}/math-html.html"
 

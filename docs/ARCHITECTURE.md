@@ -101,19 +101,20 @@ the same assets. The exported controls can toggle the contents sidebar and
 light/dark theme. Images remain resolved links; extension code and WebAssembly
 are not included in the exported page.
 
-## Math development workflow
+## Local dependency development workflow
 
-Ongoing viewer/typesetter development uses the sibling checkout through
-`./build.sh math-dev <step>`. This keeps local integration moving without
-rewriting the immutable GitHub dependency after every typesetter commit. The
-typesetter is pushed and `./build.sh pin-math` is run only before pushing a
-viewer change that depends on that revision.
+Ongoing viewer development uses the sibling `zig-math-typesetter`,
+`zig-markdown-parser`, and `zig-native-syntax` checkouts through `./build.sh dev
+<step>`. This keeps local integration moving without rewriting immutable
+GitHub dependencies after every dependency commit. The typesetter is pushed
+and `./build.sh pin-math` is run only before pushing a viewer change that
+depends on that revision. `math-dev` remains a compatibility alias for `dev`.
 
 Chromium is the active compatibility and visual-regression browser for the
 HTML math backend. Firefox coverage is intentionally deferred and is not a
 current development or release requirement.
 
-`./build.sh math-dev chromium-math-e2e` runs the release-small Wasm renderer in
+`./build.sh dev chromium-math-e2e` runs the release-small Wasm renderer in
 Chromium with the production content script, sanitizer policies, styles, and
 packaged font. It verifies the visual/MathML composite boundary, retained safe
 dimensions, script scaling, non-overlapping fraction layers, non-empty glyph

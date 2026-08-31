@@ -24,11 +24,11 @@ if [ "${viewer_actual_zig_version}" != "${viewer_zig_version}" ]; then
     exit 1
 fi
 
-viewer_math_dev=false
+viewer_dev=false
 if [ "$#" -ge 1 ]; then
     case "$1" in
-        math-dev)
-            viewer_math_dev=true
+        dev|math-dev)
+            viewer_dev=true
             shift
             ;;
         pin-math)
@@ -58,8 +58,13 @@ if [ "$#" -ge 2 ] && [ "$1" = "render-html" ]; then
     esac
 fi
 
-if [ "${viewer_math_dev}" = true ]; then
-    set -- --fork ../zig-math-typesetter "$@"
+if [ "${viewer_dev}" = true ]; then
+    set -- \
+      --fork ../zig-math-typesetter \
+      --fork ../zig-markdown-parser \
+      --fork ../zig-native-syntax \
+      -Dcheck-wasm-size=false \
+      "$@"
 fi
 
 exec "${viewer_zig_exe}" build "$@"
