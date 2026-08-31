@@ -75,6 +75,12 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 
 ### Fixed
 
+- Visual HTML inline formulae now use the layout tree's recorded depth for their
+  surrounding text baseline, and AMS display rows retain enough height and
+  depth to keep operator limits clear of adjacent rows.
+- AMS aligned environments retain display-style limit semantics in both MathML
+  and visual HTML, including underneath limits for `\operatorname*` and
+  `\mathop` unless `\nolimits` explicitly requests a side script.
 - Visual HTML math now applies the typesetter's exact glyph scale and explicit
   box positions, preventing scripts, fractions, roots, limits, and table rows
   from collapsing or overlapping in Chromium.

@@ -106,5 +106,5 @@ current development or release requirement.
 Chromium with the production content script, sanitizer policies, styles, and
 packaged font. It verifies the visual/MathML composite boundary, retained safe
 dimensions, script scaling, non-overlapping fraction layers, non-empty glyph
-geometry, hostile-markup filtering, font loading, and standalone-export
-embedding.
+geometry, inline baseline anchoring, display-limit placement, aligned-row
+spacing, hostile-markup filtering, font loading, and standalone-export embedding.

@@ -14,10 +14,20 @@ math-backend = html
 math-block-alignment = start
 ~~~
 
-Inline $x_2^3 + \alpha$ math.
+Inline before $\frac{x_2^3 + \alpha}{y}$ after math.
 
 ~~~math
 \left(\frac{\sqrt[3]{x+y}}{\binom{n}{k}}\right)
+~~~
+
+~~~math
+\begin{aligned}
+&\forall x\; f(x) \in R \\
+&\operatorname{rank}_A \\
+&\operatorname*{argmax}_{x \in X} \\
+&\mathop{F}_n \\
+&\mathop{G}\nolimits_k
+\end{aligned}
 ~~~
 
 <span id="unsafe" style="position:fixed" onclick="alert(1)">unsafe</span>
@@ -75,8 +85,8 @@ Inline $x_2^3 + \alpha$ math.
 
     async function runVisualMathAssertions() {
       await waitFor(
-        () => document.querySelectorAll('#zig-md-document .zig-math-composite').length === 2,
-        'viewer did not render two visual math composites'
+        () => document.querySelectorAll('#zig-md-document .zig-math-composite').length === 3,
+        'viewer did not render three visual math composites'
       );
 
       const documentRoot = document.querySelector('#zig-md-document');
@@ -140,6 +150,24 @@ Inline $x_2^3 + \alpha$ math.
         'script glyph font size is not smaller than the text-style font size'
       );
 
+      const inlineList = composites[0].querySelector(':scope > .zig-math-html > .zig-math-hlist');
+      const inlineParagraph = composites[0].closest('p');
+      invariant(inlineParagraph && inlineList, 'inline baseline fixture is incomplete');
+      const baselineMarker = document.createElement('span');
+      baselineMarker.style.cssText = 'display:inline-block;width:0;height:0;padding:0;margin:0';
+      composites[0].after(baselineMarker);
+      const inlineListRect = inlineList.getBoundingClientRect();
+      const inlineBaseline = baselineMarker.getBoundingClientRect().top;
+      const inlineDepth = -Number.parseFloat(inlineList.style.verticalAlign) * baseFontSize;
+      invariant(inlineDepth > 0, 'inline formula has no recorded depth');
+      invariant(
+        Math.abs((inlineListRect.bottom - inlineBaseline) - inlineDepth) <= 1,
+        'inline math list is not anchored to its recorded depth'
+      );
+      const baselineStrut = getComputedStyle(inlineList, '::before');
+      invariant(Number.parseFloat(baselineStrut.height) > 0, 'inline baseline strut has no height');
+      invariant(Number.parseFloat(baselineStrut.width) === 0, 'inline baseline strut has nonzero width');
+
       const fractionStack = composites[1].querySelector('.zig-math-vlist');
       const fractionLayers = fractionStack ? [...fractionStack.children] : [];
       invariant(fractionLayers.length === 3, 'fraction position layers are missing');
@@ -157,6 +185,39 @@ Inline $x_2^3 + \alpha$ math.
       const denominatorTop = Math.min(...denominatorGlyphs.map(element => element.getBoundingClientRect().top));
       invariant(numeratorBottom <= ruleRect.top + 1, 'fraction numerator overlaps its rule');
       invariant(denominatorTop >= ruleRect.bottom - 1, 'fraction denominator overlaps its rule');
+
+      const aligned = composites[2];
+      const alignedGlyphs = [...aligned.querySelectorAll('.zig-math-glyph')];
+      const glyphNamed = name => alignedGlyphs.find(element => element.textContent === name);
+      const rowGlyphs = ['∀', 'rank', 'argmax', 'F', 'G'].map(glyphNamed);
+      invariant(rowGlyphs.every(Boolean), 'aligned operator row glyphs are missing');
+      const rowLefts = rowGlyphs.map(element => element.getBoundingClientRect().left);
+      invariant(Math.max(...rowLefts) - Math.min(...rowLefts) <= 1,
+        'aligned HTML rows retain empty leading-column space');
+      const argmaxGlyph = rowGlyphs[2];
+      const fGlyph = rowGlyphs[3];
+      const gGlyph = rowGlyphs[4];
+      const argmaxStack = argmaxGlyph.closest('.zig-math-vlist');
+      const fStack = fGlyph.closest('.zig-math-vlist');
+      invariant(argmaxStack?.children.length === 2 && fStack?.children.length === 2,
+        'operator limit stacks are missing');
+      const argmaxLimitGlyphs = [...argmaxStack.children[1].querySelectorAll('.zig-math-glyph')];
+      const fLimitGlyph = fStack.children[1].querySelector('.zig-math-glyph');
+      const kGlyph = glyphNamed('k');
+      invariant(argmaxLimitGlyphs.length === 3 && fLimitGlyph && kGlyph,
+        'operator limit glyphs are missing');
+      const argmaxRect = argmaxGlyph.getBoundingClientRect();
+      const argmaxLimitTop = Math.min(...argmaxLimitGlyphs.map(element => element.getBoundingClientRect().top));
+      const argmaxLimitBottom = Math.max(...argmaxLimitGlyphs.map(element => element.getBoundingClientRect().bottom));
+      const fRect = fGlyph.getBoundingClientRect();
+      const fLimitRect = fLimitGlyph.getBoundingClientRect();
+      const gRect = gGlyph.getBoundingClientRect();
+      const kRect = kGlyph.getBoundingClientRect();
+      invariant(argmaxLimitTop >= argmaxRect.bottom - 1, 'argmax limit is not below its operator');
+      invariant(fLimitRect.top >= fRect.bottom - 1, 'mathop limit is not below its operator');
+      invariant(argmaxLimitBottom < fRect.top, 'argmax limit collides with the following row');
+      invariant(fLimitRect.bottom < gRect.top, 'mathop limit collides with the following row');
+      invariant(kRect.left >= gRect.right - 1, 'nolimits subscript is not beside its operator');
 
       document.querySelector('[data-action="download"]').click();
       await waitFor(() => globalThis.capturedStandaloneBlob !== null, 'standalone export did not create a Blob');
@@ -208,10 +269,14 @@ math-block-alignment = start
         inline_height: Math.round(visualRect.height * 1000) / 1000,
         glyph_width: Math.round(glyphRect.width * 1000) / 1000,
         script_font_size: Math.round(scriptFontSizes[0] * 1000) / 1000,
+        inline_baseline_error: Math.round(Math.abs(
+          (inlineListRect.bottom - inlineBaseline) - inlineDepth
+        ) * 1000) / 1000,
         fraction_clearance: Math.round(Math.min(
           ruleRect.top - numeratorBottom,
           denominatorTop - ruleRect.bottom
         ) * 1000) / 1000,
+        aligned_row_spread: Math.round((Math.max(...rowLefts) - Math.min(...rowLefts)) * 1000) / 1000,
         mathml_width: Math.round(mathmlRect.width * 1000) / 1000,
         mathml_row_offset: Math.round((mathmlRowLefts[0] - wrapperRect.left) * 1000) / 1000,
         mathml_row_spread: Math.round(mathmlRowSpread * 1000) / 1000,

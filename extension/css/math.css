@@ -6,6 +6,7 @@
 .zig-math-position{height:0;position:relative}
 .zig-math-position>*,.zig-math-delimiter>*{vertical-align:top!important}
 .zig-math-hlist{align-items:flex-start;display:inline-flex;white-space:nowrap}
+.zig-math-hlist:before{content:"";height:100%;width:0}
 .zig-math-vlist,.zig-math-overlap,.zig-math-shift{position:relative}
 .zig-math-vlist>.zig-math-position,.zig-math-overlap>.zig-math-position,.zig-math-shift>.zig-math-position{position:absolute}
 .zig-math-rule{background:currentColor}

@@ -45,8 +45,8 @@ node --check extension/js/popup.js
 node --check extension/js/standalone.js
 node --check extension/js/wasm.js
 ./build.sh package-extension
-unzip -t zig-out/dist/zig-markdown-viewer-0.3.5.zip
-sha256sum zig-out/dist/zig-markdown-viewer-0.3.5.zip
+unzip -t zig-out/dist/zig-markdown-viewer-0.3.6.zip
+sha256sum zig-out/dist/zig-markdown-viewer-0.3.6.zip
 ```
 
 Build the package a second time and confirm that its SHA-256 is identical.
