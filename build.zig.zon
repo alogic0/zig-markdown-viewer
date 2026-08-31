@@ -9,8 +9,8 @@
             .hash = "zig_markdown_parser-0.2.0-Hjn7-EaYAgAspbYQFbOgofwSB1ECRmqFj2E5hn3PHXEQ",
         },
         .math_typesetter = .{
-            .url = "git+https://github.com/alogic0/zig-math-typesetter.git#b01eaf11e239597b2ba79e9fd2bbc2a8f70fde2c",
-            .hash = "zig_math_typesetter-0.4.0-sPTkio1yBwArgqueVmghkfjr6GklkrSuvCehXelubab-",
+            .url = "git+https://github.com/alogic0/zig-math-typesetter.git#75cda41d5a5b83464df6a28cef940b5021c86e5a",
+            .hash = "zig_math_typesetter-0.4.0-sPTkiraNBwCT7a6wpVcd-XwrH8oVzE7xuC-_J-dg4mkX",
         },
         .native_syntax = .{
             .url = "git+https://github.com/alogic0/zig-native-syntax.git#20b1d9c6ac6ad4799bdfe5393889d87449004bf3",

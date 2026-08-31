@@ -23,6 +23,14 @@
     'magenta', 'yellow', 'gray', 'orange', 'purple', 'brown',
   ]);
 
+  function allowsColumnLines(value) {
+    if (typeof value !== 'string') return false;
+    const tokens = value.split(' ');
+    return tokens.length >= 1 && tokens.length <= 63 &&
+      tokens.some(token => token === 'solid') &&
+      tokens.every(token => token === 'solid' || token === 'none');
+  }
+
   function allowsElement(name, elementNamespace, attributes, isRoot) {
     if (elementNamespace !== namespace || !elements.has(name)) return false;
     const values = new Map(attributes);
@@ -39,6 +47,10 @@
     if (name === 'mtd') {
       return values.size === 0 ||
         (values.size === 1 && ['right', 'left'].includes(values.get('columnalign')));
+    }
+    if (name === 'mtable') {
+      return values.size === 0 ||
+        (values.size === 1 && allowsColumnLines(values.get('columnlines')));
     }
     if (name === 'mi') {
       return values.size === 0 ||

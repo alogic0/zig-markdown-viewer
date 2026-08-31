@@ -48,6 +48,19 @@ test('accepts only inert descendants and fixed spacing widths', () => {
   assert.equal(policy.allowsElement('mtd', ns, [['columnalign', 'right']], false), true);
   assert.equal(policy.allowsElement('mtd', ns, [['columnalign', 'left']], false), true);
   assert.equal(policy.allowsElement('mtd', ns, [['columnalign', 'center']], false), false);
+  assert.equal(policy.allowsElement('mtable', ns, [], false), true);
+  assert.equal(policy.allowsElement('mtable', ns, [['columnlines', 'solid']], false), true);
+  assert.equal(policy.allowsElement('mtable', ns, [['columnlines', 'solid none']], false), true);
+  assert.equal(policy.allowsElement('mtable', ns, [['columnlines', 'none solid']], false), true);
+  assert.equal(policy.allowsElement('mtable', ns, [['columnlines', 'none']], false), false);
+  assert.equal(policy.allowsElement('mtable', ns, [['columnlines', 'solid  none']], false), false);
+  assert.equal(policy.allowsElement('mtable', ns, [['columnlines', 'dashed']], false), false);
+  assert.equal(policy.allowsElement(
+    'mtable',
+    ns,
+    [['columnlines', Array(64).fill('solid').join(' ')]],
+    false
+  ), false);
   assert.equal(policy.allowsElement('mtr', ns, [['columnalign', 'right']], false), false);
   assert.equal(policy.allowsElement('mi', ns, [['mathvariant', 'normal']], false), true);
   assert.equal(policy.allowsElement('mi', ns, [['mathvariant', 'bold']], false), false);

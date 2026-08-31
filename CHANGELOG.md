@@ -13,6 +13,8 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 - First-, middle-, and last-aligned display rows through bounded AMS `multline`.
 - Explicit bounded alignment-pair groups through the AMS `alignedat` environment.
 - Generic bounded AMS arrays with validated left, center, and right columns.
+- Bounded interior array separators with a strict solid/none column-line
+  browser policy.
 - Acute, grave, check, breve, ring, and stretchable over-arrow accents.
 - Triple- and quadruple-dot accents plus stretchable left and right harpoons.
 - Ten scoped math size commands with an exact fixed-value browser allowlist.
