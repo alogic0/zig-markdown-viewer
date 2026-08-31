@@ -38,8 +38,8 @@ Read the package version or update every viewer-version location with:
 
 `./build.sh version get` is the explicit form of the default read command. The
 setter accepts a canonical numeric `MAJOR.MINOR.PATCH` compatible with the Zig
-package and Chrome manifest. The reader reports a short error if
-`build.zig.zon` and `extension/manifest.json` disagree.
+package and Chrome manifest. The reader treats `build.zig.zon` as authoritative
+and reports one short error for every tracked file whose version differs.
 
 No npm install, remote script, or CDN is required. Zig package dependencies used
 by optional highlighting backends are pinned by `zig-native-syntax`.

@@ -52,6 +52,9 @@ const LoadedFile = struct {
 
 pub fn main(init: std.process.Init) !void {
     const args = try init.minimal.args.toSlice(init.arena.allocator());
+    const is_get = args.len == 1 or (args.len == 2 and std.mem.eql(u8, args[1], "get"));
+    const is_set = args.len == 3 and std.mem.eql(u8, args[1], "set");
+    if (!is_get and !is_set) return usage(init);
 
     var loaded: [files.len]LoadedFile = undefined;
     var loaded_count: usize = 0;
@@ -77,21 +80,15 @@ pub fn main(init: std.process.Init) !void {
         "cannot read build.zig.zon version: {s}",
         .{@errorName(err)},
     );
-    const manifest_version = fileVersion(loaded[manifest_file_index]) catch |err| return fatal(
-        init,
-        "cannot read extension/manifest.json version: {s}",
-        .{@errorName(err)},
-    );
-    if (!std.mem.eql(u8, current, manifest_version)) return fatal(
-        init,
-        "extension/manifest.json ({s}) != build.zig.zon ({s})",
-        .{ manifest_version, current },
-    );
-
-    if (args.len == 1 or (args.len == 2 and std.mem.eql(u8, args[1], "get"))) {
+    if (is_get) {
+        const mismatch_count = reportMismatches(init, &loaded, current) catch |err| return fatal(
+            init,
+            "cannot compare version locations: {s}",
+            .{@errorName(err)},
+        );
+        if (mismatch_count != 0) std.process.exit(1);
         return printVersion(init, "{s}\n", .{current});
     }
-    if (args.len != 3 or !std.mem.eql(u8, args[1], "set")) return usage(init);
 
     const next = args[2];
     validateVersion(next) catch return fatal(
@@ -99,10 +96,6 @@ pub fn main(init: std.process.Init) !void {
         "invalid version '{s}': expected canonical MAJOR.MINOR.PATCH with components from 0 to {d}",
         .{ next, max_component },
     );
-    if (std.mem.eql(u8, current, next)) {
-        return printVersion(init, "package version is already {s}\n", .{current});
-    }
-
     var replacements: [files.len][]u8 = undefined;
     var replacement_count: usize = 0;
     defer for (replacements[0..replacement_count]) |contents| init.gpa.free(contents);
@@ -154,6 +147,9 @@ pub fn main(init: std.process.Init) !void {
         };
     }
 
+    if (std.mem.eql(u8, current, next)) {
+        return printVersion(init, "package version synchronized at {s}\n", .{current});
+    }
     return printVersion(init, "package version: {s} -> {s}\n", .{ current, next });
 }
 
@@ -162,6 +158,38 @@ fn fileVersion(file: LoadedFile) ![]const u8 {
     const version = try extractVersion(file.contents, file.spec.patterns[0]);
     try validateVersion(version);
     return version;
+}
+
+fn reportMismatches(
+    init: std.process.Init,
+    loaded: []const LoadedFile,
+    expected: []const u8,
+) !usize {
+    var stderr_buffer: [1024]u8 = undefined;
+    var stderr_writer = std.Io.File.stderr().writer(init.io, &stderr_buffer);
+    var mismatch_count: usize = 0;
+    for (loaded[1..]) |file| {
+        const actual = try firstMismatch(file.contents, file.spec.patterns, expected) orelse continue;
+        try stderr_writer.interface.print(
+            "version: {s} ({s}) != build.zig.zon ({s})\n",
+            .{ file.spec.path, actual, expected },
+        );
+        mismatch_count += 1;
+    }
+    try stderr_writer.interface.flush();
+    return mismatch_count;
+}
+
+fn firstMismatch(
+    contents: []const u8,
+    patterns: []const Pattern,
+    expected: []const u8,
+) !?[]const u8 {
+    for (patterns) |pattern| {
+        const actual = try extractVersion(contents, pattern);
+        if (!std.mem.eql(u8, actual, expected)) return actual;
+    }
+    return null;
 }
 
 fn extractVersion(contents: []const u8, pattern: Pattern) ![]const u8 {
@@ -302,5 +330,30 @@ test "extracts package and manifest metadata versions" {
     try std.testing.expectEqualStrings(
         "0.3.1",
         try extractVersion("  \"version\": \"0.3.1\",\n", files[manifest_file_index].patterns[0]),
+    );
+}
+
+test "finds the first mismatch in each tracked file" {
+    try std.testing.expectEqual(
+        @as(?[]const u8, null),
+        try firstMismatch(
+            "version = \"0.3.1\"; archive = \"0.3.1\";",
+            &.{
+                .{ .prefix = "version = \"", .suffix = "\";" },
+                .{ .prefix = "archive = \"", .suffix = "\";" },
+            },
+            "0.3.1",
+        ),
+    );
+    try std.testing.expectEqualStrings(
+        "0.3.0",
+        (try firstMismatch(
+            "version = \"0.3.1\"; archive = \"0.3.0\";",
+            &.{
+                .{ .prefix = "version = \"", .suffix = "\";" },
+                .{ .prefix = "archive = \"", .suffix = "\";" },
+            },
+            "0.3.1",
+        )).?,
     );
 }
