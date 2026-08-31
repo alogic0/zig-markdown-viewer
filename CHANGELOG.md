@@ -67,6 +67,12 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
   foreground and background colors. The logo update step also regenerates every
   checked-in Chrome icon size for the normal build to install.
 
+### Fixed
+
+- Document-local `start` alignment now places shrink-wrapped MathML and visual
+  HTML display blocks at the document's start edge instead of retaining
+  browser-centered display layout.
+
 ### Removed
 
 - Extension-level math macro settings and their stored definitions; portable

@@ -45,7 +45,9 @@ Inline $x_2^3 + \alpha$ math.
           get(defaults, callback) { callback({ ...defaults, theme: 'light' }); },
           set(_values, callback) { callback?.(); },
         },
-        onChanged: { addListener() {} },
+        onChanged: {
+          addListener(listener) { globalThis.storageChangedListener = listener; },
+        },
       },
     };
   </script>
@@ -98,6 +100,12 @@ Inline $x_2^3 + \alpha$ math.
       }
 
       invariant(document.querySelector('.zig-math-display-start .zig-math-composite'), 'start-aligned display math is missing');
+      const visualWrapper = document.querySelector('.zig-math-display-start');
+      const visualDisplay = visualWrapper.querySelector('.zig-math-composite');
+      invariant(
+        Math.abs(visualDisplay.getBoundingClientRect().left - visualWrapper.getBoundingClientRect().left) <= 1,
+        'visual HTML display math is not start aligned'
+      );
       invariant(composites[0].querySelectorAll('[style]').length > 0, 'visual dimensions were stripped');
       const glyph = composites[0].querySelector('.zig-math-glyph');
       invariant(glyph && [...glyph.textContent].every(character => {
@@ -123,12 +131,40 @@ Inline $x_2^3 + \alpha$ math.
       invariant(standalone.includes('data:font/woff2;base64,d09GMg'), 'standalone export did not embed the math font');
       invariant(!standalone.includes('./fonts/ZigMathSTIX.woff2'), 'standalone export retained an external font URL');
 
+      globalThis.visualMathTestSource = String.raw`~~~markdown-viewer
+math-block-alignment = start
+~~~
+
+~~~math
+\begin{aligned}
+&\forall x\; f(x) \in R \\
+&\operatorname{rank}_A \\
+&\operatorname*{argmax}_{x \in X}
+\end{aligned}
+~~~
+`;
+      globalThis.storageChangedListener({ enabled: { newValue: false } }, 'local');
+      globalThis.storageChangedListener({ enabled: { newValue: true } }, 'local');
+      await waitFor(
+        () => document.querySelector('#zig-md-document .zig-math-display-start math[display="block"]'),
+        'viewer did not rerender start-aligned MathML'
+      );
+      const mathmlWrapper = document.querySelector('#zig-md-document .zig-math-display-start');
+      const mathml = mathmlWrapper.querySelector('math[display="block"]');
+      const wrapperRect = mathmlWrapper.getBoundingClientRect();
+      const mathmlRect = mathml.getBoundingClientRect();
+      invariant(!mathmlWrapper.querySelector('.zig-math-composite'), 'default backend did not remain MathML');
+      invariant(getComputedStyle(mathml).display === 'inline-block', 'display MathML does not shrink to its content');
+      invariant(mathmlRect.width > 1 && mathmlRect.width < wrapperRect.width, 'display MathML geometry is not bounded');
+      invariant(Math.abs(mathmlRect.left - wrapperRect.left) <= 1, 'display MathML is not start aligned');
+
       return {
         composites: composites.length,
         font: fontFace.status,
         inline_width: Math.round(visualRect.width * 1000) / 1000,
         inline_height: Math.round(visualRect.height * 1000) / 1000,
         glyph_width: Math.round(glyphRect.width * 1000) / 1000,
+        mathml_width: Math.round(mathmlRect.width * 1000) / 1000,
         standalone_bytes: standalone.length,
       };
     }
