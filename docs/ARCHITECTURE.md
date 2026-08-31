@@ -106,8 +106,9 @@ current development or release requirement.
 Chromium with the production content script, sanitizer policies, styles, and
 packaged font. It verifies the visual/MathML composite boundary, retained safe
 dimensions, script scaling, non-overlapping fraction layers, non-empty glyph
-geometry, inline baseline anchoring, display-limit placement, aligned-row
-spacing, hostile-markup filtering, font loading, and standalone-export embedding.
+geometry, inline baseline anchoring, horizontal glyph-baseline consistency,
+radical-rule joins, display-limit placement, aligned-row spacing,
+hostile-markup filtering, font loading, and standalone-export embedding.
 
 The repeatable equal-scale HTML/MathML screenshot procedure is documented in
 [`MATH_VISUAL_COMPARISON.md`](MATH_VISUAL_COMPARISON.md). Use it instead of

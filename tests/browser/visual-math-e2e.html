@@ -14,7 +14,7 @@ math-backend = html
 math-block-alignment = start
 ~~~
 
-Inline before $\frac{x_2^3 + \alpha}{y}$ after math.
+Inline before $\frac{-b+\sqrt{b^2-4ac}+x_2^3+\alpha}{2a}$ after math.
 
 ~~~math
 \left(\frac{\sqrt[3]{x+y}}{\binom{n}{k}}\right)
@@ -156,23 +156,67 @@ Inline before $\frac{x_2^3 + \alpha}{y}$ after math.
         'script glyph font size is not smaller than the text-style font size'
       );
 
-      const inlineList = composites[0].querySelector(':scope > .zig-math-html > .zig-math-hlist');
+      const inlineBox = composites[0].querySelector(':scope > .zig-math-html > .zig-math-hbox');
+      const inlineList = inlineBox?.querySelector(':scope > .zig-math-hlist');
       const inlineParagraph = composites[0].closest('p');
-      invariant(inlineParagraph && inlineList, 'inline baseline fixture is incomplete');
+      invariant(inlineParagraph && inlineBox && inlineList, 'inline baseline fixture is incomplete');
       const baselineMarker = document.createElement('span');
       baselineMarker.style.cssText = 'display:inline-block;width:0;height:0;padding:0;margin:0';
       composites[0].after(baselineMarker);
-      const inlineListRect = inlineList.getBoundingClientRect();
+      const inlineListRect = inlineBox.getBoundingClientRect();
       const inlineBaseline = baselineMarker.getBoundingClientRect().top;
-      const inlineDepth = -Number.parseFloat(inlineList.style.verticalAlign) * baseFontSize;
+      const inlineAnchor = inlineList.querySelector(':scope > .zig-math-anchor');
+      invariant(inlineAnchor, 'inline metric baseline anchor is missing');
+      const inlineDepth = inlineListRect.height - inlineAnchor.getBoundingClientRect().height;
       invariant(inlineDepth > 0, 'inline formula has no recorded depth');
       invariant(
         Math.abs((inlineListRect.bottom - inlineBaseline) - inlineDepth) <= 1,
-        'inline math list is not anchored to its recorded depth'
+        `inline math list is not anchored to its recorded depth: ${
+          (inlineListRect.bottom - inlineBaseline) - inlineDepth
+        }`
       );
-      const baselineStrut = getComputedStyle(inlineList, '::before');
-      invariant(Number.parseFloat(baselineStrut.height) > 0, 'inline baseline strut has no height');
-      invariant(Number.parseFloat(baselineStrut.width) === 0, 'inline baseline strut has nonzero width');
+      invariant(
+        !composites[0].querySelector('.zig-math-hlist > .zig-math-position'),
+        'horizontal rows still use top-positioned glyph wrappers'
+      );
+
+      const directGlyphs = list => [...list.children]
+        .filter(element => element.matches('.zig-math-glyph'));
+      const textRect = element => {
+        const range = document.createRange();
+        range.selectNodeContents(element);
+        return range.getBoundingClientRect();
+      };
+      const horizontalLists = [...composites[0].querySelectorAll('.zig-math-hlist')];
+      const numeratorRow = horizontalLists.find(list =>
+        directGlyphs(list).slice(0, 3).map(element => element.textContent).join('') === '-𝑏+'
+      );
+      const radicandRow = horizontalLists.find(list =>
+        directGlyphs(list).map(element => element.textContent).join('') === '-4𝑎𝑐'
+      );
+      invariant(numeratorRow && radicandRow, 'quadratic baseline fixtures are missing');
+      const numeratorTextTops = directGlyphs(numeratorRow).slice(0, 3)
+        .map(element => textRect(element).top);
+      const radicandTextTops = directGlyphs(radicandRow)
+        .map(element => textRect(element).top);
+      const numeratorBaselineSpread = Math.max(...numeratorTextTops) - Math.min(...numeratorTextTops);
+      const radicandBaselineSpread = Math.max(...radicandTextTops) - Math.min(...radicandTextTops);
+      invariant(numeratorBaselineSpread <= 0.5, 'minus, identifier, and plus do not share a text baseline');
+      invariant(radicandBaselineSpread <= 0.5, 'minus and 4ac do not share a text baseline');
+
+      const radical = composites[0].querySelector('.zig-math-delimiter-vertical');
+      const radicalGlyph = radical?.querySelector('.zig-math-glyph');
+      const radicalList = radical?.closest('.zig-math-hlist');
+      const radicalRule = radicalList?.querySelector('.zig-math-rule');
+      invariant(radicalGlyph && radicalRule, 'quadratic radical parts are missing');
+      const radicalRect = radicalGlyph.getBoundingClientRect();
+      const radicalRuleRect = radicalRule.getBoundingClientRect();
+      const radicalVerticalGap = Math.abs(radicalRect.top - radicalRuleRect.top);
+      const radicalHorizontalGap = Math.abs(radicalRect.right - radicalRuleRect.left);
+      invariant(radicalVerticalGap <= 1,
+        `radical top does not meet its rule vertically: ${radicalVerticalGap}`);
+      invariant(radicalHorizontalGap <= 1,
+        `radical top does not meet its rule horizontally: ${radicalHorizontalGap}`);
 
       const fractionStack = composites[1].querySelector('.zig-math-vlist');
       const fractionLayers = fractionStack ? [...fractionStack.children] : [];
@@ -189,11 +233,18 @@ Inline before $\frac{x_2^3 + \alpha}{y}$ after math.
       const ruleRect = fractionRule.getBoundingClientRect();
       const numeratorBottom = Math.max(...numeratorGlyphs.map(element => element.getBoundingClientRect().bottom));
       const denominatorTop = Math.min(...denominatorGlyphs.map(element => element.getBoundingClientRect().top));
-      invariant(numeratorBottom <= ruleRect.top + 1, 'fraction numerator overlaps its rule');
-      invariant(denominatorTop >= ruleRect.bottom - 1, 'fraction denominator overlaps its rule');
+      invariant(numeratorBottom <= ruleRect.top + 1,
+        `fraction numerator overlaps its rule: ${numeratorBottom - ruleRect.top}`);
+      invariant(denominatorTop >= ruleRect.bottom - 1,
+        `fraction denominator overlaps its rule: ${ruleRect.bottom - denominatorTop}`);
 
       const aligned = composites[2];
       const alignedGlyphs = [...aligned.querySelectorAll('.zig-math-glyph')];
+      const alignedRect = aligned.children[0].getBoundingClientRect();
+      const alignedGlyphTop = Math.min(...alignedGlyphs.map(element => element.getBoundingClientRect().top));
+      const alignedGlyphBottom = Math.max(...alignedGlyphs.map(element => element.getBoundingClientRect().bottom));
+      invariant(alignedGlyphTop >= alignedRect.top - 1 && alignedGlyphBottom <= alignedRect.bottom + 1,
+        'aligned row glyphs overflow their recorded display box');
       const glyphNamed = name => alignedGlyphs.find(element => element.textContent === name);
       const rowGlyphs = ['∀', 'rank', 'argmax', '𝐹', '𝐺'].map(glyphNamed);
       invariant(rowGlyphs.every(Boolean), 'aligned operator row glyphs are missing');
@@ -284,11 +335,20 @@ math-block-alignment = start
         inline_baseline_error: Math.round(Math.abs(
           (inlineListRect.bottom - inlineBaseline) - inlineDepth
         ) * 1000) / 1000,
+        numerator_baseline_spread: Math.round(numeratorBaselineSpread * 1000) / 1000,
+        radicand_baseline_spread: Math.round(radicandBaselineSpread * 1000) / 1000,
+        radical_vertical_gap: Math.round(radicalVerticalGap * 1000) / 1000,
+        radical_horizontal_gap: Math.round(radicalHorizontalGap * 1000) / 1000,
         fraction_clearance: Math.round(Math.min(
           ruleRect.top - numeratorBottom,
           denominatorTop - ruleRect.bottom
         ) * 1000) / 1000,
         aligned_row_spread: Math.round((Math.max(...rowLefts) - Math.min(...rowLefts)) * 1000) / 1000,
+        aligned_vertical_overflow: Math.round(Math.max(
+          alignedRect.top - alignedGlyphTop,
+          alignedGlyphBottom - alignedRect.bottom,
+          0
+        ) * 1000) / 1000,
         mathml_width: Math.round(mathmlRect.width * 1000) / 1000,
         mathml_row_offset: Math.round((mathmlRowLefts[0] - wrapperRect.left) * 1000) / 1000,
         mathml_row_spread: Math.round(mathmlRowSpread * 1000) / 1000,

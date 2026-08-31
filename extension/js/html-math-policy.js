@@ -8,9 +8,10 @@
   const namespace = 'http://www.w3.org/1999/xhtml';
   const classes = new Set([
     'zig-math-html', 'zig-math-inline', 'zig-math-display',
-    'zig-math-list', 'zig-math-hlist', 'zig-math-vlist',
+    'zig-math-list', 'zig-math-hbox', 'zig-math-hlist', 'zig-math-vlist',
     'zig-math-glyph', 'zig-math-kern', 'zig-math-rule',
-    'zig-math-overlap', 'zig-math-shift', 'zig-math-position', 'zig-math-delimiter',
+    'zig-math-overlap', 'zig-math-shift', 'zig-math-position', 'zig-math-anchor',
+    'zig-math-baseline', 'zig-math-delimiter',
     'zig-math-delimiter-vertical', 'zig-math-delimiter-horizontal', 'zig-math-assembled',
     'zig-math-scope', 'zig-math-text', 'zig-math-alpha-roman',
     'zig-math-alpha-bold', 'zig-math-alpha-italic', 'zig-math-alpha-sans_serif',
@@ -92,6 +93,15 @@
     if (tokens.has('zig-math-position')) {
       return tokens.size === 1 && (sameKeys(style, ['top']) || sameKeys(style, ['left', 'top']));
     }
+    if (tokens.has('zig-math-anchor')) {
+      return tokens.size === 1 && sameKeys(style, ['height']);
+    }
+    if (tokens.has('zig-math-baseline')) {
+      return tokens.size === 1 && sameKeys(style, ['width', 'height']);
+    }
+    if (tokens.has('zig-math-hbox')) {
+      return tokens.size === 1 && sameKeys(style, ['width', 'height', 'vertical-align']);
+    }
     if (tokens.has('zig-math-delimiter')) {
       const axes = Number(tokens.has('zig-math-delimiter-vertical')) +
         Number(tokens.has('zig-math-delimiter-horizontal'));
@@ -138,11 +148,18 @@
         } else if (child.nodeType !== 1) return false;
       }
       if (glyph && (childElements.length !== 0 || element.childNodes.length === 0)) return false;
-      if ((element.classList.contains('zig-math-kern') || element.classList.contains('zig-math-rule')) &&
+      if ((element.classList.contains('zig-math-kern') || element.classList.contains('zig-math-rule') ||
+           element.classList.contains('zig-math-anchor')) &&
           element.childNodes.length !== 0) return false;
       if ((element.classList.contains('zig-math-shift') || element.classList.contains('zig-math-position') ||
-           element.classList.contains('zig-math-scope')) &&
+           element.classList.contains('zig-math-hbox') || element.classList.contains('zig-math-scope')) &&
           childElements.length !== 1) return false;
+      if (element.classList.contains('zig-math-hbox') &&
+          !childElements[0]?.classList.contains('zig-math-hlist')) return false;
+      if (element.classList.contains('zig-math-hlist') &&
+          !childElements[0]?.classList.contains('zig-math-anchor')) return false;
+      if (element.classList.contains('zig-math-baseline') &&
+          (childElements.length !== 2 || !childElements[0].classList.contains('zig-math-anchor'))) return false;
     }
     return visualRoot.children.length === 1;
   }
