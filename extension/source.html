@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en" data-zig-markdown-theme="auto">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Source · Zig Markdown Viewer</title>
+    <link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
+    <link rel="stylesheet" href="css/content.css">
+    <link rel="stylesheet" href="css/source.css">
+  </head>
+  <body class="zig-md-page zig-source-page">
+    <div id="zig-md-shell">
+      <div id="zig-md-main">
+        <header id="zig-md-toolbar" aria-label="Source tools">
+          <div class="zig-source-identity">
+            <strong id="zig-source-name">Source file</strong>
+            <span id="zig-source-language"></span>
+            <span id="zig-source-location"></span>
+          </div>
+          <div class="zig-md-actions">
+            <button type="button" data-action="wrap" title="Toggle line wrapping" aria-label="Toggle line wrapping">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h13a3 3 0 0 1 0 6H8m0 0 3-3m-3 3 3 3M4 18h8"/></svg>
+            </button>
+            <button type="button" data-action="theme" title="Cycle color theme" aria-label="Cycle color theme">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9Z"/></svg>
+            </button>
+            <button type="button" data-action="copy" title="Copy source" aria-label="Copy source">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>
+            </button>
+            <button type="button" data-action="download" title="Download source" aria-label="Download source">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+            </button>
+          </div>
+        </header>
+        <main id="zig-md-document" tabindex="-1" aria-live="polite"></main>
+      </div>
+    </div>
+    <script src="js/wasm.js"></script>
+    <script src="js/source-languages.js"></script>
+    <script src="js/source.js"></script>
+  </body>
+</html>

@@ -10,7 +10,7 @@
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
-  "permissions": ["storage"],
+  "permissions": ["storage", "declarativeNetRequestWithHostAccess"],
   "host_permissions": ["file:///*", "http://*/*", "https://*/*"],
   "action": {
     "default_title": "Zig Markdown Viewer",
@@ -82,7 +82,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["renderer.wasm", "icons/favicon.svg", "css/content.css", "css/math.css", "css/fonts/ZigMathSTIX.woff2"],
+      "resources": ["source.html", "renderer.wasm", "icons/favicon.svg", "css/content.css", "css/math.css", "css/source.css", "css/fonts/ZigMathSTIX.woff2", "js/source-languages.js", "js/source.js", "js/wasm.js"],
       "matches": ["file:///*", "http://*/*", "https://*/*"]
     }
   ],
