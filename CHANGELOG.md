@@ -13,6 +13,7 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
   `./build.sh pin-math` for validated exact GitHub revision updates.
 - Centered multi-row formulas through the bounded AMS `gathered` environment.
 - First-, middle-, and last-aligned display rows through bounded AMS `multline`.
+- Two-column equation alignment through bounded AMS `split` rows.
 - Explicit bounded alignment-pair groups through the AMS `alignedat` environment.
 - Generic bounded AMS arrays with validated left, center, and right columns.
 - Bounded interior array separators with a strict solid/none column-line
@@ -42,8 +43,7 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 
 ### Changed
 
-- Pinned `zig-math-typesetter` at `75cda41` after the multline, higher-accent,
-  and bounded array-separator slices.
+- Pinned `zig-math-typesetter` at `15e9d9b` after the bounded `split` slice.
 - Extended the inert MathML policy with only the fixed alignment, column-line,
   accent, size, and color attribute values emitted by the typesetter.
 - Updated `zig-math-typesetter` to 0.4.0 and replaced the viewer-local macro

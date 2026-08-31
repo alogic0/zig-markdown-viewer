@@ -783,13 +783,14 @@ test "renders the integrated AMS table surface" {
         \\\begin{alignedat}{2}a&=b&c&=d\end{alignedat}
         \\\begin{array}{l|cr}p&q&r\end{array}
         \\\begin{multline}m=1\\n=2\end{multline}
+        \\\begin{split}f(x)&=x^2\\&=(x+1)^2\end{split}
         \\```
     );
     defer std.testing.allocator.free(html);
 
-    try std.testing.expectEqual(@as(usize, 8), std.mem.count(u8, html, "<mtable"));
+    try std.testing.expectEqual(@as(usize, 9), std.mem.count(u8, html, "<mtable"));
     try std.testing.expect(std.mem.indexOf(u8, html, "<mi>u</mi><mo>=</mo><mn>1</mn>") != null);
-    try std.testing.expectEqual(@as(usize, 6), std.mem.count(
+    try std.testing.expectEqual(@as(usize, 8), std.mem.count(
         u8,
         html,
         "<mtd columnalign=\"right\">",
@@ -808,6 +809,11 @@ test "renders the integrated AMS table surface" {
     try std.testing.expect(std.mem.indexOf(u8, html, "<mo>{</mo><mtable>") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "<mtd columnalign=\"right\">") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "<mtd columnalign=\"left\">") != null);
+    try std.testing.expect(std.mem.indexOf(
+        u8,
+        html,
+        "<mrow><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo></mrow>",
+    ) != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "language-math") == null);
 }
 

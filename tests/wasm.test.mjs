@@ -151,11 +151,12 @@ test('renders AMS table environments through WebAssembly', () => {
 \\begin{alignedat}{2}a&=b&c&=d\\end{alignedat}
 \\begin{array}{l|cr}p&q&r\\end{array}
 \\begin{multline}m=1\\\\n=2\\end{multline}
+\\begin{split}f(x)&=x^2\\\\&=(x+1)^2\\end{split}
 ~~~
 `);
-  assert.equal((html.match(/<mtable(?: [^>]*)?>/g) || []).length, 8);
+  assert.equal((html.match(/<mtable(?: [^>]*)?>/g) || []).length, 9);
   assert.match(html, /<mi>u<\/mi><mo>=<\/mo><mn>1<\/mn>/);
-  assert.equal((html.match(/<mtd columnalign="right">/g) || []).length, 6);
+  assert.equal((html.match(/<mtd columnalign="right">/g) || []).length, 8);
   assert.match(html, /<mtd columnalign="right"><mrow><mi>r<\/mi><\/mrow><\/mtd>/);
   assert.match(html, /<mtable columnlines="solid none">/);
   assert.match(html, /<mo>\(<\/mo>/);
@@ -164,6 +165,7 @@ test('renders AMS table environments through WebAssembly', () => {
   assert.match(html, /<mtd columnalign="left">/);
   assert.match(html, /<mtd columnalign="left"><mrow><mi>m<\/mi>/);
   assert.match(html, /<mtd columnalign="right"><mrow><mi>n<\/mi>/);
+  assert.match(html, /<mrow><mi>f<\/mi><mo>\(<\/mo><mi>x<\/mi><mo>\)<\/mo><\/mrow>/);
   assert.doesNotMatch(html, /language-math/);
 });
 
