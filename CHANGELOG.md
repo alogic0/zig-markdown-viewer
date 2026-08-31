@@ -75,6 +75,9 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 
 ### Fixed
 
+- Visual HTML identifiers now use the same default mathematical italics as
+  MathML, and the shared display wrapper owns block spacing so both backends
+  occupy comparable document flow.
 - Visual HTML inline formulae now use the layout tree's recorded depth for their
   surrounding text baseline, and AMS display rows retain enough height and
   depth to keep operator limits clear of adjacent rows.

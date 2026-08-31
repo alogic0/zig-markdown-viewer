@@ -112,6 +112,12 @@ Inline before $\frac{x_2^3 + \alpha}{y}$ after math.
       invariant(document.querySelector('.zig-math-display-start .zig-math-composite'), 'start-aligned display math is missing');
       const visualWrapper = document.querySelector('.zig-math-display-start');
       const visualDisplay = visualWrapper.querySelector('.zig-math-composite');
+      const visualWrapperStyle = getComputedStyle(visualWrapper);
+      const visualPaddingTop = visualWrapperStyle.paddingTop;
+      const visualPaddingBottom = visualWrapperStyle.paddingBottom;
+      invariant(Number.parseFloat(visualWrapperStyle.paddingTop) === 20 &&
+        Number.parseFloat(visualWrapperStyle.paddingBottom) === 20,
+        'visual HTML display wrapper does not own the standard block spacing');
       invariant(
         Math.abs(visualDisplay.getBoundingClientRect().left - visualWrapper.getBoundingClientRect().left) <= 1,
         'visual HTML display math is not start aligned'
@@ -122,8 +128,8 @@ Inline before $\frac{x_2^3 + \alpha}{y}$ after math.
       invariant(glyph && glyphs.every(element =>
         globalThis.ZigMarkdownHtmlMathPolicy.allowsGlyphText(element.textContent)
       ), 'glyph text escaped the reviewed Unicode and private-use ranges');
-      invariant(composites[0].children[0].textContent.includes('x'), 'ordinary x glyph is not readable Unicode');
-      invariant(composites[0].children[0].textContent.includes('α'), 'ordinary alpha glyph is not readable Unicode');
+      invariant(composites[0].children[0].textContent.includes('𝑥'), 'ordinary x glyph is not mathematical italic Unicode');
+      invariant(composites[0].children[0].textContent.includes('𝛼'), 'ordinary alpha glyph is not mathematical italic Unicode');
       invariant(glyphs.some(element => [...element.textContent].some(character => {
         const scalar = character.codePointAt(0);
         return scalar >= 0xF0000 && scalar <= 0xFFFFD;
@@ -189,7 +195,7 @@ Inline before $\frac{x_2^3 + \alpha}{y}$ after math.
       const aligned = composites[2];
       const alignedGlyphs = [...aligned.querySelectorAll('.zig-math-glyph')];
       const glyphNamed = name => alignedGlyphs.find(element => element.textContent === name);
-      const rowGlyphs = ['∀', 'rank', 'argmax', 'F', 'G'].map(glyphNamed);
+      const rowGlyphs = ['∀', 'rank', 'argmax', '𝐹', '𝐺'].map(glyphNamed);
       invariant(rowGlyphs.every(Boolean), 'aligned operator row glyphs are missing');
       const rowLefts = rowGlyphs.map(element => element.getBoundingClientRect().left);
       invariant(Math.max(...rowLefts) - Math.min(...rowLefts) <= 1,
@@ -203,7 +209,7 @@ Inline before $\frac{x_2^3 + \alpha}{y}$ after math.
         'operator limit stacks are missing');
       const argmaxLimitGlyphs = [...argmaxStack.children[1].querySelectorAll('.zig-math-glyph')];
       const fLimitGlyph = fStack.children[1].querySelector('.zig-math-glyph');
-      const kGlyph = glyphNamed('k');
+      const kGlyph = glyphNamed('𝑘');
       invariant(argmaxLimitGlyphs.length === 3 && fLimitGlyph && kGlyph,
         'operator limit glyphs are missing');
       const argmaxRect = argmaxGlyph.getBoundingClientRect();
@@ -246,6 +252,12 @@ math-block-alignment = start
       );
       const mathmlWrapper = document.querySelector('#zig-md-document .zig-math-display-start');
       const mathml = mathmlWrapper.querySelector('math[display="block"]');
+      const mathmlWrapperStyle = getComputedStyle(mathmlWrapper);
+      invariant(mathmlWrapperStyle.paddingTop === visualPaddingTop &&
+        mathmlWrapperStyle.paddingBottom === visualPaddingBottom &&
+        Number.parseFloat(getComputedStyle(mathml).marginTop) === 0 &&
+        Number.parseFloat(getComputedStyle(mathml).marginBottom) === 0,
+        'MathML and visual HTML do not share display-block spacing');
       const wrapperRect = mathmlWrapper.getBoundingClientRect();
       const mathmlRect = mathml.getBoundingClientRect();
       invariant(!mathmlWrapper.querySelector('.zig-math-composite'), 'default backend did not remain MathML');
