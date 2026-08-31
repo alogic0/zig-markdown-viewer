@@ -162,6 +162,10 @@ math-block-alignment = start
       const mathmlRowLefts = mathmlRows.map(row => row.getBoundingClientRect().left);
       const mathmlRowSpread = Math.max(...mathmlRowLefts) - Math.min(...mathmlRowLefts);
       invariant(mathmlRowSpread <= 1, 'aligned MathML rows remain internally centered');
+      invariant(
+        mathmlRowLefts.every(left => Math.abs(left - wrapperRect.left) <= 1),
+        'aligned MathML rows retain empty leading-column space'
+      );
 
       return {
         composites: composites.length,
@@ -170,6 +174,7 @@ math-block-alignment = start
         inline_height: Math.round(visualRect.height * 1000) / 1000,
         glyph_width: Math.round(glyphRect.width * 1000) / 1000,
         mathml_width: Math.round(mathmlRect.width * 1000) / 1000,
+        mathml_row_offset: Math.round((mathmlRowLefts[0] - wrapperRect.left) * 1000) / 1000,
         mathml_row_spread: Math.round(mathmlRowSpread * 1000) / 1000,
         standalone_bytes: standalone.length,
       };

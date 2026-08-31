@@ -294,6 +294,10 @@ body.zig-md-page {
   text-align: right;
 }
 
+#zig-md-document .zig-math-display-start mtr > mtd:first-child[columnalign="left"] {
+  padding-left: 0;
+}
+
 #zig-md-document pre {
   position: relative;
   overflow: auto;

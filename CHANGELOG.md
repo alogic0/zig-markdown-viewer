@@ -76,6 +76,8 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
   HTML display blocks at the document's start edge, and preserves the
   renderer's left/right alignment inside MathML table columns instead of
   retaining browser-centered layout.
+- Aligned, aligned-at, and split formulas whose rows all start with `&` no
+  longer reserve an empty leading column or indent their visible content.
 
 ### Removed
 

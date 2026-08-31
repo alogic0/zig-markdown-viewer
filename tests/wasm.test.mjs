@@ -90,6 +90,16 @@ x=1
   assert.match(invalid, /zig-math-display-center/);
 });
 
+test('omits a wholly empty leading aligned column through WebAssembly', () => {
+  const html = render(`~~~math
+\\begin{aligned}&x\\\\&y\\end{aligned}
+~~~
+`);
+  assert.equal((html.match(/<mtd columnalign="left">/g) || []).length, 2);
+  assert.doesNotMatch(html, /<mtd columnalign="right">/);
+  assert.doesNotMatch(html, /<mtd[^>]*><mrow><\/mrow><\/mtd>/);
+});
+
 test('renders GFM-style features through WebAssembly', () => {
   const html = render(`# Hello
 
