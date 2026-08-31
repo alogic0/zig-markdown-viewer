@@ -29,7 +29,7 @@ The validated package is written to
 `zig-out/dist/zig-markdown-viewer-0.3.1.zip` with `manifest.json` at the ZIP
 root.
 
-Read or update every synchronized viewer-version location with:
+Read the package version or update every viewer-version location with:
 
 ```sh
 ./build.sh version
@@ -38,8 +38,8 @@ Read or update every synchronized viewer-version location with:
 
 `./build.sh version get` is the explicit form of the default read command. The
 setter accepts a canonical numeric `MAJOR.MINOR.PATCH` compatible with the Zig
-package and Chrome manifest, and refuses inconsistent existing metadata before
-writing any file.
+package and Chrome manifest. The reader reports a short error if
+`build.zig.zon` and `extension/manifest.json` disagree.
 
 No npm install, remote script, or CDN is required. Zig package dependencies used
 by optional highlighting backends are pinned by `zig-native-syntax`.

@@ -7,9 +7,9 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 
 ### Added
 
-- A Zig `version` command that reads every synchronized viewer-version
-  location and updates it with atomic file replacement after validating a
-  canonical Chrome-compatible semantic version.
+- A Zig `version` command that reads `build.zig.zon`, checks the Chrome
+  manifest version, and updates every viewer-version location with atomic file
+  replacement after validating a canonical semantic version.
 - A Chromium end-to-end visual-math gate covering the release-small Wasm
   renderer, production sanitizer, packaged font, browser geometry, hostile
   markup removal, and standalone-export font embedding.

@@ -42,25 +42,12 @@ const files = [_]FileSpec{
         },
     },
 };
+const package_file_index = 0;
+const manifest_file_index = 2;
 
 const LoadedFile = struct {
     spec: *const FileSpec,
     contents: []u8,
-};
-
-const LocatedVersion = struct {
-    path: []const u8,
-    value: []const u8,
-};
-
-const VersionMismatch = struct {
-    actual: LocatedVersion,
-    expected: LocatedVersion,
-};
-
-const VersionInspection = union(enum) {
-    synchronized: []const u8,
-    mismatch: VersionMismatch,
 };
 
 pub fn main(init: std.process.Init) !void {
@@ -85,24 +72,21 @@ pub fn main(init: std.process.Init) !void {
         loaded_count += 1;
     }
 
-    const inspection = inspectVersions(&loaded) catch |err| return fatal(
+    const current = fileVersion(loaded[package_file_index]) catch |err| return fatal(
         init,
-        "cannot determine a synchronized package version: {s}",
+        "cannot read build.zig.zon version: {s}",
         .{@errorName(err)},
     );
-    const current = switch (inspection) {
-        .synchronized => |version| version,
-        .mismatch => |mismatch| return fatal(
-            init,
-            "'{s}' has version {s}, but the other synchronized version locations use {s} (for example '{s}')",
-            .{
-                mismatch.actual.path,
-                mismatch.actual.value,
-                mismatch.expected.value,
-                mismatch.expected.path,
-            },
-        ),
-    };
+    const manifest_version = fileVersion(loaded[manifest_file_index]) catch |err| return fatal(
+        init,
+        "cannot read extension/manifest.json version: {s}",
+        .{@errorName(err)},
+    );
+    if (!std.mem.eql(u8, current, manifest_version)) return fatal(
+        init,
+        "extension/manifest.json ({s}) != build.zig.zon ({s})",
+        .{ manifest_version, current },
+    );
 
     if (args.len == 1 or (args.len == 2 and std.mem.eql(u8, args[1], "get"))) {
         return printVersion(init, "{s}\n", .{current});
@@ -127,7 +111,19 @@ pub fn main(init: std.process.Init) !void {
         var updated = try init.gpa.dupe(u8, file.contents);
         errdefer init.gpa.free(updated);
         for (file.spec.patterns) |pattern| {
-            const replacement = replaceVersion(init.gpa, updated, pattern, current, next) catch |err| {
+            const existing = extractVersion(updated, pattern) catch |err| {
+                init.gpa.free(updated);
+                return fatal(
+                    init,
+                    "cannot update '{s}': {s}",
+                    .{ file.spec.path, @errorName(err) },
+                );
+            };
+            validateVersion(existing) catch {
+                init.gpa.free(updated);
+                return fatal(init, "cannot update '{s}': invalid existing version", .{file.spec.path});
+            };
+            const replacement = replaceVersion(init.gpa, updated, pattern, existing, next) catch |err| {
                 init.gpa.free(updated);
                 return fatal(
                     init,
@@ -161,44 +157,11 @@ pub fn main(init: std.process.Init) !void {
     return printVersion(init, "package version: {s} -> {s}\n", .{ current, next });
 }
 
-fn inspectVersions(loaded: []const LoadedFile) !VersionInspection {
-    var located: [16]LocatedVersion = undefined;
-    var located_count: usize = 0;
-    for (loaded) |file| {
-        for (file.spec.patterns) |pattern| {
-            const found = try extractVersion(file.contents, pattern);
-            try validateVersion(found);
-            if (located_count == located.len) return error.TooManyVersionLocations;
-            located[located_count] = .{ .path = file.spec.path, .value = found };
-            located_count += 1;
-        }
-    }
-    if (located_count == 0) return error.MissingVersion;
-    return inspectLocatedVersions(located[0..located_count]);
-}
-
-fn inspectLocatedVersions(located: []const LocatedVersion) VersionInspection {
-    std.debug.assert(located.len > 0);
-    var consensus_index: usize = 0;
-    var consensus_count: usize = 0;
-    for (located, 0..) |candidate, candidate_index| {
-        var count: usize = 0;
-        for (located) |other| {
-            if (std.mem.eql(u8, candidate.value, other.value)) count += 1;
-        }
-        if (count > consensus_count) {
-            consensus_index = candidate_index;
-            consensus_count = count;
-        }
-    }
-
-    const consensus = located[consensus_index];
-    for (located) |candidate| {
-        if (!std.mem.eql(u8, candidate.value, consensus.value)) {
-            return .{ .mismatch = .{ .actual = candidate, .expected = consensus } };
-        }
-    }
-    return .{ .synchronized = consensus.value };
+fn fileVersion(file: LoadedFile) ![]const u8 {
+    if (file.spec.patterns.len != 1) return error.AmbiguousVersionFile;
+    const version = try extractVersion(file.contents, file.spec.patterns[0]);
+    try validateVersion(version);
+    return version;
 }
 
 fn extractVersion(contents: []const u8, pattern: Pattern) ![]const u8 {
@@ -331,19 +294,13 @@ test "rejects missing duplicate and inconsistent version markers" {
     );
 }
 
-test "reports the file that differs from the majority version" {
-    const inspection = inspectLocatedVersions(&.{
-        .{ .path = "build.zig.zon", .value = "0.4.0" },
-        .{ .path = "build.zig", .value = "0.3.1" },
-        .{ .path = "extension/manifest.json", .value = "0.3.1" },
-    });
-    switch (inspection) {
-        .synchronized => return error.TestExpectedMismatch,
-        .mismatch => |mismatch| {
-            try std.testing.expectEqualStrings("build.zig.zon", mismatch.actual.path);
-            try std.testing.expectEqualStrings("0.4.0", mismatch.actual.value);
-            try std.testing.expectEqualStrings("build.zig", mismatch.expected.path);
-            try std.testing.expectEqualStrings("0.3.1", mismatch.expected.value);
-        },
-    }
+test "extracts package and manifest metadata versions" {
+    try std.testing.expectEqualStrings(
+        "0.3.1",
+        try extractVersion("    .version = \"0.3.1\",\n", files[package_file_index].patterns[0]),
+    );
+    try std.testing.expectEqualStrings(
+        "0.3.1",
+        try extractVersion("  \"version\": \"0.3.1\",\n", files[manifest_file_index].patterns[0]),
+    );
 }
