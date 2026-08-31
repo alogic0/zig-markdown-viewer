@@ -75,14 +75,14 @@
         "file://*/*.MKD?*",
         "file://*/*.MDX?*"
       ],
-      "js": ["js/standalone.js", "js/wasm.js", "js/mathml-policy.js", "js/content.js"],
-      "css": ["css/content.css"],
+      "js": ["js/standalone.js", "js/wasm.js", "js/mathml-policy.js", "js/html-math-policy.js", "js/content.js"],
+      "css": ["css/content.css", "css/math.css"],
       "run_at": "document_end"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["renderer.wasm", "icons/favicon.svg", "css/content.css"],
+      "resources": ["renderer.wasm", "icons/favicon.svg", "css/content.css", "css/math.css", "css/fonts/ZigMathSTIX.woff2"],
       "matches": ["file:///*", "http://*/*", "https://*/*"]
     }
   ],

@@ -76,7 +76,8 @@ as the extension; it does not instantiate the WebAssembly renderer.
 - Common Markdown plus tables, task lists, footnotes, strikethrough,
   autolinks, smart punctuation, and highlighted fenced code
 - inline `$...$` math and display math in `math`, `tex`, or `latex` fences,
-  rendered locally as an inert MathML Core subset with literal-source fallback;
+  rendered locally as inert MathML Core by default or as optional fixed-vocabulary
+  visual HTML/CSS paired with MathML accessibility, with literal-source fallback;
   the AMS profile supports bounded `array` columns and vertical separators,
   matrices, compact matrices,
   cases, `aligned`, `alignedat`, `split`, `gathered`, and `multline` equations,
@@ -90,8 +91,8 @@ as the extension; it does not instantiate the WebAssembly renderer.
   colors, and an expanded set of symbols and operators are also supported
 - bounded custom math macros declared in `math-macros` fences, validated once
   per document without enabling mutable definitions inside math expressions
-- document-local block-math alignment through an atomic `markdown-viewer`
-  settings fence
+- document-local math backend and block-math alignment through an atomic
+  `markdown-viewer` settings fence
 - a curated set of quality-verified `zig-native-syntax` backends, with escaped
   plain-text fallback for experimental, unsupported, or unknown fence languages
 - local and remote Markdown URLs
@@ -137,11 +138,20 @@ math-block-alignment = start
 ~~~
 ```
 
-The only accepted key is `math-block-alignment`, and its values are `center`
-and `start`. Exactly one complete settings fence is allowed. Unknown or
-duplicate keys, invalid values, duplicate fences, and oversized settings leave
-the fences visible as ordinary code and preserve centered display math. Inline
-math is unaffected.
+Select the optional visual HTML/CSS backend in the same document-local fence:
+
+```markdown
+~~~markdown-viewer
+math-backend = html
+math-block-alignment = start
+~~~
+```
+
+`math-backend` accepts `mathml` (the default) or `html`.
+`math-block-alignment` accepts `center` or `start`. Exactly one complete
+settings fence is allowed. Unknown or duplicate keys, invalid values,
+duplicate fences, and oversized settings leave the fences visible as ordinary
+code and preserve the defaults. Inline math is unaffected by block alignment.
 
 See [Highlighting quality](docs/HIGHLIGHTING_QUALITY.md) for the
 supported-language registry, admission criteria, and parser/tokenizer policy.
@@ -159,11 +169,13 @@ should follow the [release checklist](docs/RELEASING.md) and use the canonical
 node --test tests/wasm.test.mjs
 node --test tests/standalone.test.cjs
 node --test tests/mathml-policy.test.cjs
+node --test tests/html-math-policy.test.cjs
 node --test tests/settings.test.cjs
 node --test tests/branding.test.cjs
 node --check extension/js/background.js
 node --check extension/js/content.js
 node --check extension/js/mathml-policy.js
+node --check extension/js/html-math-policy.js
 node --check extension/js/popup.js
 node --check extension/js/standalone.js
 node --check extension/js/wasm.js
@@ -203,7 +215,9 @@ present on an `origin` branch or tag.
 
 The extension is an independent implementation inspired by the local [Markview](https://github.com/markview-app/markview)
 extension's user experience. `zig-markdown-parser`, [Zine](https://zine-ssg.io), [SuperHTML](https://github.com/kristoff-it/superhtml), and
-Markview retain their own licenses and copyrights.
+Markview retain their own licenses and copyrights. The visual math backend
+packages a modified STIX Two Math font under the adjacent SIL Open Font License
+in `extension/css/fonts/OFL.txt`.
 
 Changes are recorded in [CHANGELOG.md](CHANGELOG.md). The project is licensed
 under the [MIT License](LICENSE).

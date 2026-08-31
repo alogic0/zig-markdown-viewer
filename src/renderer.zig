@@ -18,8 +18,14 @@ const MathBlockAlignment = enum {
     start,
 };
 
+const MathBackend = enum {
+    mathml,
+    html,
+};
+
 const DocumentSettings = struct {
     math_block_alignment: MathBlockAlignment = .center,
+    math_backend: MathBackend = .mathml,
 };
 
 const CollectedDocumentSettings = struct {
@@ -252,6 +258,7 @@ fn collectDocumentSettings(document: markdown.Document) CollectedDocumentSetting
 fn parseDocumentSettings(source: []const u8) ?DocumentSettings {
     var settings: DocumentSettings = .{};
     var saw_alignment = false;
+    var saw_backend = false;
     var lines = std.mem.splitScalar(u8, source, '\n');
     while (lines.next()) |raw_line| {
         const line = std.mem.trim(u8, raw_line, " \t\r");
@@ -260,16 +267,27 @@ fn parseDocumentSettings(source: []const u8) ?DocumentSettings {
         if (std.mem.indexOfScalarPos(u8, line, separator + 1, '=') != null) return null;
         const key = std.mem.trim(u8, line[0..separator], " \t");
         const value = std.mem.trim(u8, line[separator + 1 ..], " \t");
-        if (!std.mem.eql(u8, key, "math-block-alignment") or saw_alignment) return null;
-        settings.math_block_alignment = if (std.mem.eql(u8, value, "center"))
-            .center
-        else if (std.mem.eql(u8, value, "start"))
-            .start
-        else
-            return null;
-        saw_alignment = true;
+        if (std.mem.eql(u8, key, "math-block-alignment")) {
+            if (saw_alignment) return null;
+            settings.math_block_alignment = if (std.mem.eql(u8, value, "center"))
+                .center
+            else if (std.mem.eql(u8, value, "start"))
+                .start
+            else
+                return null;
+            saw_alignment = true;
+        } else if (std.mem.eql(u8, key, "math-backend")) {
+            if (saw_backend) return null;
+            settings.math_backend = if (std.mem.eql(u8, value, "mathml"))
+                .mathml
+            else if (std.mem.eql(u8, value, "html"))
+                .html
+            else
+                return null;
+            saw_backend = true;
+        } else return null;
     }
-    return if (saw_alignment) settings else null;
+    return if (saw_alignment or saw_backend) settings else null;
 }
 
 const CollectMacroDeclarationsError = error{ OutOfMemory, TooLarge };
@@ -614,6 +632,18 @@ fn renderMath(
     display_mode: math.DisplayMode,
     writer: *std.Io.Writer,
 ) std.Io.Writer.Error!void {
+    return switch (context.document_settings.math_backend) {
+        .mathml => renderMathMl(context, source, display_mode, writer),
+        .html => renderMathHtml(context, source, display_mode, writer),
+    };
+}
+
+fn renderMathMl(
+    context: *const RenderContext,
+    source: []const u8,
+    display_mode: math.DisplayMode,
+    writer: *std.Io.Writer,
+) std.Io.Writer.Error!void {
     var result = if (context.math_session) |session|
         session.renderMathMlAlloc(context.allocator, source, .{
             .display_mode = display_mode,
@@ -629,6 +659,36 @@ fn renderMath(
     switch (result) {
         .output => |output_html| try writer.writeAll(output_html),
         .diagnostic => try renderMathFallback(source, display_mode, writer),
+    }
+}
+
+fn renderMathHtml(
+    context: *const RenderContext,
+    source: []const u8,
+    display_mode: math.DisplayMode,
+    writer: *std.Io.Writer,
+) std.Io.Writer.Error!void {
+    var result = if (context.math_session) |session|
+        session.renderHtmlAlloc(
+            context.allocator,
+            source,
+            .{ .display_mode = display_mode, .profile = .ams },
+            math.layout.metrics.stix_two_math,
+            .{},
+        ) catch return renderMathFallback(source, display_mode, writer)
+    else
+        math.renderHtmlAlloc(
+            context.allocator,
+            source,
+            .{ .display_mode = display_mode, .profile = .ams },
+            math.layout.metrics.stix_two_math,
+            .{},
+        ) catch return renderMathFallback(source, display_mode, writer);
+    defer result.deinit(context.allocator);
+
+    switch (result) {
+        .output => |output_html| try writer.writeAll(output_html),
+        .diagnostic, .layout_failure => try renderMathFallback(source, display_mode, writer),
     }
 }
 
@@ -1029,11 +1089,26 @@ test "document settings parse exact block math alignment values" {
         MathBlockAlignment.center,
         parseDocumentSettings("math-block-alignment=center\n").?.math_block_alignment,
     );
+    try std.testing.expectEqual(
+        MathBackend.html,
+        parseDocumentSettings("math-backend=html\n").?.math_backend,
+    );
+    try std.testing.expectEqual(
+        MathBackend.mathml,
+        parseDocumentSettings("math-backend=mathml\n").?.math_backend,
+    );
+    const combined = parseDocumentSettings(
+        "math-backend = html\nmath-block-alignment = start\n",
+    ).?;
+    try std.testing.expectEqual(MathBackend.html, combined.math_backend);
+    try std.testing.expectEqual(MathBlockAlignment.start, combined.math_block_alignment);
     for ([_][]const u8{
         "",
         "unknown = start",
         "math-block-alignment = left",
         "math-block-alignment = start\nmath-block-alignment = center",
+        "math-backend = svg",
+        "math-backend = html\nmath-backend = mathml",
         "math-block-alignment == start",
         "math-block-alignment = \"start\"",
     }) |source| try std.testing.expectEqual(@as(?DocumentSettings, null), parseDocumentSettings(source));
@@ -1056,6 +1131,31 @@ test "valid document settings hide their fence and align display math" {
         "<div class=\"zig-math-display zig-math-display-start\"><math",
     ) != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "markdown-viewer") == null);
+}
+
+test "document-local HTML math backend is explicit and macro aware" {
+    const source =
+        \\~~~markdown-viewer
+        \\math-backend = html
+        \\~~~
+        \\~~~math-macros
+        \\\newcommand{\sq}[1]{#1^2}
+        \\~~~
+        \\Inline $\sq{x}$.
+    ;
+    const html = try renderAlloc(std.testing.allocator, source);
+    defer std.testing.allocator.free(html);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"zig-math-composite\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"zig-math-html zig-math-inline\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "<msup>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "language-math-macros") == null);
+}
+
+test "MathML remains the default backend" {
+    const html = try renderAlloc(std.testing.allocator, "Inline $x$.\n");
+    defer std.testing.allocator.free(html);
+    try std.testing.expect(std.mem.indexOf(u8, html, "<math class=\"zig-math\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "zig-math-composite") == null);
 }
 
 test "invalid or repeated document settings remain visible and atomic" {

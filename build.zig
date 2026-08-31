@@ -227,20 +227,11 @@ pub fn build(b: *std.Build) void {
     size_report_step.dependOn(&run_size_report.step);
 
     const renderer_core = rendererCoreModule(b, b.graph.host, optimize, syntax_inclusions, syntax_exclusions);
-    const assets = b.addOptions();
-    var css_file = b.root.openFile(
-        b.graph.io,
-        "extension/css/content.css",
-        .{ .mode = .read_only },
-    ) catch @panic("unable to open extension/css/content.css");
-    defer css_file.close(b.graph.io);
-    var css_reader = css_file.reader(b.graph.io, &.{});
-    const content_css = css_reader.interface.allocRemaining(
-        b.allocator,
-        .limited(1024 * 1024),
-    ) catch @panic("unable to read extension/css/content.css");
-    assets.addOption([]const u8, "content_css", content_css);
-    const assets_module = assets.createModule();
+    const assets_module = b.createModule(.{
+        .root_source_file = b.path("viewer_assets.zig"),
+        .target = b.graph.host,
+        .optimize = optimize,
+    });
     const render_html_root = b.createModule(.{
         .root_source_file = b.path("tools/render_html.zig"),
         .target = b.graph.host,

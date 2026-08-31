@@ -4,6 +4,9 @@ const viewer_assets = @import("viewer_assets");
 
 const max_input_size = 256 * 1024 * 1024;
 const content_css = viewer_assets.content_css;
+const math_css = viewer_assets.math_css;
+const math_font = viewer_assets.math_font;
+const font_url = "./fonts/ZigMathSTIX.woff2";
 
 const Theme = enum { auto, light, dark };
 
@@ -355,6 +358,10 @@ fn buildStandaloneAlloc(
     try writeHtmlEscaped(out, title);
     try out.writeAll("</title>\n  <style>\n");
     try out.writeAll(content_css);
+    if (std.mem.indexOf(u8, document_html, "zig-math-composite") != null) {
+        try out.writeByte('\n');
+        try writeStandaloneMathCss(out);
+    }
     try out.writeAll("\n  </style>\n</head>\n<body class=\"zig-md-page\">\n  <div id=\"zig-md-shell\" class=\"");
     var wrote_class = false;
     if (options.centered) {
@@ -383,6 +390,14 @@ fn buildStandaloneAlloc(
     try out.writeAll(page_script);
     try out.writeAll("\n  </script>\n</body>\n</html>\n");
     return writer.toOwnedSlice();
+}
+
+fn writeStandaloneMathCss(out: *std.Io.Writer) std.Io.Writer.Error!void {
+    const start = std.mem.indexOf(u8, math_css, font_url) orelse unreachable;
+    try out.writeAll(math_css[0..start]);
+    try out.writeAll("data:font/woff2;base64,");
+    try out.printBase64(math_font);
+    try out.writeAll(math_css[start + font_url.len ..]);
 }
 
 fn writeEnhancedCodeBlocks(html: []const u8, writer: *std.Io.Writer) !void {
@@ -540,4 +555,18 @@ test "standalone output contains navigation and enhanced code" {
     try std.testing.expect(std.mem.indexOf(u8, html, "class=\"zig-md-language\">zig</span>") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "class=\"zig-md-copy\">Copy</button>") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "--zig-md-syntax-comment: #545454") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "data:font/woff2") == null);
+    try std.testing.expect(std.mem.indexOf(u8, html, font_url) == null);
+}
+
+test "standalone visual math embeds its font" {
+    const html = try buildStandaloneAlloc(
+        std.testing.allocator,
+        "Math.md",
+        "<span class=\"zig-math-composite\"></span>",
+        .{ .input_path = "Math.md" },
+    );
+    defer std.testing.allocator.free(html);
+    try std.testing.expect(std.mem.indexOf(u8, html, "data:font/woff2;base64,d09GMg") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, font_url) == null);
 }

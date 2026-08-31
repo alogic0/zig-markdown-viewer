@@ -9,7 +9,7 @@ content script ---- settings/history ---- chrome.storage.local
         v
 renderer.wasm ---- zig-markdown-parser
         |
-        +-------- zig-math-typesetter ---- safe MathML Core subset
+        +-------- zig-math-typesetter ---- safe MathML or visual HTML + MathML
         |
         +-------- zig-native-syntax ---- optional native tokenizers/parsers
         |
@@ -22,7 +22,9 @@ HTML sanitizer -> relative URL resolution -> document UI
 - `zig-markdown-parser` owns Markdown syntax, source spans, and deterministic
   document rendering, including source-preserving inline and block math nodes.
 - `zig-math-typesetter` parses the supported delimiter-free TeX-like subset,
-  normalizes its semantic tree, and emits one complete inert MathML fragment.
+  normalizes its semantic tree, and emits one complete inert MathML fragment
+  by default. An explicit document-local backend can instead emit its bounded,
+  fixed-vocabulary visual HTML paired with the same MathML for accessibility.
   Diagnostics produce escaped literal source instead of partial MathML. Native
   renderer integrations may pass caller-owned definitions through
   `RenderOptions.math_macros`; the renderer validates and compiles that table
@@ -31,9 +33,10 @@ HTML sanitizer -> relative URL resolution -> document UI
   authoritative for that document. It does not accept mutable definitions
   inside math expressions.
 - The Markdown renderer accepts at most one atomic `markdown-viewer` settings
-  fence. Its only current key selects fixed center or start alignment for all
-  display math. Valid settings compile to fixed HTML wrapper classes; invalid
-  settings remain visible and cannot add CSS or MathML attributes.
+  fence. Its fixed keys select MathML or visual HTML output and center or start
+  alignment for display math. Valid settings compile to enum choices and fixed
+  HTML wrapper classes; invalid settings remain visible and cannot add CSS,
+  HTML, or MathML attributes.
 - `zig-native-syntax` supplies core and optional backends, quality metadata, aliases,
   and a configured registry of verified enabled backends. The viewer consumes that
   registry without maintaining a second allowlist. Its safe HTML renderer emits only
@@ -72,11 +75,15 @@ table alignment, bounded solid/none column lines, roman identifiers, styled and
 binomial fractions, accents, stretchable annotations, explicit math styles,
 scoped sizes, and named colors match the typesetter's strict allowlist. Relative
 links and images are resolved against the Markdown document URL after
-validation.
+validation. Visual math is accepted only as an exact two-child composite: a
+hidden fixed-class span tree followed by valid MathML. Its sanitizer permits
+only the typesetter's class vocabulary, canonical bounded `em` dimensions,
+and Plane 15 private-use glyph scalars mapped by the packaged WOFF2 font.
 
 Standalone export runs the source through the same renderer and sanitizer. The
-content script then serializes the safe document, current layout settings, table
-of contents, viewer stylesheet, and a small interaction script into one HTML
-file. The exported controls can toggle the contents sidebar and light/dark
-theme. Images remain resolved links; extension code and WebAssembly are not
-included in the exported page.
+content script then serializes the safe document, current layout settings,
+table of contents, viewer stylesheets, packaged math font as a data URL, and a
+small interaction script into one HTML file. The native standalone tool embeds
+the same assets. The exported controls can toggle the contents sidebar and
+light/dark theme. Images remain resolved links; extension code and WebAssembly
+are not included in the exported page.

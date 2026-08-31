@@ -27,6 +27,7 @@
     tocOpen: true,
     documentTitle: document.title || fileName(window.location.href),
     exportStylesPromise: null,
+    mathExportStylesPromise: null,
   };
 
   function storageGet(keys) {
@@ -80,6 +81,11 @@
   function sanitize(html) {
     const template = document.createElement('template');
     template.innerHTML = html;
+    for (const composite of [...template.content.querySelectorAll('.zig-math-composite')]) {
+      const semantic = composite.children[1];
+      if (!globalThis.ZigMarkdownHtmlMathPolicy.allowsTree(composite) ||
+          !semantic || !globalThis.ZigMarkdownMathMlPolicy.allowsTree(semantic)) composite.remove();
+    }
     for (const root of [...template.content.querySelectorAll('math')]) {
       if (!globalThis.ZigMarkdownMathMlPolicy.allowsTree(root)) root.remove();
     }
@@ -101,7 +107,9 @@
           element.removeAttribute(attribute.name);
           continue;
         }
-        if (name === 'style' && !/^\s*text-align\s*:\s*(left|center|right)\s*;?\s*$/i.test(attribute.value)) {
+        if (name === 'style' &&
+            !globalThis.ZigMarkdownHtmlMathPolicy.allowsStyle(element) &&
+            !/^\s*text-align\s*:\s*(left|center|right)\s*;?\s*$/i.test(attribute.value)) {
           element.removeAttribute(attribute.name);
         }
       }
@@ -295,17 +303,37 @@
     applySettings();
   }
 
-  async function exportStyles() {
+  async function exportStyles(includeMath) {
     if (!state.exportStylesPromise) {
       state.exportStylesPromise = fetch(chrome.runtime.getURL('css/content.css')).then(response => {
         if (!response.ok) throw new Error(`Unable to load viewer styles (${response.status})`);
         return response.text();
       });
     }
+    if (!includeMath) return state.exportStylesPromise;
+    if (!state.mathExportStylesPromise) {
+      state.mathExportStylesPromise = Promise.all([
+        fetch(chrome.runtime.getURL('css/math.css')),
+        fetch(chrome.runtime.getURL('css/fonts/ZigMathSTIX.woff2')),
+      ]).then(async responses => {
+        for (const response of responses) {
+          if (!response.ok) throw new Error(`Unable to load math styles (${response.status})`);
+        }
+        const mathStyles = await responses[0].text();
+        const fontBuffer = await responses[1].arrayBuffer();
+        let binary = '';
+        const bytes = new Uint8Array(fontBuffer);
+        for (let offset = 0; offset < bytes.length; offset += 0x8000) {
+          binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
+        }
+        const fontUrl = `data:font/woff2;base64,${btoa(binary)}`;
+        return mathStyles.replace('./fonts/ZigMathSTIX.woff2', fontUrl);
+      });
+    }
     try {
-      return await state.exportStylesPromise;
+      return `${await state.exportStylesPromise}\n${await state.mathExportStylesPromise}`;
     } catch (error) {
-      state.exportStylesPromise = null;
+      state.mathExportStylesPromise = null;
       throw error;
     }
   }
@@ -326,7 +354,7 @@
         maxWidth: state.settings.maxWidth,
         fontSize: state.settings.fontSize,
         lineHeight: state.settings.lineHeight,
-        css: await exportStyles(),
+        css: await exportStyles(content.querySelector('.zig-math-composite') !== null),
         documentHtml: content.innerHTML,
         tocHtml: standaloneTocHtml(content),
       });

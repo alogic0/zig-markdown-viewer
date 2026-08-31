@@ -1,0 +1,26 @@
+@font-face{font-family:ZigMathSTIX;src:url("./fonts/ZigMathSTIX.woff2") format("woff2");font-style:normal;font-weight:400;font-display:block}
+.zig-math-composite{display:inline-block;position:relative;max-width:100%}
+.zig-math-html{font-family:ZigMathSTIX,serif;line-height:1;white-space:nowrap}
+.zig-math-display{display:block;overflow:visible;text-align:center}
+.zig-math-list,.zig-math-glyph,.zig-math-kern,.zig-math-rule,.zig-math-shift,.zig-math-delimiter,.zig-math-scope{box-sizing:border-box;display:inline-block}
+.zig-math-hlist{align-items:baseline;display:inline-flex;white-space:nowrap}
+.zig-math-vlist,.zig-math-overlap{align-items:baseline;display:inline-grid;position:relative}
+.zig-math-vlist>.zig-math-shift,.zig-math-overlap>.zig-math-shift{grid-area:1/1}
+.zig-math-rule{background:currentColor}
+.zig-math-shift{position:relative}
+.zig-math-delimiter-horizontal{white-space:nowrap}
+.zig-math-delimiter-vertical.zig-math-assembled{display:inline-flex;flex-direction:column;justify-content:space-between}
+.zig-math-delimiter-horizontal.zig-math-assembled{display:inline-flex;flex-direction:row}
+.zig-math-text,.zig-math-alpha-roman{font-style:normal}
+.zig-math-alpha-bold{font-weight:700}
+.zig-math-alpha-italic{font-style:italic}
+.zig-math-alpha-sans_serif{font-family:ZigMathSTIX,sans-serif}
+.zig-math-alpha-monospace{font-family:ZigMathSTIX,monospace}
+.zig-math-color-black{color:black}.zig-math-color-white{color:white}
+.zig-math-color-red{color:red}.zig-math-color-green{color:green}
+.zig-math-color-blue{color:blue}.zig-math-color-cyan{color:cyan}
+.zig-math-color-magenta{color:magenta}.zig-math-color-yellow{color:yellow}
+.zig-math-color-gray{color:gray}.zig-math-color-orange{color:orange}
+.zig-math-color-purple{color:purple}.zig-math-color-brown{color:brown}
+.zig-math-composite>.zig-math{border:0;clip:rect(0 0 0 0);height:1px;margin:-1px;overflow:hidden;padding:0;position:absolute;white-space:nowrap;width:1px}
+@media print{.zig-math-display{overflow:visible}}
