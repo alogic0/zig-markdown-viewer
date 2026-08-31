@@ -87,3 +87,15 @@ small interaction script into one HTML file. The native standalone tool embeds
 the same assets. The exported controls can toggle the contents sidebar and
 light/dark theme. Images remain resolved links; extension code and WebAssembly
 are not included in the exported page.
+
+## Math development workflow
+
+Ongoing viewer/typesetter development uses the sibling checkout through
+`./build.sh math-dev <step>`. This keeps local integration moving without
+rewriting the immutable GitHub dependency after every typesetter commit. The
+typesetter is pushed and `./build.sh pin-math` is run only before pushing a
+viewer change that depends on that revision.
+
+Chromium is the active compatibility and visual-regression browser for the
+HTML math backend. Firefox coverage is intentionally deferred and is not a
+current development or release requirement.

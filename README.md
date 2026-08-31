@@ -192,16 +192,21 @@ and running `./build.sh update-wasm-size-baseline` to record the new size.
 ## Local math-typesetter development
 
 Use the sibling `zig-math-typesetter` checkout without changing the committed
-GitHub dependency:
+GitHub dependency. This is the default workflow for ongoing math development:
 
 ```sh
 ./build.sh math-dev test
 ```
 
 `math-dev` accepts the same build step and options as the normal wrapper and
-adds Zig's `--fork ../zig-math-typesetter` package override. After committing
-and pushing the typesetter, refresh the viewer's exact GitHub revision and
-package hash with:
+adds Zig's `--fork ../zig-math-typesetter` package override. Use it for test,
+build, packaging, size review, and focused development steps while the sibling
+checkout is advancing. Do not refresh the committed dependency during normal
+iteration.
+
+Only at the pre-push boundary for a viewer change that depends on a new
+typesetter revision, push the typesetter and refresh the viewer's exact GitHub
+revision and package hash with:
 
 ```sh
 ./build.sh pin-math
@@ -210,6 +215,10 @@ package hash with:
 
 `pin-math` refuses a dirty typesetter worktree or a HEAD commit that is not
 present on an `origin` branch or tag.
+
+Chromium is the current browser target for visual-math development and
+regression review. Firefox coverage is deferred and is not part of the current
+development gate.
 
 ## Provenance
 
