@@ -14,6 +14,7 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 - Explicit bounded alignment-pair groups through the AMS `alignedat` environment.
 - Generic bounded AMS arrays with validated left, center, and right columns.
 - Acute, grave, check, breve, ring, and stretchable over-arrow accents.
+- Triple- and quadruple-dot accents plus stretchable left and right harpoons.
 - Ten scoped math size commands with an exact fixed-value browser allowlist.
 - Scoped math colors with twelve compiled names and no arbitrary CSS input.
 - Portable document-local math macros through restricted, atomic

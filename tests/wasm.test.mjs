@@ -181,6 +181,7 @@ test('renders extended math structures through WebAssembly', () => {
 \\left\\lceil z\\right\\rceil+\\left\\Vert v\\right\\Vert
 \\operatorname{rank}_A+\\widehat{xyz}+\\widetilde{ab}
 \\acute a+\\grave b+\\check c+\\breve d+\\mathring e+\\overleftrightarrow{xy}
+\\dddot f+\\ddddot g+\\overleftharpoon{xy}+\\overrightharpoon{xy}
 \\tiny{x}+\\Huge{y}
 \\textcolor{red}{x}+\\color{blue}{y}
 \\displaystyle\\sum_i+\\textstyle{x}+\\scriptstyle{y}+\\scriptscriptstyle{z}
@@ -202,6 +203,10 @@ test('renders extended math structures through WebAssembly', () => {
     '<mo>´</mo>',
     '<mo>˚</mo>',
     '<mo stretchy="true">↔</mo>',
+    '<mo>⃛</mo>',
+    '<mo>⃜</mo>',
+    '<mo stretchy="true">↼</mo>',
+    '<mo stretchy="true">⇀</mo>',
     '<mstyle mathsize="0.5em"><mrow><mi>x</mi></mrow></mstyle>',
     '<mstyle mathsize="2.49em"><mrow><mi>y</mi></mrow></mstyle>',
     '<mstyle mathcolor="red"><mrow><mi>x</mi></mrow></mstyle>',
