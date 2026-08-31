@@ -27,7 +27,7 @@ fi
 viewer_dev=false
 if [ "$#" -ge 1 ]; then
     case "$1" in
-        dev|math-dev)
+        dev)
             viewer_dev=true
             shift
             ;;

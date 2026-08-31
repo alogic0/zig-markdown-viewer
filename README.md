@@ -225,8 +225,7 @@ Zig package overrides for all three sibling checkouts. Its aggregate `test`
 step skips the exact pinned-dependency Wasm size comparison because local
 dependency revisions can legitimately differ; use `./build.sh dev
 wasm-size-report` to inspect their size. The explicit `check-wasm-size` step and
-normal `./build.sh test` retain the release baseline gate. `math-dev` remains a
-compatibility alias for `dev`.
+normal `./build.sh test` retain the release baseline gate.
 
 Only at the pre-push boundary for a viewer change that depends on a new
 typesetter revision, push the typesetter and refresh the viewer's exact GitHub

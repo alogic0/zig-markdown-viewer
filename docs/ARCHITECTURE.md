@@ -108,7 +108,7 @@ Ongoing viewer development uses the sibling `zig-math-typesetter`,
 <step>`. This keeps local integration moving without rewriting immutable
 GitHub dependencies after every dependency commit. The typesetter is pushed
 and `./build.sh pin-math` is run only before pushing a viewer change that
-depends on that revision. `math-dev` remains a compatibility alias for `dev`.
+depends on that revision.
 
 Chromium is the active compatibility and visual-regression browser for the
 HTML math backend. Firefox coverage is intentionally deferred and is not a
