@@ -64,10 +64,10 @@ in the content script before any nodes enter the live page. Scripts, embedded
 documents, active media, forms, unsafe URL schemes, event handlers, and active
 attributes are removed. MathML is accepted only when its namespace, element
 tree, root metadata, and the exact fixed attribute values emitted for spacing,
-alignment, roman identifiers, styled and binomial fractions, wide accents, and
-stretchable braces, and explicit math styles match the typesetter's strict
-allowlist. Relative links and images are resolved against the
-Markdown document URL after validation.
+table alignment, roman identifiers, styled and binomial fractions, accents,
+stretchable annotations, explicit math styles, scoped sizes, and named colors
+match the typesetter's strict allowlist. Relative links and images are resolved
+against the Markdown document URL after validation.
 
 Standalone export runs the source through the same renderer and sanitizer. The
 content script then serializes the safe document, current layout settings, table

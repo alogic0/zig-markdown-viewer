@@ -77,16 +77,14 @@ as the extension; it does not instantiate the WebAssembly renderer.
   autolinks, smart punctuation, and highlighted fenced code
 - inline `$...$` math and display math in `math`, `tex`, or `latex` fences,
   rendered locally as an inert MathML Core subset with literal-source fallback;
-  the AMS profile supports bounded `array` columns, matrices, compact matrices, cases, `aligned`,
-  `alignedat`, and `gathered`
-  equations, while
-  `\mathrm`, `\mathbf`, `\mathit`, `\mathsf`, `\mathtt`, `\mathbb`, and
-  `\mathcal` and `\mathfrak` provide scoped mathematical alphabets; styled
+  the AMS profile supports bounded `array` columns, matrices, compact matrices,
+  cases, `aligned`, `alignedat`, and `gathered` equations, while
+  `\mathrm`, `\mathbf`, `\mathit`, `\mathsf`, `\mathtt`, `\mathbb`,
+  `\mathcal`, and `\mathfrak` provide scoped mathematical alphabets; styled
   fractions, binomials, extended fences, custom side- and display-limit
   operators through `\operatorname`, `\operatorname*`, and `\mathop`, narrow
-  diacritic and wide arrow accents,
-  braces, multi-line limits, explicit limit placement, math styles, fixed
-  scoped sizes, fixed named colors, and an
+  diacritic and wide-arrow accents, braces, multi-line limits, explicit limit
+  placement, math styles, fixed scoped sizes, fixed named colors, and an
   expanded set of symbols and operators are also supported
 - bounded custom math macros declared in `math-macros` fences, validated once
   per document without enabling mutable definitions inside math expressions
