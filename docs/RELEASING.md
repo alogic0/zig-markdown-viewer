@@ -30,6 +30,7 @@ zig fmt --check build.zig src tools
 ./build.sh update-logo
 ./build.sh test
 ./build.sh check-wasm-size
+./build.sh chromium-math-e2e
 node --test tests/wasm.test.mjs
 node --test tests/standalone.test.cjs
 node --test tests/mathml-policy.test.cjs

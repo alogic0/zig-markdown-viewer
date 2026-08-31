@@ -104,6 +104,17 @@ pub fn build(b: *std.Build) void {
     );
     b.getInstallStep().dependOn(&install_renderer.step);
 
+    const run_chromium_math_e2e = b.addSystemCommand(&.{"sh"});
+    run_chromium_math_e2e.addFileArg(b.path("tools/run_chromium_math_e2e.sh"));
+    run_chromium_math_e2e.addDirectoryArg(b.path("extension"));
+    run_chromium_math_e2e.addFileArg(checked_renderer);
+    run_chromium_math_e2e.addFileArg(b.path("tests/browser/visual-math-e2e.html"));
+    const chromium_math_e2e_step = b.step(
+        "chromium-math-e2e",
+        "Run the visual-math Wasm, sanitizer, font, geometry, and export test in Chromium",
+    );
+    chromium_math_e2e_step.dependOn(&run_chromium_math_e2e.step);
+
     const size_checker = b.addExecutable(.{
         .name = "check-wasm-size",
         .root_module = b.createModule(.{

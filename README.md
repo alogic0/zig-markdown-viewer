@@ -196,6 +196,7 @@ GitHub dependency. This is the default workflow for ongoing math development:
 
 ```sh
 ./build.sh math-dev test
+./build.sh math-dev chromium-math-e2e
 ```
 
 `math-dev` accepts the same build step and options as the normal wrapper and
@@ -218,7 +219,10 @@ present on an `origin` branch or tag.
 
 Chromium is the current browser target for visual-math development and
 regression review. Firefox coverage is deferred and is not part of the current
-development gate.
+development gate. The Chromium step loads the release-small Wasm renderer and
+production content scripts, sanitizer policies, CSS, and WOFF2 asset; it also
+checks rendered geometry and the standalone-export font embedding path. Set
+`CHROME_EXE` if Chrome or Chromium is not discoverable on `PATH`.
 
 ## Provenance
 

@@ -99,3 +99,9 @@ viewer change that depends on that revision.
 Chromium is the active compatibility and visual-regression browser for the
 HTML math backend. Firefox coverage is intentionally deferred and is not a
 current development or release requirement.
+
+`./build.sh math-dev chromium-math-e2e` runs the release-small Wasm renderer in
+Chromium with the production content script, sanitizer policies, styles, and
+packaged font. It verifies the visual/MathML composite boundary, retained safe
+dimensions, non-empty glyph geometry, hostile-markup filtering, font loading,
+and standalone-export embedding.

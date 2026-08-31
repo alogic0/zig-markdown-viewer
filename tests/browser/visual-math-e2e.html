@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Visual math end-to-end test</title>
+  <link rel="stylesheet" href="css/content.css">
+  <link rel="stylesheet" href="css/math.css">
+  <script>
+    'use strict';
+
+    globalThis.visualMathTestSource = String.raw`~~~markdown-viewer
+math-backend = html
+math-block-alignment = start
+~~~
+
+Inline $x_2^3 + \alpha$ math.
+
+~~~math
+\frac{\sqrt[3]{x+y}}{\binom{n}{k}}
+~~~
+
+<span id="unsafe" style="position:fixed" onclick="alert(1)">unsafe</span>
+<script id="hostile-script">document.documentElement.dataset.hostile = 'ran';</scr` + `ipt>
+`;
+
+    globalThis.capturedStandaloneBlob = null;
+    URL.createObjectURL = blob => {
+      globalThis.capturedStandaloneBlob = blob;
+      return 'blob:visual-math-test';
+    };
+    URL.revokeObjectURL = () => {};
+    HTMLAnchorElement.prototype.click = () => {};
+
+    globalThis.chrome = {
+      runtime: {
+        lastError: null,
+        getURL(path) { return new URL(path, document.URL).href; },
+        sendMessage(_message, callback) {
+          callback({ ok: true, source: globalThis.visualMathTestSource });
+        },
+      },
+      storage: {
+        local: {
+          get(defaults, callback) { callback({ ...defaults, theme: 'light' }); },
+          set(_values, callback) { callback?.(); },
+        },
+        onChanged: { addListener() {} },
+      },
+    };
+  </script>
+  <script src="js/standalone.js"></script>
+  <script src="js/wasm.js"></script>
+  <script src="js/mathml-policy.js"></script>
+  <script src="js/html-math-policy.js"></script>
+</head>
+<body><pre>loading visual math fixture</pre>
+  <script src="js/content.js"></script>
+  <script>
+    'use strict';
+
+    function invariant(condition, message) {
+      if (!condition) throw new Error(message);
+    }
+
+    async function waitFor(check, message) {
+      const deadline = performance.now() + 8000;
+      while (!check()) {
+        if (performance.now() >= deadline) throw new Error(message);
+        await new Promise(resolve => setTimeout(resolve, 25));
+      }
+    }
+
+    async function runVisualMathAssertions() {
+      await waitFor(
+        () => document.querySelectorAll('#zig-md-document .zig-math-composite').length === 2,
+        'viewer did not render two visual math composites'
+      );
+
+      const documentRoot = document.querySelector('#zig-md-document');
+      const composites = [...documentRoot.querySelectorAll('.zig-math-composite')];
+      invariant(!document.querySelector('[data-language="markdown-viewer"]'), 'settings fence remained visible');
+      invariant(!document.querySelector('#hostile-script'), 'script survived sanitization');
+      invariant(document.documentElement.dataset.hostile !== 'ran', 'hostile script executed');
+      const unsafe = document.querySelector('#unsafe');
+      invariant(unsafe && !unsafe.hasAttribute('style'), 'unsafe style survived sanitization');
+      invariant(!unsafe.hasAttribute('onclick'), 'event handler survived sanitization');
+
+      for (const composite of composites) {
+        invariant(composite.children.length === 2, 'composite does not have two children');
+        const visual = composite.children[0];
+        const semantic = composite.children[1];
+        invariant(visual.matches('span.zig-math-html[aria-hidden="true"]'), 'visual subtree contract changed');
+        invariant(semantic.matches('math.zig-math'), 'accessible MathML sibling is missing');
+        invariant(semantic.namespaceURI === 'http://www.w3.org/1998/Math/MathML', 'MathML namespace changed');
+        invariant(globalThis.ZigMarkdownHtmlMathPolicy.allowsTree(composite), 'visual policy rejected rendered output');
+        invariant(globalThis.ZigMarkdownMathMlPolicy.allowsTree(semantic), 'MathML policy rejected rendered output');
+      }
+
+      invariant(document.querySelector('.zig-math-display-start .zig-math-composite'), 'start-aligned display math is missing');
+      invariant(composites[0].querySelectorAll('[style]').length > 0, 'visual dimensions were stripped');
+      const glyph = composites[0].querySelector('.zig-math-glyph');
+      invariant(glyph && [...glyph.textContent].every(character => {
+        const scalar = character.codePointAt(0);
+        return scalar >= 0xF0000 && scalar <= 0xFFFFD;
+      }), 'glyph text is not mapped to the reviewed private-use range');
+
+      await document.fonts.load('16px ZigMathSTIX');
+      await document.fonts.ready;
+      const fontFace = [...document.fonts].find(face => face.family === 'ZigMathSTIX');
+      invariant(fontFace?.status === 'loaded', 'packaged ZigMathSTIX font did not load');
+      invariant(getComputedStyle(composites[0].children[0]).fontFamily.includes('ZigMathSTIX'), 'visual subtree does not use packaged font');
+
+      const visualRect = composites[0].children[0].getBoundingClientRect();
+      const glyphRect = glyph.getBoundingClientRect();
+      invariant(visualRect.width > 1 && visualRect.height > 1, 'visual math has empty geometry');
+      invariant(glyphRect.width > 0 && glyphRect.height > 0, 'visual glyph has empty geometry');
+
+      document.querySelector('[data-action="download"]').click();
+      await waitFor(() => globalThis.capturedStandaloneBlob !== null, 'standalone export did not create a Blob');
+      const standalone = await globalThis.capturedStandaloneBlob.text();
+      invariant(standalone.includes('class="zig-math-composite"'), 'standalone export lost visual math');
+      invariant(standalone.includes('data:font/woff2;base64,d09GMg'), 'standalone export did not embed the math font');
+      invariant(!standalone.includes('./fonts/ZigMathSTIX.woff2'), 'standalone export retained an external font URL');
+
+      return {
+        composites: composites.length,
+        font: fontFace.status,
+        inline_width: Math.round(visualRect.width * 1000) / 1000,
+        inline_height: Math.round(visualRect.height * 1000) / 1000,
+        glyph_width: Math.round(glyphRect.width * 1000) / 1000,
+        standalone_bytes: standalone.length,
+      };
+    }
+
+    runVisualMathAssertions().then(result => {
+      document.documentElement.dataset.e2eStatus = 'pass';
+      document.body.replaceChildren();
+      const output = document.createElement('pre');
+      output.id = 'e2e-result';
+      output.textContent = JSON.stringify(result);
+      document.body.append(output);
+    }).catch(error => {
+      document.documentElement.dataset.e2eStatus = 'fail';
+      document.body.replaceChildren();
+      const output = document.createElement('pre');
+      output.id = 'e2e-error';
+      output.textContent = error?.stack || String(error);
+      document.body.append(output);
+    });
+  </script>
+</body>
+</html>

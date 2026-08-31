@@ -52,11 +52,19 @@ jobs:
       - name: Run Wasm integration tests
         run: node --test tests/wasm.test.mjs
 
+      - name: Run Chromium visual-math integration test
+        if: runner.os == 'Linux'
+        shell: bash
+        run: ./build.sh chromium-math-e2e
+
       - name: Run standalone export tests
         run: node --test tests/standalone.test.cjs
 
       - name: Run MathML policy tests
         run: node --test tests/mathml-policy.test.cjs
+
+      - name: Run HTML math policy tests
+        run: node --test tests/html-math-policy.test.cjs
 
       - name: Check extension JavaScript
         shell: bash
@@ -64,6 +72,7 @@ jobs:
           node --check extension/js/background.js
           node --check extension/js/content.js
           node --check extension/js/mathml-policy.js
+          node --check extension/js/html-math-policy.js
           node --check extension/js/popup.js
           node --check extension/js/standalone.js
           node --check extension/js/wasm.js
@@ -85,20 +94,20 @@ jobs:
         shell: bash
         run: |
           ./build.sh package-extension
-          sha256sum zig-out/dist/zig-markdown-viewer-0.2.0.zip > /tmp/zig-markdown-viewer.sha256
+          sha256sum zig-out/dist/zig-markdown-viewer-0.3.0.zip > /tmp/zig-markdown-viewer.sha256
           ./build.sh package-extension
           sha256sum --check /tmp/zig-markdown-viewer.sha256
-          unzip -t zig-out/dist/zig-markdown-viewer-0.2.0.zip
-          sha256sum zig-out/dist/zig-markdown-viewer-0.2.0.zip > zig-out/dist/zig-markdown-viewer-0.2.0.zip.sha256
+          unzip -t zig-out/dist/zig-markdown-viewer-0.3.0.zip
+          sha256sum zig-out/dist/zig-markdown-viewer-0.3.0.zip > zig-out/dist/zig-markdown-viewer-0.3.0.zip.sha256
           rm /tmp/zig-markdown-viewer.sha256
 
       - name: Upload release package
         uses: actions/upload-artifact@v4
         with:
-          name: zig-markdown-viewer-0.2.0
+          name: zig-markdown-viewer-0.3.0
           path: |
-            zig-out/dist/zig-markdown-viewer-0.2.0.zip
-            zig-out/dist/zig-markdown-viewer-0.2.0.zip.sha256
+            zig-out/dist/zig-markdown-viewer-0.3.0.zip
+            zig-out/dist/zig-markdown-viewer-0.3.0.zip.sha256
           if-no-files-found: error
 
   release:
@@ -114,13 +123,13 @@ jobs:
       - name: Download verified release package
         uses: actions/download-artifact@v4
         with:
-          name: zig-markdown-viewer-0.2.0
+          name: zig-markdown-viewer-0.3.0
           path: dist
 
       - name: Extract release notes
         shell: bash
         run: |
-          awk '/^## \[0.2.0\]/{copy=1} copy && /^## \[0.1.0\]/{exit} copy' CHANGELOG.md > /tmp/zig-markdown-viewer-release-notes.md
+          awk '/^## \[0.3.0\]/{copy=1} copy && /^## \[0.2.0\]/{exit} copy' CHANGELOG.md > /tmp/zig-markdown-viewer-release-notes.md
 
       - name: Create release
         env:
@@ -128,8 +137,8 @@ jobs:
         shell: bash
         run: |
           gh release create "${GITHUB_REF_NAME}" \
-            dist/zig-markdown-viewer-0.2.0.zip \
-            dist/zig-markdown-viewer-0.2.0.zip.sha256 \
+            dist/zig-markdown-viewer-0.3.0.zip \
+            dist/zig-markdown-viewer-0.3.0.zip.sha256 \
             --verify-tag \
             --title "Zig Markdown Viewer ${GITHUB_REF_NAME}" \
             --notes-file /tmp/zig-markdown-viewer-release-notes.md

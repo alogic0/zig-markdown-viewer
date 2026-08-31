@@ -7,6 +7,9 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 
 ### Added
 
+- A Chromium end-to-end visual-math gate covering the release-small Wasm
+  renderer, production sanitizer, packaged font, browser geometry, hostile
+  markup removal, and standalone-export font embedding.
 - Atomic document-local `markdown-viewer` settings fences with fixed `center`
   or `start` block-math alignment.
 - `./build.sh math-dev` for temporary sibling typesetter overrides and
