@@ -10,6 +10,7 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 - `./build.sh math-dev` for temporary sibling typesetter overrides and
   `./build.sh pin-math` for validated exact GitHub revision updates.
 - Centered multi-row formulas through the bounded AMS `gathered` environment.
+- First-, middle-, and last-aligned display rows through bounded AMS `multline`.
 - Explicit bounded alignment-pair groups through the AMS `alignedat` environment.
 - Generic bounded AMS arrays with validated left, center, and right columns.
 - Acute, grave, check, breve, ring, and stretchable over-arrow accents.

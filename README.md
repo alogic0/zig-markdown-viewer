@@ -78,7 +78,7 @@ as the extension; it does not instantiate the WebAssembly renderer.
 - inline `$...$` math and display math in `math`, `tex`, or `latex` fences,
   rendered locally as an inert MathML Core subset with literal-source fallback;
   the AMS profile supports bounded `array` columns, matrices, compact matrices,
-  cases, `aligned`, `alignedat`, and `gathered` equations, while
+  cases, `aligned`, `alignedat`, `gathered`, and `multline` equations, while
   `\mathrm`, `\mathbf`, `\mathit`, `\mathsf`, `\mathtt`, `\mathbb`,
   `\mathcal`, and `\mathfrak` provide scoped mathematical alphabets; styled
   fractions, binomials, extended fences, custom side- and display-limit
