@@ -11,6 +11,21 @@ else
     std.heap.page_allocator;
 const Renderer = markdown.Renderer(*const RenderContext);
 const max_macro_declaration_bytes = 1024 * 1024;
+const max_document_settings_bytes = 4096;
+
+const MathBlockAlignment = enum {
+    center,
+    start,
+};
+
+const DocumentSettings = struct {
+    math_block_alignment: MathBlockAlignment = .center,
+};
+
+const CollectedDocumentSettings = struct {
+    settings: DocumentSettings = .{},
+    hide_fence: bool = false,
+};
 
 pub const MathMacroDefinition = math.MacroDefinition;
 
@@ -28,6 +43,8 @@ const RenderContext = struct {
     options: RenderOptions,
     math_session: ?*const math.MacroSession,
     hide_math_macro_declarations: bool,
+    document_settings: DocumentSettings,
+    hide_document_settings: bool,
 };
 
 var input: []u8 = &.{};
@@ -139,6 +156,8 @@ fn renderAllocWithMathSession(
     var document = parser.endInput() catch return error.ParseFailed;
     defer document.deinit(gpa);
 
+    const collected_settings = collectDocumentSettings(document);
+
     var declaration_collection_failed = false;
     const declaration_source: ?[]u8 = collectMathMacroDeclarationsAlloc(
         gpa,
@@ -200,6 +219,8 @@ fn renderAllocWithMathSession(
         .options = options,
         .math_session = effective_math_session,
         .hide_math_macro_declarations = declarations_valid,
+        .document_settings = collected_settings.settings,
+        .hide_document_settings = collected_settings.hide_fence,
     };
 
     var writer: std.Io.Writer.Allocating = .init(gpa);
@@ -207,6 +228,48 @@ fn renderAllocWithMathSession(
     const renderer: Renderer = .{ .context = &context, .renderFn = renderNode };
     renderer.render(document, &writer.writer) catch return error.RenderFailed;
     return writer.toOwnedSlice() catch return error.OutOfMemory;
+}
+
+fn collectDocumentSettings(document: markdown.Document) CollectedDocumentSettings {
+    var content: ?[]const u8 = null;
+    for (0..document.nodeCount()) |ordinal| {
+        const view = document.nodeAt(ordinal).?;
+        if (view.tag != .code_block or !std.mem.eql(
+            u8,
+            document.string(view.data.code_block.tag),
+            "markdown-viewer",
+        )) continue;
+        if (content != null) return .{};
+        content = document.string(view.data.code_block.content);
+    }
+
+    const source = content orelse return .{};
+    if (source.len > max_document_settings_bytes) return .{};
+    const settings = parseDocumentSettings(source) orelse return .{};
+    return .{ .settings = settings, .hide_fence = true };
+}
+
+fn parseDocumentSettings(source: []const u8) ?DocumentSettings {
+    var settings: DocumentSettings = .{};
+    var saw_alignment = false;
+    var lines = std.mem.splitScalar(u8, source, '\n');
+    while (lines.next()) |raw_line| {
+        const line = std.mem.trim(u8, raw_line, " \t\r");
+        if (line.len == 0) continue;
+        const separator = std.mem.indexOfScalar(u8, line, '=') orelse return null;
+        if (std.mem.indexOfScalarPos(u8, line, separator + 1, '=') != null) return null;
+        const key = std.mem.trim(u8, line[0..separator], " \t");
+        const value = std.mem.trim(u8, line[separator + 1 ..], " \t");
+        if (!std.mem.eql(u8, key, "math-block-alignment") or saw_alignment) return null;
+        settings.math_block_alignment = if (std.mem.eql(u8, value, "center"))
+            .center
+        else if (std.mem.eql(u8, value, "start"))
+            .start
+        else
+            return null;
+        saw_alignment = true;
+    }
+    return if (saw_alignment) settings else null;
 }
 
 const CollectMacroDeclarationsError = error{ OutOfMemory, TooLarge };
@@ -474,6 +537,8 @@ fn renderNode(
             const content = document.string(view.data.code_block.content);
             if (renderer.context.hide_math_macro_declarations and
                 std.mem.eql(u8, language, "math-macros")) return;
+            if (renderer.context.hide_document_settings and
+                std.mem.eql(u8, language, "markdown-viewer")) return;
             if (language.len == 0) {
                 try writer.writeAll("<pre><code>");
             } else {
@@ -497,13 +562,17 @@ fn renderNode(
             writer,
         ),
         .math_block => {
+            try writer.print(
+                "<div class=\"zig-math-display zig-math-display-{t}\">",
+                .{renderer.context.document_settings.math_block_alignment},
+            );
             try renderMath(
                 renderer.context,
                 document.string(view.data.text.content),
                 .display_math,
                 writer,
             );
-            try writer.writeByte('\n');
+            try writer.writeAll("</div>\n");
         },
         .html_block, .html_inline => {
             if (!renderer.context.options.escape_raw_html) {
@@ -932,10 +1001,100 @@ test "math diagnostics fall back to complete escaped source" {
     );
     defer std.testing.allocator.free(display);
     try std.testing.expectEqualStrings(
-        "<pre><code class=\"language-math\">\\text{a&lt;&amp;\n</code></pre>\n",
+        "<div class=\"zig-math-display zig-math-display-center\">" ++
+            "<pre><code class=\"language-math\">\\text{a&lt;&amp;\n</code></pre></div>\n",
         display,
     );
     try std.testing.expect(std.mem.indexOf(u8, display, "<math") == null);
+}
+
+test "document settings parse exact block math alignment values" {
+    try std.testing.expectEqual(
+        MathBlockAlignment.start,
+        parseDocumentSettings("  math-block-alignment = start  \r\n").?.math_block_alignment,
+    );
+    try std.testing.expectEqual(
+        MathBlockAlignment.center,
+        parseDocumentSettings("math-block-alignment=center\n").?.math_block_alignment,
+    );
+    for ([_][]const u8{
+        "",
+        "unknown = start",
+        "math-block-alignment = left",
+        "math-block-alignment = start\nmath-block-alignment = center",
+        "math-block-alignment == start",
+        "math-block-alignment = \"start\"",
+    }) |source| try std.testing.expectEqual(@as(?DocumentSettings, null), parseDocumentSettings(source));
+}
+
+test "valid document settings hide their fence and align display math" {
+    const source =
+        \\~~~markdown-viewer
+        \\math-block-alignment = start
+        \\~~~
+        \\~~~math
+        \\x=1
+        \\~~~
+    ;
+    const html = try renderAlloc(std.testing.allocator, source);
+    defer std.testing.allocator.free(html);
+    try std.testing.expect(std.mem.indexOf(
+        u8,
+        html,
+        "<div class=\"zig-math-display zig-math-display-start\"><math",
+    ) != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "markdown-viewer") == null);
+}
+
+test "invalid or repeated document settings remain visible and atomic" {
+    const cases = [_][]const u8{
+        \\~~~markdown-viewer
+        \\math-block-alignment = left
+        \\~~~
+        \\~~~math
+        \\x
+        \\~~~
+        ,
+        \\~~~markdown-viewer
+        \\math-block-alignment = start
+        \\~~~
+        \\~~~markdown-viewer
+        \\math-block-alignment = center
+        \\~~~
+        \\~~~math
+        \\x
+        \\~~~
+        ,
+    };
+    for (cases) |source| {
+        const html = try renderAlloc(std.testing.allocator, source);
+        defer std.testing.allocator.free(html);
+        try std.testing.expect(std.mem.indexOf(u8, html, "language-markdown-viewer") != null);
+        try std.testing.expect(std.mem.indexOf(
+            u8,
+            html,
+            "<div class=\"zig-math-display zig-math-display-center\"><math",
+        ) != null);
+    }
+}
+
+test "oversized document settings remain visible and use defaults" {
+    var padding: [max_document_settings_bytes]u8 = undefined;
+    @memset(&padding, ' ');
+    const source = try std.fmt.allocPrint(
+        std.testing.allocator,
+        "~~~markdown-viewer\nmath-block-alignment = start{s}\n~~~\n~~~math\nx\n~~~\n",
+        .{padding[0..]},
+    );
+    defer std.testing.allocator.free(source);
+    const html = try renderAlloc(std.testing.allocator, source);
+    defer std.testing.allocator.free(html);
+    try std.testing.expect(std.mem.indexOf(u8, html, "language-markdown-viewer") != null);
+    try std.testing.expect(std.mem.indexOf(
+        u8,
+        html,
+        "<div class=\"zig-math-display zig-math-display-center\"><math",
+    ) != null);
 }
 
 test "math source contributes to heading anchors" {

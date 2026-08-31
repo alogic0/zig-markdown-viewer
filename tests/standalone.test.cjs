@@ -164,6 +164,7 @@ test('keeps code copy controls visible without hover', () => {
 test('styles native inline display and printed math', () => {
   assert.match(contentCss, /\.zig-math\[display="inline"\][^{]*\{[^}]*vertical-align:/s);
   assert.match(contentCss, /\.zig-math\[display="block"\][^{]*\{[^}]*overflow-x: auto;/s);
+  assert.match(contentCss, /\.zig-math-display-start \.zig-math\[display="block"\][^{]*\{[^}]*text-align: start;/s);
   assert.match(contentCss, /@media print \{[\s\S]*\.zig-math\[display="block"\][^{]*\{ break-inside: avoid; \}/);
 });
 

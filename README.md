@@ -85,10 +85,12 @@ as the extension; it does not instantiate the WebAssembly renderer.
   fractions, binomials, extended fences, custom side- and display-limit
   operators through `\operatorname`, `\operatorname*`, and `\mathop`, narrow
   diacritic, wide-arrow, and harpoon accents, braces, multi-line limits,
-  explicit limit placement, math styles, fixed scoped sizes, fixed named colors, and an
-  expanded set of symbols and operators are also supported
+  explicit limit placement, math styles, fixed scoped sizes, fixed named
+  colors, and an expanded set of symbols and operators are also supported
 - bounded custom math macros declared in `math-macros` fences, validated once
   per document without enabling mutable definitions inside math expressions
+- document-local block-math alignment through an atomic `markdown-viewer`
+  settings fence
 - a curated set of quality-verified `zig-native-syntax` backends, with escaped
   plain-text fallback for experimental, unsupported, or unknown fence languages
 - local and remote Markdown URLs
@@ -120,6 +122,23 @@ Only the restricted `\newcommand{\name}[N]{replacement}` form is accepted.
 Arbitrary `\def`, `\gdef`, and mutation commands remain unsupported. If any
 declaration is malformed or invalid, the document-local table is rejected
 atomically and its fences remain visible as code.
+
+### Document settings
+
+Display math is centered by default. A document can align every display formula
+to the start of its text direction with one settings fence:
+
+```markdown
+~~~markdown-viewer
+math-block-alignment = start
+~~~
+```
+
+The only accepted key is `math-block-alignment`, and its values are `center`
+and `start`. Exactly one complete settings fence is allowed. Unknown or
+duplicate keys, invalid values, duplicate fences, and oversized settings leave
+the fences visible as ordinary code and preserve centered display math. Inline
+math is unaffected.
 
 See [Highlighting quality](docs/HIGHLIGHTING_QUALITY.md) for the supported-language registry,
 admission criteria, and parser/tokenizer policy.

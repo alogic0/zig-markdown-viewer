@@ -30,6 +30,10 @@ HTML sanitizer -> relative URL resolution -> document UI
   declarations before rendering and treats a valid document-local table as
   authoritative for that document. It does not accept mutable definitions
   inside math expressions.
+- The Markdown renderer accepts at most one atomic `markdown-viewer` settings
+  fence. Its only current key selects fixed center or start alignment for all
+  display math. Valid settings compile to fixed HTML wrapper classes; invalid
+  settings remain visible and cannot add CSS or MathML attributes.
 - `zig-native-syntax` supplies core and optional backends, quality metadata, aliases,
   and a configured registry of verified enabled backends. The viewer consumes that
   registry without maintaining a second allowlist. Its safe HTML renderer emits only

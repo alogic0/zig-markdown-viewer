@@ -63,6 +63,33 @@ test('renders document-local macros through WebAssembly', () => {
   }
 });
 
+test('renders document-local block math alignment through WebAssembly', () => {
+  const html = render(`~~~markdown-viewer
+math-block-alignment = start
+~~~
+
+~~~math
+x=1
+~~~
+`);
+  assert.match(
+    html,
+    /<div class="zig-math-display zig-math-display-start"><math class="zig-math" display="block">/
+  );
+  assert.doesNotMatch(html, /markdown-viewer/);
+
+  const invalid = render(`~~~markdown-viewer
+math-block-alignment = left
+~~~
+
+~~~math
+x=1
+~~~
+`);
+  assert.match(invalid, /class="language-markdown-viewer"/);
+  assert.match(invalid, /zig-math-display-center/);
+});
+
 test('renders GFM-style features through WebAssembly', () => {
   const html = render(`# Hello
 
@@ -224,7 +251,8 @@ test('keeps malformed math as escaped literal source', () => {
   );
   assert.equal(
     render('~~~latex\n\\text{a<&\n~~~\n'),
-    '<pre><code class="language-math">\\text{a&lt;&amp;\n</code></pre>\n'
+    '<div class="zig-math-display zig-math-display-center">' +
+      '<pre><code class="language-math">\\text{a&lt;&amp;\n</code></pre></div>\n'
   );
 });
 

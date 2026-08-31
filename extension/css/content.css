@@ -279,6 +279,10 @@ body.zig-md-page {
   text-align: center;
 }
 
+#zig-md-document .zig-math-display-start .zig-math[display="block"] {
+  text-align: start;
+}
+
 #zig-md-document pre {
   position: relative;
   overflow: auto;
