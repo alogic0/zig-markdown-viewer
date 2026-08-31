@@ -157,6 +157,11 @@ math-block-alignment = start
       invariant(getComputedStyle(mathml).display === 'inline-block', 'display MathML does not shrink to its content');
       invariant(mathmlRect.width > 1 && mathmlRect.width < wrapperRect.width, 'display MathML geometry is not bounded');
       invariant(Math.abs(mathmlRect.left - wrapperRect.left) <= 1, 'display MathML is not start aligned');
+      const mathmlRows = [...mathml.querySelectorAll('mtd[columnalign="left"] > mrow')];
+      invariant(mathmlRows.length === 3, 'aligned MathML rows are missing');
+      const mathmlRowLefts = mathmlRows.map(row => row.getBoundingClientRect().left);
+      const mathmlRowSpread = Math.max(...mathmlRowLefts) - Math.min(...mathmlRowLefts);
+      invariant(mathmlRowSpread <= 1, 'aligned MathML rows remain internally centered');
 
       return {
         composites: composites.length,
@@ -165,6 +170,7 @@ math-block-alignment = start
         inline_height: Math.round(visualRect.height * 1000) / 1000,
         glyph_width: Math.round(glyphRect.width * 1000) / 1000,
         mathml_width: Math.round(mathmlRect.width * 1000) / 1000,
+        mathml_row_spread: Math.round(mathmlRowSpread * 1000) / 1000,
         standalone_bytes: standalone.length,
       };
     }

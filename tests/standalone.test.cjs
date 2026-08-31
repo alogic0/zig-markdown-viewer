@@ -166,6 +166,8 @@ test('styles native inline display and printed math', () => {
   assert.match(contentCss, /\.zig-math\[display="block"\][^{]*\{[^}]*display: inline-block;[^}]*overflow-x: auto;/s);
   assert.match(contentCss, /\.zig-math-display\.zig-math-display-center[^{]*\{[^}]*text-align: center;/s);
   assert.match(contentCss, /\.zig-math-display\.zig-math-display-start[^{]*\{[^}]*text-align: start;/s);
+  assert.match(contentCss, /\.zig-math mtd\[columnalign="left"\][^{]*\{[^}]*text-align: left;/s);
+  assert.match(contentCss, /\.zig-math mtd\[columnalign="right"\][^{]*\{[^}]*text-align: right;/s);
   assert.match(contentCss, /@media print \{[\s\S]*\.zig-math\[display="block"\][^{]*\{ break-inside: avoid; \}/);
 });
 

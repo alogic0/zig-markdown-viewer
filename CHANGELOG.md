@@ -70,8 +70,9 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 ### Fixed
 
 - Document-local `start` alignment now places shrink-wrapped MathML and visual
-  HTML display blocks at the document's start edge instead of retaining
-  browser-centered display layout.
+  HTML display blocks at the document's start edge, and preserves the
+  renderer's left/right alignment inside MathML table columns instead of
+  retaining browser-centered layout.
 
 ### Removed
 
