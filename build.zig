@@ -1,6 +1,6 @@
 const std = @import("std");
 
-const release_version = "0.3.8";
+const release_version = "0.4.0";
 
 pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{
@@ -389,6 +389,7 @@ fn addWasmRenderer(
     renderer_module.export_symbol_names = &.{
         "allocateSource",
         "renderMarkdown",
+        "renderSource",
         "renderedLength",
         "errorCode",
         "releaseSource",

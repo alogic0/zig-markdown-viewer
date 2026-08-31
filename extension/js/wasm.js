@@ -17,12 +17,28 @@
 
     render(source) {
       const bytes = this.encoder.encode(source);
+      return this.renderBytes(bytes, () => this.exports.renderMarkdown(bytes.length));
+    }
+
+    renderSource(language, source) {
+      const languageBytes = this.encoder.encode(language);
+      const sourceBytes = this.encoder.encode(source);
+      const bytes = new Uint8Array(languageBytes.length + sourceBytes.length);
+      bytes.set(languageBytes);
+      bytes.set(sourceBytes, languageBytes.length);
+      return this.renderBytes(
+        bytes,
+        () => this.exports.renderSource(languageBytes.length, sourceBytes.length)
+      );
+    }
+
+    renderBytes(bytes, render) {
       const sourcePointer = this.exports.allocateSource(bytes.length);
       if (bytes.length !== 0 && sourcePointer === 0) this.throwLastError();
 
       try {
         new Uint8Array(this.exports.memory.buffer, sourcePointer, bytes.length).set(bytes);
-        const outputPointer = this.exports.renderMarkdown(bytes.length);
+        const outputPointer = render();
         const outputLength = this.exports.renderedLength();
         if (outputPointer === 0 && outputLength === 0 && this.exports.errorCode() !== 0) {
           this.throwLastError();

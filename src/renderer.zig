@@ -103,6 +103,34 @@ export fn renderMarkdown(length: u32) u32 {
     return @intCast(@intFromPtr(output.ptr));
 }
 
+/// Highlights a complete source file. The input buffer contains the language
+/// name followed immediately by the source bytes.
+export fn renderSource(language_length: u32, source_length: u32) u32 {
+    releaseOutput();
+    last_error = .none;
+
+    const language_end: usize = language_length;
+    const source_len: usize = source_length;
+    if (language_end > input.len or source_len > input.len - language_end) {
+        last_error = .invalid_input;
+        return 0;
+    }
+
+    output = renderSourceAlloc(
+        allocator,
+        input[0..language_end],
+        input[language_end..][0..source_len],
+    ) catch |err| {
+        last_error = switch (err) {
+            error.OutOfMemory => .out_of_memory,
+            error.ParseFailed => .parse,
+            error.RenderFailed => .render,
+        };
+        return 0;
+    };
+    return @intCast(@intFromPtr(output.ptr));
+}
+
 export fn renderedLength() u32 {
     return @intCast(output.len);
 }
@@ -125,6 +153,29 @@ pub const RenderError = error{ OutOfMemory, ParseFailed, RenderFailed };
 
 pub fn renderAlloc(gpa: std.mem.Allocator, source: []const u8) RenderError![]u8 {
     return renderAllocOptions(gpa, source, .{});
+}
+
+pub fn renderSourceAlloc(
+    gpa: std.mem.Allocator,
+    language: []const u8,
+    source: []const u8,
+) RenderError![]u8 {
+    var writer: std.Io.Writer.Allocating = .init(gpa);
+    errdefer writer.deinit();
+
+    writer.writer.print(
+        "<pre data-language=\"{f}\"><code class=\"language-{f}\">",
+        .{ markdown.fmtHtml(language), markdown.fmtHtml(language) },
+    ) catch return error.RenderFailed;
+    if (highlight.renderAlloc(gpa, language, source)) |html| {
+        defer gpa.free(html);
+        writer.writer.writeAll(html) catch return error.RenderFailed;
+    } else {
+        writer.writer.print("{f}", .{markdown.fmtHtml(source)}) catch
+            return error.RenderFailed;
+    }
+    writer.writer.writeAll("</code></pre>\n") catch return error.RenderFailed;
+    return writer.toOwnedSlice() catch return error.OutOfMemory;
 }
 
 pub fn renderAllocOptions(
@@ -1270,6 +1321,31 @@ test "escapes code block language and source" {
     defer std.testing.allocator.free(html);
     try std.testing.expect(std.mem.indexOf(u8, html, "language-x&amp;amp") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "&lt;a&gt;") != null);
+}
+
+test "renders a complete highlighted source file without Markdown parsing" {
+    const html = try renderSourceAlloc(
+        std.testing.allocator,
+        "zig",
+        "const fence = \"```\";\n<script>\n",
+    );
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expect(std.mem.startsWith(u8, html, "<pre data-language=\"zig\">"));
+    try std.testing.expect(std.mem.indexOf(u8, html, "class=\"syntax-keyword\">const</span>") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "```") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "&lt;") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "&gt;") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "<script>") == null);
+}
+
+test "source rendering safely falls back for an unknown language" {
+    const html = try renderSourceAlloc(std.testing.allocator, "unknown&amp;", "<tag>\n");
+    defer std.testing.allocator.free(html);
+
+    try std.testing.expect(std.mem.indexOf(u8, html, "data-language=\"unknown&amp;amp;\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "&lt;tag&gt;") != null);
+    try std.testing.expect(std.mem.indexOf(u8, html, "syntax-") == null);
 }
 
 test "native standalone mode escapes raw HTML and unsafe URLs" {

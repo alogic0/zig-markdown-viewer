@@ -34,6 +34,7 @@ test('exports the browser ABI', () => {
     'memory',
     'allocateSource',
     'renderMarkdown',
+    'renderSource',
     'renderedLength',
     'errorCode',
     'releaseSource',
@@ -41,6 +42,16 @@ test('exports the browser ABI', () => {
   ]) {
     assert.ok(name in wasm, `missing WebAssembly export: ${name}`);
   }
+});
+
+test('highlights complete source files through WebAssembly', () => {
+  const html = browserRenderer.renderSource('zig', 'const source = "```";\n<script>\n');
+  assert.match(html, /^<pre data-language="zig"><code class="language-zig">/);
+  assert.match(html, /class="syntax-keyword">const<\/span>/);
+  assert.match(html, /```/);
+  assert.match(html, /&lt;/);
+  assert.match(html, /&gt;/);
+  assert.doesNotMatch(html, /<script>/);
 });
 
 test('renders document-local macros through WebAssembly', () => {
