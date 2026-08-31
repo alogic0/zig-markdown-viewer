@@ -763,7 +763,7 @@ test "renders inline and display math as safe MathML" {
     try std.testing.expect(std.mem.indexOf(u8, html, "<mi>ℱ</mi>") != null);
 }
 
-test "renders AMS matrices cases and aligned equations" {
+test "renders the integrated AMS table surface" {
     const html = try renderAlloc(std.testing.allocator,
         \\```math
         \\\begin{pmatrix}a&b\\c&d\end{pmatrix}
@@ -781,14 +781,15 @@ test "renders AMS matrices cases and aligned equations" {
         \\\begin{smallmatrix}a&b\\c&d\end{smallmatrix}
         \\\begin{gathered}u=1\\v=2\end{gathered}
         \\\begin{alignedat}{2}a&=b&c&=d\end{alignedat}
-        \\\begin{array}{lcr}p&q&r\end{array}
+        \\\begin{array}{l|cr}p&q&r\end{array}
+        \\\begin{multline}m=1\\n=2\end{multline}
         \\```
     );
     defer std.testing.allocator.free(html);
 
-    try std.testing.expectEqual(@as(usize, 7), std.mem.count(u8, html, "<mtable>"));
+    try std.testing.expectEqual(@as(usize, 8), std.mem.count(u8, html, "<mtable"));
     try std.testing.expect(std.mem.indexOf(u8, html, "<mi>u</mi><mo>=</mo><mn>1</mn>") != null);
-    try std.testing.expectEqual(@as(usize, 5), std.mem.count(
+    try std.testing.expectEqual(@as(usize, 6), std.mem.count(
         u8,
         html,
         "<mtd columnalign=\"right\">",
@@ -797,6 +798,11 @@ test "renders AMS matrices cases and aligned equations" {
         u8,
         html,
         "<mtd columnalign=\"right\"><mrow><mi>r</mi></mrow></mtd>",
+    ) != null);
+    try std.testing.expect(std.mem.indexOf(
+        u8,
+        html,
+        "<mtable columnlines=\"solid none\">",
     ) != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "<mo>(</mo>") != null);
     try std.testing.expect(std.mem.indexOf(u8, html, "<mo>{</mo><mtable>") != null);

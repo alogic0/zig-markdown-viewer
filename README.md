@@ -105,6 +105,8 @@ as the extension; it does not instantiate the WebAssembly renderer.
 
 Mermaid diagrams are not currently supported.
 
+### Math macros
+
 Declare portable, document-wide math macros in a fenced block. Backtick and
 tilde fences are equivalent, and valid declaration blocks are omitted from the
 rendered document:
@@ -140,8 +142,8 @@ duplicate keys, invalid values, duplicate fences, and oversized settings leave
 the fences visible as ordinary code and preserve centered display math. Inline
 math is unaffected.
 
-See [Highlighting quality](docs/HIGHLIGHTING_QUALITY.md) for the supported-language registry,
-admission criteria, and parser/tokenizer policy.
+See [Highlighting quality](docs/HIGHLIGHTING_QUALITY.md) for the
+supported-language registry, admission criteria, and parser/tokenizer policy.
 
 The [privacy policy](PRIVACY.md) describes local document processing, stored
 settings, recent-document metadata, and permission use. Release maintainers

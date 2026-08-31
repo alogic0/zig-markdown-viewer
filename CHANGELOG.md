@@ -42,10 +42,10 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 
 ### Changed
 
-- Pinned `zig-math-typesetter` at `daa2051` after the gathered, `alignedat`,
-  array, accent, size, and color slices.
-- Extended the inert MathML policy with only the fixed alignment, accent,
-  size, and color attribute values emitted by those slices.
+- Pinned `zig-math-typesetter` at `75cda41` after the multline, higher-accent,
+  and bounded array-separator slices.
+- Extended the inert MathML policy with only the fixed alignment, column-line,
+  accent, size, and color attribute values emitted by the typesetter.
 - Updated `zig-math-typesetter` to 0.4.0 and replaced the viewer-local macro
   declaration scanner with its allocator-owned public API.
 - Updated `zig-math-typesetter` to 0.3.0 for the optional bounded AMS table
