@@ -78,8 +78,9 @@ links and images are resolved against the Markdown document URL after
 validation. Visual math is accepted only as an exact two-child composite: a
 hidden fixed-class span tree followed by valid MathML. Its sanitizer permits
 only the typesetter's class vocabulary, canonical bounded `em` dimensions and
-position offsets, exact glyph font scales, and Plane 15 private-use glyph
-scalars mapped by the packaged WOFF2 font.
+position offsets, and exact glyph font scales. Ordinary glyph text is limited
+to the metric set's reviewed Unicode ranges; font-internal stretchy variants
+are limited to Plane 15 private-use scalars mapped by the packaged WOFF2 font.
 
 Standalone export runs the source through the same renderer and sanitizer. The
 content script then serializes the safe document, current layout settings,

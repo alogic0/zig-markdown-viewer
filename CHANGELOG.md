@@ -49,6 +49,9 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 
 ### Changed
 
+- Visual HTML emits ordinary math glyphs as readable Unicode while retaining
+  private-use font mappings only for exact stretchy variants and assembly
+  pieces that do not have distinct Unicode characters.
 - Pinned `zig-math-typesetter` at `15e9d9b` after the bounded `split` slice.
 - Extended the inert MathML policy with only the fixed alignment, column-line,
   accent, size, and color attribute values emitted by the typesetter.

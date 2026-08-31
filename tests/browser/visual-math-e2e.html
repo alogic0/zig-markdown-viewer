@@ -17,7 +17,7 @@ math-block-alignment = start
 Inline $x_2^3 + \alpha$ math.
 
 ~~~math
-\frac{\sqrt[3]{x+y}}{\binom{n}{k}}
+\left(\frac{\sqrt[3]{x+y}}{\binom{n}{k}}\right)
 ~~~
 
 <span id="unsafe" style="position:fixed" onclick="alert(1)">unsafe</span>
@@ -108,10 +108,16 @@ Inline $x_2^3 + \alpha$ math.
       );
       invariant(composites[0].querySelectorAll('[style]').length > 0, 'visual dimensions were stripped');
       const glyph = composites[0].querySelector('.zig-math-glyph');
-      invariant(glyph && [...glyph.textContent].every(character => {
+      const glyphs = [...documentRoot.querySelectorAll('.zig-math-glyph')];
+      invariant(glyph && glyphs.every(element =>
+        globalThis.ZigMarkdownHtmlMathPolicy.allowsGlyphText(element.textContent)
+      ), 'glyph text escaped the reviewed Unicode and private-use ranges');
+      invariant(composites[0].children[0].textContent.includes('x'), 'ordinary x glyph is not readable Unicode');
+      invariant(composites[0].children[0].textContent.includes('α'), 'ordinary alpha glyph is not readable Unicode');
+      invariant(glyphs.some(element => [...element.textContent].some(character => {
         const scalar = character.codePointAt(0);
         return scalar >= 0xF0000 && scalar <= 0xFFFFD;
-      }), 'glyph text is not mapped to the reviewed private-use range');
+      })), 'exact stretchy glyph mapping is missing');
 
       await document.fonts.load('16px ZigMathSTIX');
       await document.fonts.ready;

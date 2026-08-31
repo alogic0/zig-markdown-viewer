@@ -81,9 +81,12 @@ test('accepts generated box classes and canonical em styles', () => {
   ], false), false, style);
 });
 
-test('accepts only Plane 15 private-use glyph text', () => {
+test('accepts reviewed Unicode glyph text and exact private glyph mappings', () => {
   assert.equal(policy.allowsGlyphText(String.fromCodePoint(0xF0000, 0xF1234)), true);
-  assert.equal(policy.allowsGlyphText('x'), false);
+  assert.equal(policy.allowsGlyphText('x∀∑α𝑥'), true);
+  assert.equal(policy.allowsGlyphText('<&>'), true);
+  assert.equal(policy.allowsGlyphText('\n'), false);
+  assert.equal(policy.allowsGlyphText('😀'), false);
   assert.equal(policy.allowsGlyphText(String.fromCodePoint(0x100000)), false);
   assert.equal(policy.allowsGlyphText(''), false);
 });

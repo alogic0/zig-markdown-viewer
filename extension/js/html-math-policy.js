@@ -27,6 +27,13 @@
   ]);
   const dimension = /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]{1,6})?em$/;
   const styleProperties = new Set(['width', 'height', 'vertical-align', 'font-size', 'left', 'top']);
+  const glyphScalarRanges = [
+    [0x0020, 0x007e], [0x00a0, 0x017f], [0x0300, 0x03ff],
+    [0x2000, 0x206f], [0x2070, 0x209f], [0x20d0, 0x20ff],
+    [0x2100, 0x214f], [0x2190, 0x23ff], [0x25a0, 0x25ff],
+    [0x27c0, 0x27ef], [0x2980, 0x2aff], [0x1d400, 0x1d7ff],
+    [0xF0000, 0xFFFFD],
+  ];
   const scopeClasses = new Set([...classes].filter(name =>
     name.startsWith('zig-math-alpha-') || name.startsWith('zig-math-style-') ||
     name.startsWith('zig-math-size-') || name.startsWith('zig-math-color-') ||
@@ -109,7 +116,7 @@
     if (typeof value !== 'string' || value.length === 0) return false;
     for (const scalar of value) {
       const codepoint = scalar.codePointAt(0);
-      if (codepoint < 0xF0000 || codepoint > 0xFFFFD) return false;
+      if (!glyphScalarRanges.some(([first, last]) => codepoint >= first && codepoint <= last)) return false;
     }
     return true;
   }
