@@ -107,9 +107,9 @@ are not included in the exported page.
 Ongoing viewer development uses the sibling `zig-math-typesetter`,
 `zig-markdown-parser`, and `zig-native-syntax` checkouts through `./build.sh dev
 <step>`. This keeps local integration moving without rewriting immutable
-GitHub dependencies after every dependency commit. The typesetter is pushed
-and `./build.sh pin-math` is run only before pushing a viewer change that
-depends on that revision.
+GitHub dependencies after every dependency commit. Every changed sibling
+repository is pushed before `./build.sh pin-deps` is run for a viewer change
+that depends on those revisions.
 
 Chromium is the active compatibility and visual-regression browser for the
 HTML math backend. Firefox coverage is intentionally deferred and is not a

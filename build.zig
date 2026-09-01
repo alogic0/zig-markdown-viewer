@@ -1,6 +1,6 @@
 const std = @import("std");
 
-const release_version = "1.0.0";
+const release_version = "2.0.0";
 
 pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{
@@ -315,14 +315,14 @@ pub fn build(b: *std.Build) void {
     });
     test_step.dependOn(&b.addRunArtifact(extension_packager_tests).step);
 
-    const pin_math_dependency_tests = b.addTest(.{
+    const pin_dependencies_tests = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("tools/pin_math_dependency.zig"),
+            .root_source_file = b.path("tools/pin_dependencies.zig"),
             .target = b.graph.host,
             .optimize = .debug,
         }),
     });
-    test_step.dependOn(&b.addRunArtifact(pin_math_dependency_tests).step);
+    test_step.dependOn(&b.addRunArtifact(pin_dependencies_tests).step);
 
     const package_version_tests = b.addTest(.{
         .root_module = b.createModule(.{

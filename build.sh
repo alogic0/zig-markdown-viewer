@@ -31,13 +31,13 @@ if [ "$#" -ge 1 ]; then
             viewer_dev=true
             shift
             ;;
-        pin-math)
+        pin-deps)
             shift
             if [ "$#" -ne 0 ]; then
-                echo "usage: ./build.sh pin-math" >&2
+                echo "usage: ./build.sh pin-deps" >&2
                 exit 2
             fi
-            exec "${viewer_zig_exe}" run tools/pin_math_dependency.zig -- "${viewer_zig_exe}"
+            exec "${viewer_zig_exe}" run tools/pin_dependencies.zig -- "${viewer_zig_exe}"
             ;;
         version)
             shift

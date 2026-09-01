@@ -27,7 +27,7 @@ Build the deterministic Chrome Web Store/GitHub release archive with:
 ```
 
 The validated package is written to
-`zig-out/dist/zig-markdown-viewer-1.0.0.zip` with `manifest.json` at the ZIP
+`zig-out/dist/zig-markdown-viewer-2.0.0.zip` with `manifest.json` at the ZIP
 root.
 
 Read the package version or update every viewer-version location with:
@@ -227,17 +227,18 @@ dependency revisions can legitimately differ; use `./build.sh dev
 wasm-size-report` to inspect their size. The explicit `check-wasm-size` step and
 normal `./build.sh test` retain the release baseline gate.
 
-Only at the pre-push boundary for a viewer change that depends on a new
-typesetter revision, push the typesetter and refresh the viewer's exact GitHub
-revision and package hash with:
+Only at the pre-push boundary for a viewer change that depends on sibling
+revisions, push the changed repositories and refresh every viewer dependency's
+exact GitHub revision and package hash with:
 
 ```sh
-./build.sh pin-math
+./build.sh pin-deps
 ./build.sh test
 ```
 
-`pin-math` refuses a dirty typesetter worktree or a HEAD commit that is not
-present on an `origin` branch or tag.
+`pin-deps` preflights `zig-markdown-parser`, `zig-math-typesetter`, and
+`zig-native-syntax` before changing the viewer manifest. It refuses any dirty
+worktree or HEAD commit that is not present on an `origin` branch or tag.
 
 Chromium is the current browser target for visual-math development and
 regression review. Firefox coverage is deferred and is not part of the current

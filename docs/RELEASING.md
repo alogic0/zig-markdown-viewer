@@ -18,11 +18,11 @@ Chrome extension ZIP generated from that exact commit.
 
 Run the complete local gate with the pinned Zig compiler:
 
-When publishing viewer changes that depend on local `zig-math-typesetter`
-development, push that repository first and refresh the viewer pin:
+When publishing viewer changes that depend on local sibling development, push
+every changed dependency repository first and refresh all viewer pins:
 
 ```sh
-./build.sh pin-math
+./build.sh pin-deps
 ```
 
 ```sh
@@ -49,8 +49,8 @@ node --check extension/js/source.js
 node --check extension/js/standalone.js
 node --check extension/js/wasm.js
 ./build.sh package-extension
-unzip -t zig-out/dist/zig-markdown-viewer-1.0.0.zip
-sha256sum zig-out/dist/zig-markdown-viewer-1.0.0.zip
+unzip -t zig-out/dist/zig-markdown-viewer-2.0.0.zip
+sha256sum zig-out/dist/zig-markdown-viewer-2.0.0.zip
 ```
 
 Build the package a second time and confirm that its SHA-256 is identical.

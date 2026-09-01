@@ -8,11 +8,10 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 ### Added
 
 - A configurable source-file viewer that intercepts supported top-level local
-  and remote navigations before attachment responses trigger downloads, then
-  renders the complete file through the existing Zig/Wasm syntax backends with
+  files and renders them through the existing Zig/Wasm syntax backends with
   theme, wrap, copy, download, auto-refresh, and recent-file controls.
-- A Chromium attachment-response integration gate for source interception and
-  native syntax highlighting.
+- A Chromium local-file integration gate for source interception and native
+  syntax highlighting.
 - A Zig `version` command that reads `build.zig.zon`, reports every tracked
   file that differs, and updates every viewer-version location with atomic file
   replacement after validating a canonical semantic version.
@@ -21,8 +20,9 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
   markup removal, and standalone-export font embedding.
 - Atomic document-local `markdown-viewer` settings fences with fixed `center`
   or `start` block-math alignment.
-- `./build.sh math-dev` for temporary sibling typesetter overrides and
-  `./build.sh pin-math` for validated exact GitHub revision updates.
+- `./build.sh dev` for temporary parser, typesetter, and syntax sibling
+  overrides and `./build.sh pin-deps` for validated exact GitHub revision
+  updates across all three packages.
 - Centered multi-row formulas through the bounded AMS `gathered` environment.
 - First-, middle-, and last-aligned display rows through bounded AMS `multline`.
 - Two-column equation alignment through bounded AMS `split` rows.
