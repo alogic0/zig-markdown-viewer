@@ -1,13 +1,14 @@
 # Chrome Web Store Submission
 
-This document contains the canonical copy and disclosures for the `0.5.1`
+This document contains the canonical copy and disclosures for the `1.0.0`
 submission. Keep the dashboard answers consistent with `PRIVACY.md` and the
 extension manifest.
 
 ## Single purpose
 
-Render Markdown and supported source-code files opened from local files or web
-URLs as readable pages with local Zig/WebAssembly parsing and highlighting.
+Render Markdown opened from local files or web URLs and supported local
+source-code files as readable pages with Zig/WebAssembly parsing and
+highlighting.
 
 ## Short description
 
@@ -16,9 +17,9 @@ Fast, local-first Markdown and source rendering powered by Zig and WebAssembly.
 ## Detailed description
 
 Zig Markdown Viewer turns `.md`, `.markdown`, `.mkd`, and `.mdx` documents into
-readable pages directly in Chrome. It also displays supported source-code URLs
-with native syntax highlighting, including files that a server marks as an
-attachment. It includes a responsive table of contents, light and dark themes,
+readable pages directly in Chrome. It also displays supported local source-code
+files with native syntax highlighting. It includes a responsive table of
+contents, light and dark themes,
 raw source view, local inline and display math rendering with document-local
 macros, printing, code-copy controls, optional auto-refresh, raw source
 download, and one-click standalone Markdown HTML export.
@@ -37,10 +38,10 @@ remains in `chrome.storage.local` and is not transmitted to the developer.
 
 ### declarativeNetRequestWithHostAccess
 
-Required to redirect only top-level navigations whose filenames match the
-extension's fixed supported-source map into the packaged source viewer before
-Chrome handles an attachment response as a download. It does not inspect or
-modify subresources, and users can disable source interception independently.
+Required to redirect only top-level local-file navigations whose filenames
+match the extension's fixed supported-source map into the packaged source
+viewer. It does not inspect or modify web navigations or subresources, and
+users can disable source interception independently.
 
 ### Host access: file URLs
 
@@ -51,11 +52,11 @@ choice.
 
 ### Host access: HTTP and HTTPS
 
-Required because developer text files can be hosted on any domain. The content
-script matches only supported Markdown filename extensions, while a fixed
-main-frame rule matches supported source filenames. The background worker may
-fetch only the exact URL the user opened, with credentials omitted, to preserve
-text and provide explicitly enabled auto-refresh.
+Required because Markdown documents can be hosted on any domain. The content
+script matches only supported Markdown filename extensions. The background
+worker may fetch only the exact Markdown URL the user opened, with credentials
+omitted, to preserve text and provide explicitly enabled auto-refresh. Source
+interception remains restricted to local `file://` URLs.
 
 ## Remote code
 

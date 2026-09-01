@@ -131,17 +131,6 @@
     'git-rebase-todo': 'git-rebase',
   });
 
-  const excludedNavigationDomains = Object.freeze([
-    'github.com',
-  ]);
-
-  function isExcludedNavigationHost(hostname) {
-    const normalized = hostname.toLowerCase();
-    return excludedNavigationDomains.some(
-      domain => normalized === domain || normalized.endsWith(`.${domain}`)
-    );
-  }
-
   function fileName(url) {
     try {
       const path = new URL(url).pathname;
@@ -163,8 +152,7 @@
     } catch {
       return null;
     }
-    if (!['file:', 'http:', 'https:'].includes(parsed.protocol)) return null;
-    if (isExcludedNavigationHost(parsed.hostname)) return null;
+    if (parsed.protocol !== 'file:') return null;
 
     const name = fileName(url).toLowerCase();
     if (fileNames[name]) return fileNames[name];
@@ -186,12 +174,12 @@
 
   function extensionRegex(names) {
     const pattern = names.map(regexEscape).join('|');
-    return `^(?:https?|file)://[^?#]*\\.(?:${pattern})(?:\\?[^#]*)?$`;
+    return `^file://[^?#]*\\.(?:${pattern})(?:\\?[^#]*)?$`;
   }
 
   const navigationRegexes = Object.freeze([
     ...groups(Object.keys(extensions), 12).map(extensionRegex),
-    `^(?:https?|file)://[^?#]*/(?:${Object.keys(fileNames).map(regexEscape).join('|')})(?:\\?[^#]*)?$`,
+    `^file://[^?#]*/(?:${Object.keys(fileNames).map(regexEscape).join('|')})(?:\\?[^#]*)?$`,
   ]);
 
   function redirectRules(firstId, destination) {
@@ -205,7 +193,6 @@
       condition: {
         regexFilter,
         isUrlFilterCaseSensitive: false,
-        excludedRequestDomains: excludedNavigationDomains,
         resourceTypes: ['main_frame'],
       },
     }));
@@ -214,7 +201,6 @@
   globalThis.ZigSourceLanguages = Object.freeze({
     extensions,
     fileNames,
-    excludedNavigationDomains,
     fileName,
     languageForUrl,
     navigationRegexes,

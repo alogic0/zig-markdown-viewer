@@ -51,16 +51,14 @@ download button and are saved through the browser's normal download behavior.
 
 - `storage` stores display settings and the local recent-document list.
 - `declarativeNetRequestWithHostAccess` redirects only top-level supported
-  source-file navigations to the packaged source viewer before an attachment
-  response can start a download. The independent source-viewer setting removes
-  this redirect when disabled.
+  local source-file navigations to the packaged source viewer. The independent
+  source-viewer setting removes this redirect when disabled.
 - `file:///*` allows rendering local Markdown and supported source files after
   the user explicitly enables file URL access for the extension.
-- `http://*/*` and `https://*/*` allow rendering developer text files on
-  arbitrary sites and fetching the exact file the user opened. Content scripts
-  remain restricted to supported Markdown extensions; source interception is
-  restricted to the extension's fixed source filename map and top-level
-  navigations.
+- `http://*/*` and `https://*/*` allow rendering Markdown documents on
+  arbitrary sites and fetching the exact Markdown URL the user opened. Content
+  scripts remain restricted to supported Markdown extensions; source
+  interception is restricted to local `file://` URLs.
 
 ## Changes and contact
 

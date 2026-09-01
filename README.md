@@ -27,7 +27,7 @@ Build the deterministic Chrome Web Store/GitHub release archive with:
 ```
 
 The validated package is written to
-`zig-out/dist/zig-markdown-viewer-0.5.1.zip` with `manifest.json` at the ZIP
+`zig-out/dist/zig-markdown-viewer-1.0.0.zip` with `manifest.json` at the ZIP
 root.
 
 Read the package version or update every viewer-version location with:
@@ -109,11 +109,9 @@ as the extension; it does not instantiate the WebAssembly renderer.
 - a curated set of quality-verified `zig-native-syntax` backends, with escaped
   plain-text fallback for experimental, unsupported, or unknown fence languages
 - local and remote Markdown URLs
-- supported local and remote source-code URLs, including attachment responses
-  that Chromium would otherwise download; the source viewer provides theme,
-  wrapping, copy, raw-download, auto-refresh, and recent-file controls
-- raw GitHub content URLs are supported, while `github.com` repository and
-  `blob` pages remain in GitHub because their responses are HTML, not source
+- supported local source-code files; the source viewer provides theme,
+  wrapping, copy, raw-download, auto-refresh, and recent-file controls while
+  remote source URLs remain under the originating website's control
 - safe handling of raw HTML before DOM insertion
 - relative link and image resolution
 - automatic heading anchors and responsive table of contents
@@ -248,10 +246,9 @@ production content scripts, sanitizer policies, CSS, and WOFF2 asset; it also
 checks rendered geometry and the standalone-export font embedding path. Set
 `CHROME_EXE` if Chrome or Chromium is not discoverable on `PATH`.
 
-The separate `chromium-source-e2e` step serves a Zig file with an attachment
-response header and verifies that main-frame interception opens the source
-viewer, fetches the original URL, and emits native syntax spans instead of
-starting a browser download.
+The separate `chromium-source-e2e` step opens a local Zig file and verifies
+that main-frame interception opens the source viewer, reads the original file,
+and emits native syntax spans.
 
 ## Provenance
 

@@ -49,8 +49,8 @@ node --check extension/js/source.js
 node --check extension/js/standalone.js
 node --check extension/js/wasm.js
 ./build.sh package-extension
-unzip -t zig-out/dist/zig-markdown-viewer-0.5.1.zip
-sha256sum zig-out/dist/zig-markdown-viewer-0.5.1.zip
+unzip -t zig-out/dist/zig-markdown-viewer-1.0.0.zip
+sha256sum zig-out/dist/zig-markdown-viewer-1.0.0.zip
 ```
 
 Build the package a second time and confirm that its SHA-256 is identical.
@@ -59,9 +59,9 @@ Load `zig-out/extension` unpacked and smoke-test a local and remote Markdown
 document, settings persistence, raw mode, theme switching, table-of-contents
 navigation, code copying, printing, and standalone HTML export.
 
-Open a supported local and remote source file, including one returned with an
-attachment content disposition. Verify highlighting, wrapping, copying, raw
-download, auto-refresh, and disabling the source-viewer setting.
+Open a supported local source file. Verify highlighting, wrapping, copying,
+raw download, auto-refresh, and disabling the source-viewer setting. Confirm a
+remote URL ending in a supported source extension remains on its website.
 
 Chromium is the required browser for this checklist and for visual-math
 regression review. Firefox coverage is deferred and is not a release gate for
