@@ -7,11 +7,14 @@ into that file. Then create the commit with `git commit -F path_to_temp_file`. D
 Before committing a fix or feature:
 
 1. Run `./build.sh version` and note the current package version.
-2. Decide which Semantic Versioning component the change requires: patch for a
-   backward-compatible fix, minor for a backward-compatible feature, or major for
-   a breaking change.
-3. Run `./build.sh version set <new_sem_ver>` with the selected new version.
-4. Include every version file updated by that command in the fix or feature commit.
+2. Decide between a patch increment for a backward-compatible fix and a minor
+   increment for a backward-compatible feature. Keep the current major component.
+3. Never change the major component. Major-version changes are made only by the
+   user. If a change would require a new major version, report that requirement and
+   wait for the user to change the version before committing.
+4. Run `./build.sh version set <new_sem_ver>` with the selected patch or minor
+   version.
+5. Include every version file updated by that command in the fix or feature commit.
 
 ## Temporary Files
 
