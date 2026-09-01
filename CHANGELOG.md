@@ -5,6 +5,8 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-09-01
+
 ### Added
 
 - A configurable source-file viewer that intercepts supported top-level local
@@ -55,6 +57,8 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 
 ### Changed
 
+- Updated `zig-native-syntax` to the revision aligned with
+  `zig-markdown-parser` 0.2.0.
 - Visual HTML emits ordinary math glyphs as readable Unicode while retaining
   private-use font mappings only for exact stretchy variants and assembly
   pieces that do not have distinct Unicode characters.
@@ -145,6 +149,7 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 - Release Wasm removes compiler name and DWARF metadata, preventing local
   checkout paths from entering published artifacts.
 
-[Unreleased]: https://github.com/alogic0/zig-markdown-viewer/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/alogic0/zig-markdown-viewer/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/alogic0/zig-markdown-viewer/compare/v0.2.0...v0.7.0
 [0.2.0]: https://github.com/alogic0/zig-markdown-viewer/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/alogic0/zig-markdown-viewer/releases/tag/v0.1.0

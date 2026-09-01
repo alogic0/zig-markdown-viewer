@@ -91,6 +91,8 @@ jobs:
     name: Build release package
     needs: test
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.package_version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
 
@@ -100,24 +102,30 @@ jobs:
           version: 0.17.0-dev.1756+613c03321
           cache-key: ${{ hashFiles('build.zig', 'build.zig.zon') }}
 
+      - name: Read package version
+        id: package_version
+        shell: bash
+        run: echo "version=$(./build.sh version)" >> "${GITHUB_OUTPUT}"
+
       - name: Build and verify reproducible package
         shell: bash
         run: |
+          archive="zig-out/dist/zig-markdown-viewer-${{ steps.package_version.outputs.version }}.zip"
           ./build.sh package-extension
-          sha256sum zig-out/dist/zig-markdown-viewer-0.4.0.zip > /tmp/zig-markdown-viewer.sha256
+          sha256sum "${archive}" > /tmp/zig-markdown-viewer.sha256
           ./build.sh package-extension
           sha256sum --check /tmp/zig-markdown-viewer.sha256
-          unzip -t zig-out/dist/zig-markdown-viewer-0.4.0.zip
-          sha256sum zig-out/dist/zig-markdown-viewer-0.4.0.zip > zig-out/dist/zig-markdown-viewer-0.4.0.zip.sha256
+          unzip -t "${archive}"
+          sha256sum "${archive}" > "${archive}.sha256"
           rm /tmp/zig-markdown-viewer.sha256
 
       - name: Upload release package
         uses: actions/upload-artifact@v4
         with:
-          name: zig-markdown-viewer-0.4.0
+          name: zig-markdown-viewer-${{ steps.package_version.outputs.version }}
           path: |
-            zig-out/dist/zig-markdown-viewer-0.4.0.zip
-            zig-out/dist/zig-markdown-viewer-0.4.0.zip.sha256
+            zig-out/dist/zig-markdown-viewer-${{ steps.package_version.outputs.version }}.zip
+            zig-out/dist/zig-markdown-viewer-${{ steps.package_version.outputs.version }}.zip.sha256
           if-no-files-found: error
 
   release:
@@ -133,22 +141,33 @@ jobs:
       - name: Download verified release package
         uses: actions/download-artifact@v4
         with:
-          name: zig-markdown-viewer-0.4.0
+          name: zig-markdown-viewer-${{ needs.package.outputs.version }}
           path: dist
 
       - name: Extract release notes
         shell: bash
         run: |
-          awk '/^## \[0.4.0\]/{copy=1} copy && /^## \[0.2.0\]/{exit} copy' CHANGELOG.md > /tmp/zig-markdown-viewer-release-notes.md
+          version="${{ needs.package.outputs.version }}"
+          if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
+            echo "tag ${GITHUB_REF_NAME} does not match package version ${version}" >&2
+            exit 1
+          fi
+          awk -v version="${version}" '
+            $1 == "##" && $2 == "[" version "]" { copy=1 }
+            copy && $1 == "##" && $2 ~ /^\[/ && $2 != "[" version "]" { exit }
+            copy
+          ' CHANGELOG.md > /tmp/zig-markdown-viewer-release-notes.md
+          test -s /tmp/zig-markdown-viewer-release-notes.md
 
       - name: Create release
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
+          version="${{ needs.package.outputs.version }}"
           gh release create "${GITHUB_REF_NAME}" \
-            dist/zig-markdown-viewer-0.4.0.zip \
-            dist/zig-markdown-viewer-0.4.0.zip.sha256 \
+            "dist/zig-markdown-viewer-${version}.zip" \
+            "dist/zig-markdown-viewer-${version}.zip.sha256" \
             --verify-tag \
             --title "Zig Markdown Viewer ${GITHUB_REF_NAME}" \
             --notes-file /tmp/zig-markdown-viewer-release-notes.md

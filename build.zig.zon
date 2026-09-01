@@ -13,8 +13,8 @@
             .hash = "zig_math_typesetter-0.4.0-sPTkik4xGgAOiNaQyhDbOhlueHrJXgZ6u-vLijgNVaVV",
         },
         .native_syntax = .{
-            .url = "git+https://github.com/alogic0/zig-native-syntax.git#20b1d9c6ac6ad4799bdfe5393889d87449004bf3",
-            .hash = "zig_native_syntax-0.1.0-rNAusSs0FwBfXi6bawxeEmEAQb-NDDaeH1k3jbs5YYlV",
+            .url = "git+https://github.com/alogic0/zig-native-syntax.git#611aa9522aa16e86b27ce19f1c90feae0c1844f9",
+            .hash = "zig_native_syntax-0.1.0-rNAusbE2FwALiaGP3FqhXxJIpXqTu5hpAPySbSBnes0I",
         },
     },
     .paths = .{
