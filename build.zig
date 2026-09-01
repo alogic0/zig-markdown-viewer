@@ -1,6 +1,6 @@
 const std = @import("std");
 
-const release_version = "2.0.0";
+const release_version = "0.7.0";
 
 pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{

@@ -27,7 +27,7 @@ Build the deterministic Chrome Web Store/GitHub release archive with:
 ```
 
 The validated package is written to
-`zig-out/dist/zig-markdown-viewer-2.0.0.zip` with `manifest.json` at the ZIP
+`zig-out/dist/zig-markdown-viewer-0.7.0.zip` with `manifest.json` at the ZIP
 root.
 
 Read the package version or update every viewer-version location with:
