@@ -61,6 +61,9 @@ if ! "${browser}" \
     "file://${work_dir}/visual-math-e2e.html" \
     >"${work_dir}/dom.html" 2>"${work_dir}/chromium.log"
 then
+    printf '%s\n' \
+        '::error title=Chromium visual-math process::Chromium exited before producing a test result; see the browser log in this step.' >&2
+    "${browser}" --version >&2 || true
     cat "${work_dir}/chromium.log" >&2
     exit 1
 fi
@@ -69,6 +72,9 @@ if ! rg -F 'data-e2e-status="pass"' "${work_dir}/dom.html" >/dev/null; then
     e2e_error="$(rg -o 'data-e2e-error="[^"]*"' "${work_dir}/dom.html" | sed 's/^data-e2e-error="//; s/"$//' | sed -n '1p' || true)"
     if [ -n "${e2e_error}" ]; then
         printf '::error title=Chromium visual-math assertion::%s\n' "${e2e_error}" >&2
+    else
+        printf '%s\n' \
+            '::error title=Chromium visual-math assertion::The harness did not report a passing result or a specific assertion; inspect the dumped DOM in this step.' >&2
     fi
     "${browser}" --version >&2 || true
     cat "${work_dir}/dom.html" >&2
