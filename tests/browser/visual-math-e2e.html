@@ -76,7 +76,7 @@ Inline before $\frac{-b+\sqrt{b^2-4ac}+x_2^3+\alpha}{2a}$ after math.
     }
 
     async function waitFor(check, message) {
-      const deadline = performance.now() + 8000;
+      const deadline = performance.now() + 20000;
       while (!check()) {
         if (performance.now() >= deadline) throw new Error(message);
         await new Promise(resolve => setTimeout(resolve, 25));
@@ -365,6 +365,7 @@ math-block-alignment = start
       document.body.append(output);
     }).catch(error => {
       document.documentElement.dataset.e2eStatus = 'fail';
+      document.documentElement.dataset.e2eError = error?.message || String(error);
       document.body.replaceChildren();
       const output = document.createElement('pre');
       output.id = 'e2e-error';

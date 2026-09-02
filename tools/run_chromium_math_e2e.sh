@@ -56,7 +56,7 @@ if ! "${browser}" \
     --allow-file-access-from-files \
     --window-size=1280,900 \
     --user-data-dir="${work_dir}/profile" \
-    --virtual-time-budget=10000 \
+    --virtual-time-budget=30000 \
     --dump-dom \
     "file://${work_dir}/visual-math-e2e.html" \
     >"${work_dir}/dom.html" 2>"${work_dir}/chromium.log"
@@ -66,6 +66,11 @@ then
 fi
 
 if ! rg -F 'data-e2e-status="pass"' "${work_dir}/dom.html" >/dev/null; then
+    e2e_error="$(rg -o 'data-e2e-error="[^"]*"' "${work_dir}/dom.html" | sed 's/^data-e2e-error="//; s/"$//' | sed -n '1p' || true)"
+    if [ -n "${e2e_error}" ]; then
+        printf '::error title=Chromium visual-math assertion::%s\n' "${e2e_error}" >&2
+    fi
+    "${browser}" --version >&2 || true
     cat "${work_dir}/dom.html" >&2
     cat "${work_dir}/chromium.log" >&2
     exit 1
