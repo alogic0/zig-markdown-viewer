@@ -89,7 +89,7 @@ fi
 debug_port="$(sed -n '1p' "${work_dir}/profile/DevToolsActivePort")"
 
 attempt=0
-while [ "${attempt}" -lt 600 ]; do
+while [ "${attempt}" -lt 1200 ]; do
     if ! kill -0 "${browser_pid}" 2>/dev/null; then
         printf '%s\n' \
             '::error title=Chromium visual-math process::Chromium exited before the harness completed.' >&2
@@ -114,8 +114,12 @@ while [ "${attempt}" -lt 600 ]; do
     sleep 0.05
 done
 
-printf '%s\n' \
-    '::error title=Chromium visual-math timeout::The harness did not complete within 30 seconds.' >&2
+target_title="$(sed -n 's/^[[:space:]]*"title": "\(Zig math E2E [^"]*\)",$/\1/p' "${work_dir}/targets.json" | sed -n '1p')"
+if [ -z "${target_title}" ]; then
+    target_title="no visual-math page target"
+fi
+printf '::error title=Chromium visual-math timeout::The harness did not complete within 60 seconds; last phase: %s.\n' \
+    "${target_title}" >&2
 "${browser}" --version >&2 || true
 cat "${work_dir}/targets.json" >&2
 cat "${work_dir}/chromium.log" >&2

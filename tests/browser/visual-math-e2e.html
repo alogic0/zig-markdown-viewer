@@ -84,6 +84,7 @@ Inline before $\frac{-b+\sqrt{b^2-4ac}+x_2^3+\alpha}{2a}$ after math.
     }
 
     async function runVisualMathAssertions() {
+      document.title = 'Zig math E2E RUNNING: render';
       await waitFor(
         () => document.querySelectorAll('#zig-md-document .zig-math-composite').length === 3,
         'viewer did not render three visual math composites'
@@ -135,6 +136,7 @@ Inline before $\frac{-b+\sqrt{b^2-4ac}+x_2^3+\alpha}{2a}$ after math.
         return scalar >= 0xF0000 && scalar <= 0xFFFFD;
       })), 'exact stretchy glyph mapping is missing');
 
+      document.title = 'Zig math E2E RUNNING: font';
       await document.fonts.load('16px ZigMathSTIX');
       await document.fonts.ready;
       const fontFace = [...document.fonts].find(face => face.family === 'ZigMathSTIX');
@@ -276,6 +278,7 @@ Inline before $\frac{-b+\sqrt{b^2-4ac}+x_2^3+\alpha}{2a}$ after math.
       invariant(fLimitRect.bottom < gRect.top, 'mathop limit collides with the following row');
       invariant(kRect.left >= gRect.right - 1, 'nolimits subscript is not beside its operator');
 
+      document.title = 'Zig math E2E RUNNING: export';
       document.querySelector('[data-action="download"]').click();
       await waitFor(() => globalThis.capturedStandaloneBlob !== null, 'standalone export did not create a Blob');
       const standalone = await globalThis.capturedStandaloneBlob.text();
@@ -295,6 +298,7 @@ math-block-alignment = start
 \end{aligned}
 ~~~
 `;
+      document.title = 'Zig math E2E RUNNING: MathML';
       globalThis.storageChangedListener({ enabled: { newValue: false } }, 'local');
       globalThis.storageChangedListener({ enabled: { newValue: true } }, 'local');
       await waitFor(
