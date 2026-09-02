@@ -25,7 +25,17 @@ fi
 
 work_dir="$(mktemp -d)"
 cleanup() {
-    rm -r "${work_dir}"
+    cleanup_attempt=0
+    while [ -e "${work_dir}" ] && [ "${cleanup_attempt}" -lt 100 ]; do
+        rm -rf "${work_dir}" 2>/dev/null || true
+        cleanup_attempt=$((cleanup_attempt + 1))
+        if [ -e "${work_dir}" ]; then
+            sleep 0.05
+        fi
+    done
+    if [ -e "${work_dir}" ]; then
+        echo "warning: could not completely remove ${work_dir}" >&2
+    fi
 }
 trap cleanup EXIT HUP INT TERM
 
