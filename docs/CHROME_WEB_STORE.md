@@ -1,6 +1,6 @@
 # Chrome Web Store Submission
 
-This document contains the canonical copy and disclosures for the `0.7.4`
+This document contains the canonical copy and disclosures for the `0.7.5`
 submission. Keep the dashboard answers consistent with `PRIVACY.md` and the
 extension manifest.
 

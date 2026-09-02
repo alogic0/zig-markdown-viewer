@@ -358,6 +358,7 @@ math-block-alignment = start
 
     runVisualMathAssertions().then(result => {
       document.documentElement.dataset.e2eStatus = 'pass';
+      document.title = 'Zig math E2E PASS';
       document.body.replaceChildren();
       const output = document.createElement('pre');
       output.id = 'e2e-result';
@@ -366,6 +367,7 @@ math-block-alignment = start
     }).catch(error => {
       document.documentElement.dataset.e2eStatus = 'fail';
       document.documentElement.dataset.e2eError = error?.message || String(error);
+      document.title = `Zig math E2E FAIL: ${error?.message || String(error)}`;
       document.body.replaceChildren();
       const output = document.createElement('pre');
       output.id = 'e2e-error';

@@ -24,7 +24,12 @@ if [ -z "${browser}" ]; then
 fi
 
 work_dir="$(mktemp -d)"
+browser_pid=""
 cleanup() {
+    if [ -n "${browser_pid}" ]; then
+        kill "${browser_pid}" 2>/dev/null || true
+        wait "${browser_pid}" 2>/dev/null || true
+    fi
     cleanup_attempt=0
     while [ -e "${work_dir}" ] && [ "${cleanup_attempt}" -lt 100 ]; do
         rm -rf "${work_dir}" 2>/dev/null || true
@@ -48,39 +53,70 @@ sed 's|href="css/math.css"|href="css/math-harness.css"|' \
     "${work_dir}/visual-math-e2e.html" >"${work_dir}/visual-math-e2e.html.tmp"
 mv "${work_dir}/visual-math-e2e.html.tmp" "${work_dir}/visual-math-e2e.html"
 
-if ! "${browser}" \
+"${browser}" \
     --headless=new \
     --no-sandbox \
     --disable-gpu \
     --disable-background-networking \
     --allow-file-access-from-files \
+    --no-first-run \
     --window-size=1280,900 \
     --user-data-dir="${work_dir}/profile" \
-    --virtual-time-budget=30000 \
-    --dump-dom \
+    --remote-debugging-port=0 \
     "file://${work_dir}/visual-math-e2e.html" \
-    >"${work_dir}/dom.html" 2>"${work_dir}/chromium.log"
-then
-    printf '%s\n' \
-        '::error title=Chromium visual-math process::Chromium exited before producing a test result; see the browser log in this step.' >&2
-    "${browser}" --version >&2 || true
-    cat "${work_dir}/chromium.log" >&2
-    exit 1
-fi
+    >"${work_dir}/chromium.out" 2>"${work_dir}/chromium.log" &
+browser_pid="$!"
 
-if ! rg -F 'data-e2e-status="pass"' "${work_dir}/dom.html" >/dev/null; then
-    e2e_error="$(rg -o 'data-e2e-error="[^"]*"' "${work_dir}/dom.html" | sed 's/^data-e2e-error="//; s/"$//' | sed -n '1p' || true)"
-    if [ -n "${e2e_error}" ]; then
-        printf '::error title=Chromium visual-math assertion::%s\n' "${e2e_error}" >&2
-    else
+attempt=0
+while [ ! -s "${work_dir}/profile/DevToolsActivePort" ] && [ "${attempt}" -lt 200 ]; do
+    if ! kill -0 "${browser_pid}" 2>/dev/null; then
         printf '%s\n' \
-            '::error title=Chromium visual-math assertion::The harness did not report a passing result or a specific assertion; inspect the dumped DOM in this step.' >&2
+            '::error title=Chromium visual-math process::Chromium exited before its DevTools endpoint started.' >&2
+        "${browser}" --version >&2 || true
+        cat "${work_dir}/chromium.log" >&2
+        exit 1
     fi
+    attempt=$((attempt + 1))
+    sleep 0.05
+done
+if [ ! -s "${work_dir}/profile/DevToolsActivePort" ]; then
+    printf '%s\n' \
+        '::error title=Chromium visual-math process::Chromium DevTools endpoint did not start.' >&2
     "${browser}" --version >&2 || true
-    cat "${work_dir}/dom.html" >&2
     cat "${work_dir}/chromium.log" >&2
     exit 1
 fi
+debug_port="$(sed -n '1p' "${work_dir}/profile/DevToolsActivePort")"
 
-result="$(rg -o '<pre id="e2e-result">[^<]*' "${work_dir}/dom.html" | sed 's/^<pre id="e2e-result">//')"
-echo "Chromium visual math E2E: ${result}"
+attempt=0
+while [ "${attempt}" -lt 600 ]; do
+    if ! kill -0 "${browser_pid}" 2>/dev/null; then
+        printf '%s\n' \
+            '::error title=Chromium visual-math process::Chromium exited before the harness completed.' >&2
+        "${browser}" --version >&2 || true
+        cat "${work_dir}/chromium.log" >&2
+        exit 1
+    fi
+    curl -s "http://127.0.0.1:${debug_port}/json/list" >"${work_dir}/targets.json" || true
+    if rg -F '"title": "Zig math E2E PASS"' "${work_dir}/targets.json" >/dev/null; then
+        echo "Chromium visual math E2E: pass"
+        exit 0
+    fi
+    if rg -F '"title": "Zig math E2E FAIL:' "${work_dir}/targets.json" >/dev/null; then
+        e2e_error="$(sed -n 's/^[[:space:]]*"title": "Zig math E2E FAIL: \(.*\)",$/\1/p' "${work_dir}/targets.json" | sed -n '1p')"
+        printf '::error title=Chromium visual-math assertion::%s\n' "${e2e_error}" >&2
+        "${browser}" --version >&2 || true
+        cat "${work_dir}/targets.json" >&2
+        cat "${work_dir}/chromium.log" >&2
+        exit 1
+    fi
+    attempt=$((attempt + 1))
+    sleep 0.05
+done
+
+printf '%s\n' \
+    '::error title=Chromium visual-math timeout::The harness did not complete within 30 seconds.' >&2
+"${browser}" --version >&2 || true
+cat "${work_dir}/targets.json" >&2
+cat "${work_dir}/chromium.log" >&2
+exit 1
