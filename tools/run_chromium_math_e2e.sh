@@ -98,11 +98,11 @@ while [ "${attempt}" -lt 1200 ]; do
         exit 1
     fi
     curl -s "http://127.0.0.1:${debug_port}/json/list" >"${work_dir}/targets.json" || true
-    if rg -F '"title": "Zig math E2E PASS"' "${work_dir}/targets.json" >/dev/null; then
+    if grep -F '"title": "Zig math E2E PASS"' "${work_dir}/targets.json" >/dev/null; then
         echo "Chromium visual math E2E: pass"
         exit 0
     fi
-    if rg -F '"title": "Zig math E2E FAIL:' "${work_dir}/targets.json" >/dev/null; then
+    if grep -F '"title": "Zig math E2E FAIL:' "${work_dir}/targets.json" >/dev/null; then
         e2e_error="$(sed -n 's/^[[:space:]]*"title": "Zig math E2E FAIL: \(.*\)",$/\1/p' "${work_dir}/targets.json" | sed -n '1p')"
         printf '::error title=Chromium visual-math assertion::%s\n' "${e2e_error}" >&2
         "${browser}" --version >&2 || true

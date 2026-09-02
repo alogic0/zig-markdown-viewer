@@ -81,7 +81,7 @@ debug_port="$(sed -n '1p' "${work_dir}/profile/DevToolsActivePort")"
 
 attempt=0
 while [ "${attempt}" -lt 200 ]; do
-    if curl -s "http://127.0.0.1:${debug_port}/json/list" | rg -F '/js/background.js' >/dev/null; then
+    if curl -s "http://127.0.0.1:${debug_port}/json/list" | grep -F '/js/background.js' >/dev/null; then
         break
     fi
     attempt=$((attempt + 1))
@@ -103,8 +103,8 @@ curl -s -X PUT "http://127.0.0.1:${debug_port}/json/new?${source_url}" >"${work_
 attempt=0
 while [ "${attempt}" -lt 200 ]; do
     curl -s "http://127.0.0.1:${debug_port}/json/list" >"${work_dir}/targets.json"
-    if rg -F '"title": "sample.zig · Zig Markdown Viewer"' "${work_dir}/targets.json" >/dev/null &&
-        rg -F '/source.html#file://' "${work_dir}/targets.json" >/dev/null
+    if grep -F '"title": "sample.zig · Zig Markdown Viewer"' "${work_dir}/targets.json" >/dev/null &&
+        grep -F '/source.html#file://' "${work_dir}/targets.json" >/dev/null
     then
         break
     fi

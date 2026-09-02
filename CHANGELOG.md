@@ -5,7 +5,7 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 
 ## [Unreleased]
 
-## [0.7.6] - 2026-09-01
+## [0.7.7] - 2026-09-01
 
 ### Added
 
@@ -91,6 +91,8 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
   completion marker instead of relying on Chromium's virtual-time DOM dump,
   exposes asynchronous test phases, and reports browser-process, timeout, and
   assertion failures as workflow annotations.
+- Chromium integration scripts use portable POSIX tools instead of assuming
+  that `rg` is installed on GitHub's hosted Ubuntu runner.
 - Visual HTML identifiers now use the same default mathematical italics as
   MathML, and the shared display wrapper owns block spacing so both backends
   occupy comparable document flow.
@@ -155,7 +157,7 @@ All notable changes to Zig Markdown Viewer are documented here. Releases use
 - Release Wasm removes compiler name and DWARF metadata, preventing local
   checkout paths from entering published artifacts.
 
-[Unreleased]: https://github.com/alogic0/zig-markdown-viewer/compare/v0.7.6...HEAD
-[0.7.6]: https://github.com/alogic0/zig-markdown-viewer/compare/v0.2.0...v0.7.6
+[Unreleased]: https://github.com/alogic0/zig-markdown-viewer/compare/v0.7.7...HEAD
+[0.7.7]: https://github.com/alogic0/zig-markdown-viewer/compare/v0.2.0...v0.7.7
 [0.2.0]: https://github.com/alogic0/zig-markdown-viewer/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/alogic0/zig-markdown-viewer/releases/tag/v0.1.0
